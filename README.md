@@ -1,8 +1,8 @@
 # 📦 Descripción StatsLibX
 
-    StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
+StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
 
-    Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y ligera que permita a desarrolladores y entusiastas integrar la **estadistica descriptiva e inferencial** sin complicaciones, con multiples funcionalidades y utilidades pensadas para el futuro.
+Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y ligera que permita a desarrolladores y entusiastas integrar la **estadistica descriptiva e inferencial** sin complicaciones, con multiples funcionalidades y utilidades pensadas para el futuro.
 
 ## ✨ Características principales
 
