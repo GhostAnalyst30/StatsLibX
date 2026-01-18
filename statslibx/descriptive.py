@@ -617,7 +617,7 @@ class DescriptiveStats:
             case "en-US":
                 help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                    📊 DescriptiveStats CLASS - COMPLETE HELP               ║
+║                    📊 CLASS DescriptiveStats  - COMPLETE HELP              ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
 📝 DESCRIPTION:

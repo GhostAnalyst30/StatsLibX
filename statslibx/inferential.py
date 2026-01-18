@@ -700,19 +700,32 @@ class InferentialStats:
         )
 
     
-    def help(self):
+    def help(self, lang = "es-ES"):
         """
-        Muestra ayuda completa de la clase InferentialStats
+        Muestra ayuda completa de la clase DescriptiveStats
+
+        Parametros / Parameters:
+        ------------------------
+        lang: str
+            Idioma Usuario: Codigo de Idioma (es-Es) o "Español"
+            User Language: Languaje Code (en-Us) or "English"
         """
-        help_text = """
+        if lang in ["en-US", "English", "english"]:
+            lang = "en-US"
+        else:
+            lang = "es-ES"
+        help_text = " "
+        match lang:
+            case "es_ES":
+                help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                   🔬 CLASE InferentialStats - AYUDA COMPLETA               ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
 📝 DESCRIPCIÓN:
-   Clase para estadística inferencial: pruebas de hipótesis, intervalos de
-   confianza y pruebas de normalidad. Permite realizar inferencias sobre
-   poblaciones a partir de muestras de datos.
+    Clase para estadística inferencial: pruebas de hipótesis, intervalos de
+    confianza y pruebas de normalidad. Permite realizar inferencias sobre
+    poblaciones a partir de muestras de datos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -722,278 +735,569 @@ class InferentialStats:
 │ 1. 📊 INTERVALOS DE CONFIANZA                                              │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  • .confidence_interval(column, confidence=0.95, statistic='mean')
+    • .confidence_interval(column, confidence=0.95, statistic='mean')
     
     Calcula intervalos de confianza para diferentes estadísticos
     
-    Parámetros:
-      column      : Columna a analizar (str)
-      confidence  : Nivel de confianza (float, default 0.95 = 95%)
-      statistic   : 'mean', 'median' o 'proportion'
-    
-    Retorna: (lower_bound, upper_bound, point_estimate)
+        Parámetros:
+            column      : Columna a analizar (str)
+            confidence  : Nivel de confianza (float, default 0.95 = 95%)
+            statistic   : 'mean', 'median' o 'proportion'
+        
+        Retorna: (lower_bound, upper_bound, point_estimate)
 
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ 2. 🧪 PRUEBAS DE HIPÓTESIS - UNA MUESTRA                                   │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  • .t_test_1sample(column, popmean=None, popmedian=None, 
-                   alternative='two-sided')
+    • .t_test_1sample(column, popmean=None, popmedian=None, 
+                        alternative='two-sided')
     
-    Prueba t de una muestra (o Wilcoxon para mediana)
-    
-    Parámetros:
-      column      : Columna a analizar
-      popmean     : Media poblacional hipotética (para t-test)
-      popmedian   : Mediana poblacional hipotética (para Wilcoxon)
-      alternative : 'two-sided', 'less', 'greater'
+        Prueba t de una muestra (o Wilcoxon para mediana)
+        
+        Parámetros:
+            column      : Columna a analizar
+            popmean     : Media poblacional hipotética (para t-test)
+            popmedian   : Mediana poblacional hipotética (para Wilcoxon)
+            alternative : 'two-sided', 'less', 'greater'
 
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ 3. 🧪 PRUEBAS DE HIPÓTESIS - DOS MUESTRAS                                  │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  🔹 Pruebas Paramétricas:
-  
-  • .t_test_2sample(column1, column2, equal_var=True, 
-                   alternative='two-sided')
-    Prueba t de dos muestras independientes
-  
-  • .t_test_paired(column1, column2, alternative='two-sided')
-    Prueba t pareada (muestras dependientes)
+    🔹 Pruebas Paramétricas:
 
-  🔹 Pruebas No Paramétricas:
-  
-  • .mann_whitney_test(column1, column2, alternative='two-sided')
-    Alternativa no paramétrica al t-test de dos muestras
+    • .t_test_2sample(column1, column2, equal_var=True, 
+                        alternative='two-sided')
+        Prueba t de dos muestras independientes
 
-  🔹 Pruebas Extras:
-  • .hypothesis_test(method='mean', column1=None, column2=None, 
-                   alpha=0.05, homoscedasticity='levene')
-  • .variance_test(column1, column2, method='levene', center='median')
+    • .t_test_paired(column1, column2, alternative='two-sided')
+        Prueba t pareada (muestras dependientes)
+
+    🔹 Pruebas No Paramétricas:
+
+    • .mann_whitney_test(column1, column2, alternative='two-sided')
+        Alternativa no paramétrica al t-test de dos muestras
+
+    🔹 Pruebas Extras:
+    • .hypothesis_test(method='mean', column1=None, column2=None, 
+                        alpha=0.05, homoscedasticity='levene')
+    • .variance_test(column1, column2, method='levene', center='median')
     
 
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ 4. 🧪 PRUEBAS PARA MÚLTIPLES GRUPOS                                        │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  🔹 Pruebas Paramétricas:
-  
-  • .anova_oneway(column, groups)
-    ANOVA de un factor para comparar múltiples grupos
-  
-  🔹 Pruebas No Paramétricas:
-  
-  • .kruskal_wallis_test(column, groups)
-    Alternativa no paramétrica a ANOVA
+    🔹 Pruebas Paramétricas:
+
+    • .anova_oneway(column, groups)
+        ANOVA de un factor para comparar múltiples grupos
+
+    🔹 Pruebas No Paramétricas:
+
+    • .kruskal_wallis_test(column, groups)
+        Alternativa no paramétrica a ANOVA
 
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ 5. 🧪 PRUEBAS PARA VARIABLES CATEGÓRICAS                                   │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  • .chi_square_test(column1, column2)
-    Prueba Chi-cuadrado de independencia entre variables categóricas
+    • .chi_square_test(column1, column2)
+        Prueba Chi-cuadrado de independencia entre variables categóricas
 
 ┌────────────────────────────────────────────────────────────────────────────┐
 │ 6. 📈 PRUEBAS DE NORMALIDAD                                                │
 └────────────────────────────────────────────────────────────────────────────┘
 
-  • .normality_test(column, method='shapiro', test_statistic='mean')
+    • .normality_test(column, method='shapiro', test_statistic='mean')
     
-    Prueba si los datos siguen una distribución normal
+        Prueba si los datos siguen una distribución normal
     
-    Métodos disponibles:
-      'shapiro'      : Shapiro-Wilk (mejor para n ≤ 5000)
-      'ks'           : Kolmogorov-Smirnov
-      'anderson'     : Anderson-Darling
-      'jarque_bera'  : Jarque-Bera (basado en asimetría y curtosis)
-      'all'          : Ejecuta todos los tests
+        Métodos disponibles:
+            'shapiro'      : Shapiro-Wilk (mejor para n ≤ 5000)
+            'ks'           : Kolmogorov-Smirnov
+            'anderson'     : Anderson-Darling
+            'jarque_bera'  : Jarque-Bera (basado en asimetría y curtosis)
+            'all'          : Ejecuta todos los tests
     
-    test_statistic: 'mean', 'median' o 'mode' para centrar la distribución
+        test_statistic: 'mean', 'median' o 'mode' para centrar la distribución
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💡 EJEMPLOS DE USO:
 
-  ┌─ Ejemplo 1: Intervalos de Confianza ────────────────────────────────────┐
-  │ from inferential import InferentialStats                                │
-  │ import pandas as pd                                                      │
-  │                                                                          │
-  │ df = pd.read_csv('datos.csv')                                           │
-  │ inf_stats = InferentialStats(df)                                        │
-  │                                                                          │
-  │ # IC para la media (95%)                                                 │
-  │ lower, upper, mean = inf_stats.confidence_interval(                     │
-  │     'salario',                                                           │
-  │     confidence=0.95,                                                    │
-  │     statistic='mean'                                                    │
-  │ )                                                                        │
-  │ print(f"IC 95%: [{lower:.2f}, {upper:.2f}]")                            │
-  │                                                                          │
-  │ # IC para la mediana (bootstrap)                                         │
-  │ lower, upper, median = inf_stats.confidence_interval(                   │
-  │     'edad',                                                              │
-  │     confidence=0.99,                                                    │
-  │     statistic='median'                                                  │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 1: Intervalos de Confianza ────────────────────────────────────┐
+    │ from inferential import InferentialStats                                │
+    │ import pandas as pd                                                     │
+    │                                                                         │
+    │ df = pd.read_csv('datos.csv')                                           │
+    │ inf_stats = InferentialStats(df)                                        │
+    │                                                                         │
+    │ # IC para la media (95%)                                                │
+    │ lower, upper, mean = inf_stats.confidence_interval(                     │
+    │     'salario',                                                          │
+    │     confidence=0.95,                                                    │
+    │     statistic='mean'                                                    │
+    │ )                                                                       │
+    │ print(f"IC 95%: [{lower:.2f}, {upper:.2f}]")                            │
+    │                                                                         │
+    │ # IC para la mediana (bootstrap)                                        │
+    │ lower, upper, median = inf_stats.confidence_interval(                   │
+    │     'edad',                                                             │
+    │     confidence=0.99,                                                    │
+    │     statistic='median'                                                  │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Ejemplo 2: Prueba t de Una Muestra ────────────────────────────────────┐
-  │ # H0: μ = 50000 (la media salarial es 50000)                            │
-  │ # H1: μ ≠ 50000 (prueba bilateral)                                      │
-  │                                                                          │
-  │ resultado = inf_stats.t_test_1sample(                                   │
-  │     column='salario',                                                   │
-  │     popmean=50000,                                                      │
-  │     alternative='two-sided'                                             │
-  │ )                                                                        │
-  │                                                                          │
-  │ print(resultado)                                                         │
-  │ # Muestra: estadístico t, valor p, interpretación                       │
-  │                                                                          │
-  │ # Prueba unilateral                                                      │
-  │ resultado = inf_stats.t_test_1sample(                                   │
-  │     column='salario',                                                   │
-  │     popmean=50000,                                                      │
-  │     alternative='greater'  # H1: μ > 50000                              │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 2: Prueba t de Una Muestra ────────────────────────────────────┐
+    │ # H0: μ = 50000 (la media salarial es 50000)                            │
+    │ # H1: μ ≠ 50000 (prueba bilateral)                                      │
+    │                                                                         │
+    │ resultado = inf_stats.t_test_1sample(                                   │
+    │     column='salario',                                                   │
+    │     popmean=50000,                                                      │
+    │     alternative='two-sided'                                             │
+    │ )                                                                       │
+    │                                                                         │
+    │ print(resultado)                                                        │
+    │ # Muestra: estadístico t, valor p, interpretación                       │
+    │                                                                         │
+    │ # Prueba unilateral                                                     │
+    │ resultado = inf_stats.t_test_1sample(                                   │
+    │     column='salario',                                                   │
+    │     popmean=50000,                                                      │
+    │     alternative='greater'  # H1: μ > 50000                              │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Ejemplo 3: Comparación de Dos Grupos ──────────────────────────────────┐
-  │ # Prueba t independiente                                                 │
-  │ resultado = inf_stats.t_test_2sample(                                   │
-  │     column1='salario_hombres',                                          │
-  │     column2='salario_mujeres',                                          │
-  │     equal_var=True,                                                     │
-  │     alternative='two-sided'                                             │
-  │ )                                                                        │
-  │ print(resultado)                                                         │
-  │                                                                          │
-  │ # Prueba Mann-Whitney (no paramétrica)                                   │
-  │ resultado = inf_stats.mann_whitney_test(                                │
-  │     column1='salario_grupo_a',                                          │
-  │     column2='salario_grupo_b',                                          │
-  │     alternative='two-sided'                                             │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Prueba t pareada (mediciones antes/después)                            │
-  │ resultado = inf_stats.t_test_paired(                                    │
-  │     column1='peso_antes',                                               │
-  │     column2='peso_despues',                                             │
-  │     alternative='two-sided'                                             │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 3: Comparación de Dos Grupos ──────────────────────────────────┐
+    │ # Prueba t independiente                                                │
+    │ resultado = inf_stats.t_test_2sample(                                   │
+    │     column1='salario_hombres',                                          │
+    │     column2='salario_mujeres',                                          │
+    │     equal_var=True,                                                     │
+    │     alternative='two-sided'                                             │
+    │ )                                                                       │
+    │ print(resultado)                                                        │
+    │                                                                         │
+    │ # Prueba Mann-Whitney (no paramétrica)                                  │
+    │ resultado = inf_stats.mann_whitney_test(                                │
+    │     column1='salario_grupo_a',                                          │
+    │     column2='salario_grupo_b',                                          │
+    │     alternative='two-sided'                                             │
+    │ )                                                                       │
+    │                                                                         │
+    │ # Prueba t pareada (mediciones antes/después)                           │
+    │ resultado = inf_stats.t_test_paired(                                    │
+    │     column1='peso_antes',                                               │
+    │     column2='peso_despues',                                             │
+    │     alternative='two-sided'                                             │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Ejemplo 4: ANOVA y Kruskal-Wallis ─────────────────────────────────────┐
-  │ # ANOVA para comparar múltiples grupos                                   │
-  │ resultado = inf_stats.anova_oneway(                                     │
-  │     column='rendimiento',                                               │
-  │     groups='departamento'                                               │
-  │ )                                                                        │
-  │ print(resultado)                                                         │
-  │                                                                          │
-  │ # Kruskal-Wallis (alternativa no paramétrica)                            │
-  │ resultado = inf_stats.kruskal_wallis_test(                              │
-  │     column='satisfaccion',                                              │
-  │     groups='categoria'                                                  │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 4: ANOVA y Kruskal-Wallis ─────────────────────────────────────┐
+    │ # ANOVA para comparar múltiples grupos                                  │
+    │ resultado = inf_stats.anova_oneway(                                     │
+    │     column='rendimiento',                                               │
+    │     groups='departamento'                                               │
+    │ )                                                                       │
+    │ print(resultado)                                                        │
+    │                                                                         │
+    │ # Kruskal-Wallis (alternativa no paramétrica)                           │
+    │ resultado = inf_stats.kruskal_wallis_test(                              │
+    │     column='satisfaccion',                                              │
+    │     groups='categoria'                                                  │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Ejemplo 5: Chi-Cuadrado ───────────────────────────────────────────────┐
-  │ # Probar independencia entre variables categóricas                       │
-  │ resultado = inf_stats.chi_square_test(                                  │
-  │     column1='genero',                                                   │
-  │     column2='preferencia_producto'                                      │
-  │ )                                                                        │
-  │ print(resultado)                                                         │
-  │                                                                          │
-  │ # El resultado incluye la tabla de contingencia                          │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 5: Chi-Cuadrado ───────────────────────────────────────────────┐
+    │ # Probar independencia entre variables categóricas                      │
+    │ resultado = inf_stats.chi_square_test(                                  │
+    │     column1='genero',                                                   │
+    │     column2='preferencia_producto'                                      │
+    │ )                                                                       │
+    │ print(resultado)                                                        │
+    │                                                                         │
+    │ # El resultado incluye la tabla de contingencia                         │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Ejemplo 6: Pruebas de Normalidad ──────────────────────────────────────┐
-  │ # Shapiro-Wilk (recomendado para n ≤ 5000)                              │
-  │ resultado = inf_stats.normality_test(                                   │
-  │     column='edad',                                                      │
-  │     method='shapiro',                                                   │
-  │     test_statistic='mean'                                               │
-  │ )                                                                        │
-  │ print(resultado)                                                         │
-  │                                                                          │
-  │ # Kolmogorov-Smirnov                                                     │
-  │ resultado = inf_stats.normality_test(                                   │
-  │     column='salario',                                                   │
-  │     method='ks'                                                         │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Ejecutar todos los tests                                               │
-  │ resultados = inf_stats.normality_test(                                  │
-  │     column='ingresos',                                                  │
-  │     method='all',                                                       │
-  │     test_statistic='median'                                             │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Acceder a cada test                                                    │
-  │ print(resultados['shapiro'])                                            │
-  │ print(resultados['kolmogorov_smirnov'])                                 │
-  │ print(resultados['anderson_darling'])                                   │
-  │ print(resultados['jarque_bera'])                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Ejemplo 6: Pruebas de Normalidad ──────────────────────────────────────┐
+    │ # Shapiro-Wilk (recomendado para n ≤ 5000)                              │
+    │ resultado = inf_stats.normality_test(                                   │
+    │     column='edad',                                                      │
+    │     method='shapiro',                                                   │
+    │     test_statistic='mean'                                               │
+    │ )                                                                       │
+    │ print(resultado)                                                        │
+    │                                                                         │
+    │ # Kolmogorov-Smirnov                                                    │
+    │ resultado = inf_stats.normality_test(                                   │
+    │     column='salario',                                                   │
+    │     method='ks'                                                         │
+    │ )                                                                       │
+    │                                                                         │
+    │ # Ejecutar todos los tests                                              │
+    │ resultados = inf_stats.normality_test(                                  │
+    │     column='ingresos',                                                  │
+    │     method='all',                                                       │
+    │     test_statistic='median'                                             │
+    │ )                                                                       │
+    │                                                                         │
+    │ # Acceder a cada test                                                   │
+    │ print(resultados['shapiro'])                                            │
+    │ print(resultados['kolmogorov_smirnov'])                                 │
+    │ print(resultados['anderson_darling'])                                   │
+    │ print(resultados['jarque_bera'])                                        │
+    └─────────────────────────────────────────────────────────────────────────┘
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 GUÍA DE SELECCIÓN DE PRUEBAS:
 
-  ┌─ Comparar Una Muestra vs Valor de Referencia ───────────────────────────┐
-  │ Datos normales        → t_test_1sample (con popmean)                    │
-  │ Datos no normales     → t_test_1sample (con popmedian, usa Wilcoxon)   │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Comparar Una Muestra vs Valor de Referencia ───────────────────────────┐
+    │ Datos normales        → t_test_1sample (con popmean)                    │
+    │ Datos no normales     → t_test_1sample (con popmedian, usa Wilcoxon)    │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Comparar Dos Grupos Independientes ────────────────────────────────────┐
-  │ Datos normales        → t_test_2sample                                  │
-  │ Datos no normales     → mann_whitney_test                               │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Comparar Dos Grupos Independientes ────────────────────────────────────┐
+    │ Datos normales        → t_test_2sample                                  │
+    │ Datos no normales     → mann_whitney_test                               │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Comparar Dos Grupos Pareados ──────────────────────────────────────────┐
-  │ Datos normales        → t_test_paired                                   │
-  │ Datos no normales     → (use scipy.stats.wilcoxon directamente)        │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Comparar Dos Grupos Pareados ──────────────────────────────────────────┐
+    │ Datos normales        → t_test_paired                                   │
+    │ Datos no normales     → (use scipy.stats.wilcoxon directamente)         │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Comparar Múltiples Grupos ─────────────────────────────────────────────┐
-  │ Datos normales        → anova_oneway                                    │
-  │ Datos no normales     → kruskal_wallis_test                             │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Comparar Múltiples Grupos ─────────────────────────────────────────────┐
+    │ Datos normales        → anova_oneway                                    │
+    │ Datos no normales     → kruskal_wallis_test                             │
+    └─────────────────────────────────────────────────────────────────────────┘
 
-  ┌─ Probar Independencia entre Categóricas ────────────────────────────────┐
-  │ Variables categóricas → chi_square_test                                 │
-  └──────────────────────────────────────────────────────────────────────────┘
+    ┌─ Probar Independencia entre Categóricas ────────────────────────────────┐
+    │ Variables categóricas → chi_square_test                                 │
+    └─────────────────────────────────────────────────────────────────────────┘
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎯 CARACTERÍSTICAS CLAVE:
 
-  ✓ Pruebas paramétricas y no paramétricas
-  ✓ Intervalos de confianza con múltiples métodos
-  ✓ Pruebas de normalidad completas
-  ✓ Interpretación automática de resultados
-  ✓ Manejo automático de valores faltantes
-  ✓ Salidas formateadas profesionales
-  ✓ Soporte para análisis bilateral y unilateral
+    ✓ Pruebas paramétricas y no paramétricas
+    ✓ Intervalos de confianza con múltiples métodos
+    ✓ Pruebas de normalidad completas
+    ✓ Interpretación automática de resultados
+    ✓ Manejo automático de valores faltantes
+    ✓ Salidas formateadas profesionales
+    ✓ Soporte para análisis bilateral y unilateral
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️  INTERPRETACIÓN DE RESULTADOS:
 
-  • Valor p < 0.05: Se rechaza H0 (evidencia significativa)
-  • Valor p ≥ 0.05: No se rechaza H0 (evidencia insuficiente)
-  • IC que no incluye el valor nulo: Evidencia contra H0
+    • Valor p < 0.05: Se rechaza H0 (evidencia significativa)
+    • Valor p ≥ 0.05: No se rechaza H0 (evidencia insuficiente)
+    • IC que no incluye el valor nulo: Evidencia contra H0
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📚 DOCUMENTACIÓN ADICIONAL:
-   Para más información sobre métodos específicos, use:
-   help(InferentialStats.nombre_metodo)
+    Para más información sobre métodos específicos, use:
+    help(InferentialStats.nombre_metodo)
 
 ╚════════════════════════════════════════════════════════════════════════════╝
     """
+            case "en-US":
+                help_text = """
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   🔬 CLASS InferentialStats - COMPLETE HELP                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📝 DESCRIPTION:
+    Class for inferential statistics: hypothesis tests, intervals 
+    confidence and normality tests. Allows inferences to be made about 
+    populations from data samples.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 MAIN METHODS:
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 1. 📊 CONFIDENCE INTERVALS                                                 │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    • .confidence_interval(column, confidence=0.95, statistic='mean')
+    
+        Calculate confidence intervals for different statistics
+        
+        Parameters:
+            column      : Column to analyze (str)
+            confidence  : Confidence level (float, default 0.95 = 95%)
+            statistic   : 'mean', 'median' or 'proportion'
+        
+        Return: (lower_bound, upper_bound, point_estimate)
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 2. 🧪 HYPOTHESIS TESTING - A SAMPLE                                        │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    • .t_test_1sample(column, popmean=None, popmedian=None, 
+                        alternative='two-sided')
+    
+        One sample t test (or Wilcoxon for median)
+    
+        Parameters:
+            column      : Column to analyze
+            popmean     : Hypothetical population mean (for t-test)
+            popmedian   : Hypothetical population median (for Wilcoxon)
+            alternative : 'two-sided', 'less', 'greater'
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 3. 🧪 HYPOTHESIS TESTING - TWO SAMPLES                                     │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    🔹 Parametric Tests:
+
+    • .t_test_2sample(column1, column2, equal_var=True, 
+                    alternative='two-sided')
+        Two independent samples t test
+
+    • .t_test_paired(column1, column2, alternative='two-sided')
+        Paired t test (dependent samples)
+
+    🔹 Non-Parametric Tests:
+
+    • .mann_whitney_test(column1, column2, alternative='two-sided')
+        Non-parametric alternative to the two-sample t-test
+
+    🔹 Extra Tests:
+    • .hypothesis_test(method='mean', column1=None, column2=None, 
+                    alpha=0.05, homoscedasticity='levene')
+    • .variance_test(column1, column2, method='levene', center='median')
+    
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 4. 🧪 TESTING FOR MULTIPLE GROUPS                                          │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    🔹 Parametric Tests:
+
+    • .anova_oneway(column, groups)
+        One-way ANOVA to compare multiple groups
+
+    🔹 Non-Parametric Tests:
+
+    • .kruskal_wallis_test(column, groups)
+        Non-parametric alternative to ANOVA
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 5. 🧪 TESTS FOR CATEGORICAL VARIABLES                                      │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    • .chi_square_test(column1, column2)
+        Chi-square test of independence between categorical variables
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ 6. 📈 NORMALITY TESTS                                                      │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    • .normality_test(column, method='shapiro', test_statistic='mean')
+    
+        Tests whether the data follows a normal distribution
+        
+        Available methods:
+            'shapiro'      : Shapiro-Wilk (best for n ≤ 5000)
+            'ks'           : Kolmogorov-Smirnov
+            'anderson'     : Anderson-Darling
+            'jarque_bera'  : Jarque-Bera (based on skewness and kurtosis)
+            'all'          : Run all tests
+        
+        test_statistic: 'mean', 'median' o 'mode' to focus the distribution
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 EXAMPLES OF USE:
+
+    ┌─ Example 1: Confidence Intervals ───────────────────────────────────────┐
+    │ from inferential import InferentialStats                                │
+    │ import pandas as pd                                                     │
+    │                                                                         │
+    │ df = pd.read_csv('data.csv')                                            │
+    │ inf_stats = InferentialStats(df)                                        │
+    │                                                                         │
+    │ # CI for mean (95%)                                                     │
+    │ lower, upper, mean = inf_stats.confidence_interval(                     │
+    │     'salario',                                                          │
+    │     confidence=0.95,                                                    │
+    │     statistic='mean'                                                    │
+    │ )                                                                       │
+    │ print(f"IC 95%: [{lower:.2f}, {upper:.2f}]")                            │
+    │                                                                         │
+    │ # CI for the median (bootstrap)                                         │
+    │ lower, upper, median = inf_stats.confidence_interval(                   │
+    │     'edad',                                                             │
+    │     confidence=0.99,                                                    │
+    │     statistic='median'                                                  │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Example 2: One Sample t-test ──────────────────────────────────────────┐
+    │ # H0: μ = 50000 (the average salary is 50,000)                          │
+    │ # H1: μ ≠ 50000 (two-sided test)                                        │
+    │                                                                         │
+    │ result = inf_stats.t_test_1sample(                                      │
+    │     column='salary',                                                    │
+    │     popmean=50000,                                                      │
+    │     alternative='two-sided'                                             │
+    │ )                                                                       │
+    │                                                                         │
+    │ print(result)                                                           │
+    │ # Sample: t-statistic, p-value, interpretation                          │
+    │                                                                         │
+    │ # One-sided test                                                        │
+    │ result = inf_stats.t_test_1sample(                                      │
+    │     column='salary',                                                    │
+    │     popmean=50000,                                                      │
+    │     alternative='greater'  # H1: μ > 50000                              │
+    │ )                                                                       │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Example 3: Comparison of Two Groups ───────────────────────────────────┐
+    │ # Independent t test                                                    │ 
+    │ result = inf_stats.t_test_2sample(                                      │ 
+    │     column1='men_salary',                                               │ 
+    │     column2='women_salary',                                             │ 
+    │     equal_var=True,                                                     │ 
+    │     alternative='two-sided'                                             │ 
+    │ )                                                                       │ 
+    │ print(result)                                                           │ 
+    │                                                                         │ 
+    │ # Mann-Whitney test (non-parametric)                                    │ 
+    │     result = inf_stats.mann_whitney_test(                               │ 
+    │     column1='salary_group_a',                                           │ 
+    │     column2='salary_group_b',                                           │ 
+    │     alternative='two-sided'                                             │ 
+    │ )                                                                       │ 
+    │                                                                         │ 
+    │ # Paired t-test (before/after measurements)                             │ 
+    │ result = inf_stats.t_test_paired(                                       │ 
+    │     column1='weight_before',                                            │ 
+    │     column2='after_weight',                                             │ 
+    │     alternative='two-sided'                                             │ 
+    │)                                                                        │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Example 4: ANOVA and Kruskal-Wallis ───────────────────────────────────┐
+    │ # ANOVA to compare multiple groups                                      │ 
+    │ result = inf_stats.anova_oneway(                                        │ 
+    │     column='performance',                                               │ 
+    │     groups='department'                                                 │ 
+    │ )                                                                       │ 
+    │ print(result)                                                           │ 
+    │                                                                         │ 
+    │ # Kruskal-Wallis (non-parametric alternative)                           │ 
+    │ result = inf_stats.kruskal_wallis_test(                                 │ 
+    │     column='satisfaction',                                              │ 
+    │     groups='category'                                                   │ 
+    │)                                                                        │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Example 5: Chi-Square ─────────────────────────────────────────────────┐
+    │ # Test independence between categorical variables                       │ 
+    │ result = inf_stats.chi_square_test(                                     │ 
+    │     column1='gender',                                                   │ 
+    │     column2='product_preference'                                        │ 
+    │ )                                                                       │ 
+    │ print(result)                                                           │ 
+    │                                                                         │ 
+    │ # The result includes the contingency table                             │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Example 6: Normality Tests ────────────────────────────────────────────┐
+    │ # Shapiro-Wilk (recommended for n ≤ 5000)                               │ 
+    │ result = inf_stats.normality_test(                                      │ 
+    │     column='age',                                                       │ 
+    │     method='shapiro',                                                   │ 
+    │     test_statistic='mean'                                               │ 
+    │ )                                                                       │ 
+    │ print(result)                                                           │ 
+    │                                                                         │ 
+    │ # Kolmogorov-Smirnov                                                    │ 
+    │ result = inf_stats.normality_test(                                      │ 
+    │     column='salary',                                                    │ 
+    │     method='ks'                                                         │ 
+    │ )                                                                       │ 
+    │                                                                         │ 
+    │ # Run all tests                                                         │ 
+    │ results = inf_stats.normality_test(                                     │ 
+    │     column='income',                                                    │ 
+    │     method='all',                                                       │ 
+    │     test_statistic='median'                                             │ 
+    │ )                                                                       │ 
+    │                                                                         │ 
+    │ # Access each test                                                      │ 
+    │ print(results['shapiro'])                                               │ 
+    │ print(results['kolmogorov_smirnov'])                                    │ 
+    │ print(results['anderson_darling'])                                      │ 
+    │ print(results['jarque_bera'])                                           │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 GUÍA DE SELECCIÓN DE PRUEBAS:
+
+    ┌─ Compare A Sample vs Reference Value ───────────────────────────────────┐
+    │ Normal data           → t_test_1sample (with mean)                      │ 
+    │ Non-normal data       → t_test_1sample (with popmedian, uses Wilcoxon)  │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Compare Two Independent Groups ────────────────────────────────────────┐
+    │ Normal data           → t_test_2sample                                  │ 
+    │ Non-normal data       → mann_whitney_test                               │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Compare Two Paired Groups ─────────────────────────────────────────────┐
+    │ Normal data           → t_test_paired                                   │ 
+    │ Non-normal data       → (use scipy.stats.wilcoxon directly)             │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Compare Multiple Groups ───────────────────────────────────────────────┐
+    │ Normal data           → anova_oneway                                    │ 
+    │ Non-normal data       → kruskal_wallis_test                             │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌─ Testing Independence between Categories ───────────────────────────────┐
+    │ Categorical variables → chi_square_test                                 │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 KEY FEATURES: 
+
+    ✓ Parametric and non-parametric tests 
+    ✓ Confidence intervals with multiple methods 
+    ✓ Complete normality tests 
+    ✓ Automatic interpretation of results 
+    ✓ Automatic handling of missing values 
+    ✓ Professional formatted outputs 
+    ✓ Support for bilateral and unilateral analysis
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  INTERPRETATION OF RESULTS: 
+
+    • P value < 0.05: H0 is rejected (significant evidence) 
+    • P value ≥ 0.05: H0 is not rejected (insufficient evidence) 
+    • CI that does not include the null value: Evidence against H0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 ADDITIONAL DOCUMENTATION: 
+    For more information on specific methods, use: 
+    help(InferentialStats.method_name)
+
+╚════════════════════════════════════════════════════════════════════════════╝
+"""
         print(help_text)
 
 @dataclass
@@ -1001,7 +1305,7 @@ class TestResult:
     """Clase para resultados de pruebas de hipótesis"""
     
     def __init__(self, test_name: str, statistic: float, pvalue: float, 
-                 alternative: str, params: dict):
+                    alternative: str, params: dict):
         self.test_name = test_name
         self.statistic = statistic
         self.pvalue = pvalue
