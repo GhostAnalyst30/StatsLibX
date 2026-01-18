@@ -408,7 +408,7 @@ class DescriptiveStats:
             lang = "en-US"
         else:
             lang = "es-ES"
-        help_text = ""
+        help_text = " "
 
         match lang:
             case "es-ES":
