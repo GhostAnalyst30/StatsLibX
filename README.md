@@ -1,4 +1,4 @@
-# 📦 Descripción StatsLibX
+# 📦 StatsLibX
 
 StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
 
