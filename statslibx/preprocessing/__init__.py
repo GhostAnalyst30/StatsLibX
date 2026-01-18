@@ -169,26 +169,33 @@ class Preprocessing:
         column: str,
         method: str = "iqr"
     ) -> pd.DataFrame:
-
         if self._is_pandas():
             series = self.data[column]
         else:
             series = self.data[column].to_pandas()
 
+        # 2. Calcular la máscara según el método
         if method == "iqr":
             q1 = series.quantile(0.25)
             q3 = series.quantile(0.75)
             iqr = q3 - q1
-            mask = (series < q1 - 1.5 * iqr) | (series > q3 + 1.5 * iqr)
+            mask_values = (series < q1 - 1.5 * iqr) | (series > q3 + 1.5 * iqr)
 
         elif method == "zscore":
             z = (series - series.mean()) / series.std()
-            mask = z.abs() > 3
-
+            mask_values = z.abs() > 3
         else:
             raise ValueError("method must be 'iqr' or 'zscore'")
 
-        return self.data[mask]
+        outliers = self.data[mask_values.values]
+
+        # 4. Manejo de retorno profesional
+        if len(outliers) == 0:
+            print(f"No outliers found in column '{column}'")
+            return outliers 
+        
+        return outliers
+
 
     # ------------------------------------------------------------------
     # Data Quality Report

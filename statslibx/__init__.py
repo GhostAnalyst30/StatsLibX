@@ -37,5 +37,6 @@ def welcome():
     print(f"  - DescriptiveStats: Estadística descriptiva")
     print(f"  - InferentialStats: Estadística inferencial")
     print(f"  - UtilsStats: Utilidades Extras")
+    print(f"  - Datasets: Carga de Datasets")
     print(f"  - Preprocessing: Preprocesamiento de datos")
     print(f"\nPara más información: help(statslibx)")

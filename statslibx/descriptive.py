@@ -394,7 +394,7 @@ class DescriptiveStats:
 
 
     
-    def help(self, lang="es-Es"):
+    def help(self, lang="es-ES"):
         """
         Muestra ayuda completa de la clase DescriptiveStats
 
@@ -407,7 +407,8 @@ class DescriptiveStats:
         if lang in ["en-US", "English", "english"]:
             lang = "en-US"
         else:
-            lang = ""
+            lang = "es-ES"
+        help_text = ""
 
         match lang:
             case "es-ES":
@@ -614,7 +615,6 @@ class DescriptiveStats:
 ╚════════════════════════════════════════════════════════════════════════════╝
     """
             case "en-US":
-                # --- Falta por traducir
                 help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                    📊 DescriptiveStats CLASS - COMPLETE HELP               ║
@@ -821,8 +821,7 @@ class DescriptiveStats:
         
         print(help_text)
 
-    
-    
+
 class DescriptiveSummary:
     """Clase para formatear salida de estadística descriptiva"""
     
