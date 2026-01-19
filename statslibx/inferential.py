@@ -155,7 +155,7 @@ class InferentialStats:
         
         if popmean is not None:
             statistic, pvalue = stats.ttest_1samp(data, popmean, alternative=alternative)
-            
+
             return TestResult(
                 test_name='T-Test de Una Muestra (Media)',
                 statistic=statistic,
@@ -172,7 +172,7 @@ class InferentialStats:
         elif popmedian is not None:
             # Wilcoxon signed-rank test para mediana
             statistic, pvalue = stats.wilcoxon(data - popmedian, alternative=alternative)
-            
+
             return TestResult(
                 test_name='Wilcoxon Signed-Rank Test (Mediana)',
                 statistic=statistic,
@@ -316,11 +316,16 @@ class InferentialStats:
             Variable de agrupación (categórica)
         """
         from scipy import stats
+        clean_data = self.data[[column, groups]].dropna()
         
-        groups_data = [group[column].values for name, group in self.data.groupby(groups)]
+        groups_data = [group[column].values
+                            for _, group in clean_data.groupby(groups)
+                            if len(group) > 1 and group[column].var() > 0
+                    ]
+
         statistic, pvalue = stats.f_oneway(*groups_data)
         
-        return TestResult(
+        return TestResult(  
             test_name='ANOVA de Un Factor',
             statistic=statistic,
             pvalue=pvalue,
@@ -343,8 +348,13 @@ class InferentialStats:
             Variable de agrupación (categórica)
         """
         from scipy import stats
+
+        clean_data = self.data[[column, groups]].dropna()
         
-        groups_data = [group[column].values for name, group in self.data.groupby(groups)]
+        groups_data = [group[column].values
+                            for _, group in clean_data.groupby(groups)
+                            if len(group) > 1 and group[column].var() > 0
+                    ]
         statistic, pvalue = stats.kruskal(*groups_data)
         
         return TestResult(
@@ -402,6 +412,9 @@ class InferentialStats:
             scale = np.std(data, ddof=1)
         else:
             raise ValueError(f"test_statistic '{test_statistic}' no reconocido")
+
+        critical_values = None
+        significance_levels = None
         
         if method == 'all':
             results = {}
@@ -429,13 +442,13 @@ class InferentialStats:
             
             # Anderson-Darling
             anderson_result = stats.anderson(data, dist='norm')
-            results['anderson_darling'] = {
-                'test_name': f'Anderson-Darling ({test_statistic})',
-                'statistic': anderson_result.statistic,
-                'critical_values': anderson_result.critical_values,
-                'significance_levels': anderson_result.significance_level,
-                'params': {'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
-            }
+            results['anderson_darling'] = TestResult(
+                test_name=f'Anderson-Darling ({test_statistic})',
+                statistic=anderson_result.statistic,
+                critical_values=anderson_result.critical_values,
+                significance_levels=anderson_result.significance_level,
+                params={'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
+            )
             
             # Jarque-Bera
             stat_jb, p_jb = stats.jarque_bera(data)
@@ -468,14 +481,12 @@ class InferentialStats:
         
         elif method == 'anderson':
             anderson_result = stats.anderson(data, dist='norm')
-            return {
-                'test_name': f'Anderson-Darling ({test_statistic})',
-                'statistic': anderson_result.statistic,
-                'critical_values': anderson_result.critical_values,
-                'significance_levels': anderson_result.significance_level,
-                'params': {'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale},
-                'interpretation': self._interpret_anderson(anderson_result)
-            }
+            test_name = f'Anderson-Darling ({test_statistic})'
+            pvalue = None
+            statistic = anderson_result.statistic
+            critical_values = anderson_result.critical_values
+            significance_levels = anderson_result.significance_level
+            params = {'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
         
         elif method == 'jarque_bera':
             statistic, pvalue = stats.jarque_bera(data)
@@ -495,19 +506,10 @@ class InferentialStats:
             statistic=statistic,
             pvalue=pvalue,
             alternative='two-sided',
-            params=params
+            params=params,
+            critical_values=critical_values,
+            significance_levels=significance_levels
         )
-    
-    def _interpret_anderson(self, anderson_result):
-        """Interpreta resultados de Anderson-Darling"""
-        interpretations = []
-        for i, (crit_val, sig_level) in enumerate(zip(anderson_result.critical_values, 
-                                                    anderson_result.significance_level)):
-            if anderson_result.statistic < crit_val:
-                interpretations.append(f"No se rechaza normalidad al {sig_level}% de significancia")
-            else:
-                interpretations.append(f"Se RECHAZA normalidad al {sig_level}% de significancia")
-        return interpretations
 
     def hypothesis_test(
             self,
@@ -583,14 +585,53 @@ class InferentialStats:
             t_stat = F
             test_name = "Variance F-test"
 
-        return {
+        return print(self._format_hypothesis_test_result({
             "test": test_name,
             "statistic": t_stat,
             "p_value": p_value,
             "alpha": alpha,
             "reject_H0": p_value < alpha,
             "homoscedasticity_test": homo_result
-        }
+        }))
+    
+    def _format_hypothesis_test_result(self, result: Dict[str, Any]) -> str:
+        lines = []
+        lines.append("=" * 80)
+        lines.append(f"\n{result['test']:^80}\n")
+        lines.append("=" * 80)
+
+        # Resultados principales
+        lines.append("RESULTADOS:")
+        lines.append("-" * 80)
+        lines.append(f"{'Estadístico':<35} {result['statistic']:.6f}")
+        lines.append(f"{'Valor p':<35} {result['p_value']:.6e}")
+
+        # Interpretación
+        lines.append("\nINTERPRETACIÓN:")
+        lines.append("-" * 80)
+        lines.append(f"Alpha = {result['alpha']}")
+
+        if result["reject_H0"]:
+            lines.append("❌ Se RECHAZA la hipótesis nula")
+        else:
+            lines.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
+
+        # Homocedasticidad (si existe)
+        homo = result.get("homoscedasticity_test")
+        if homo is not None:
+            lines.append("\nTEST DE HOMOCEDASTICIDAD:")
+            lines.append("-" * 80)
+            lines.append(f"Método: {homo['method']}")
+            lines.append(f"Estadístico: {homo['statistic']:.6f}")
+            lines.append(f"Valor p: {homo['p_value']:.6e}")
+
+            if homo["equal_var"]:
+                lines.append("✔️ Se asume igualdad de varianzas")
+            else:
+                lines.append("❌ No se asume igualdad de varianzas")
+
+        lines.append("=" * 80)
+        return "\n".join(lines)
 
     def _homoscedasticity_test(
         self,
@@ -716,7 +757,7 @@ class InferentialStats:
             lang = "es-ES"
         help_text = " "
         match lang:
-            case "es_ES":
+            case "es-ES":
                 help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                   🔬 CLASE InferentialStats - AYUDA COMPLETA               ║
@@ -1304,13 +1345,23 @@ class InferentialStats:
 class TestResult:
     """Clase para resultados de pruebas de hipótesis"""
     
-    def __init__(self, test_name: str, statistic: float, pvalue: float, 
-                    alternative: str, params: dict):
+    def __init__(self, test_name: str, statistic: float,
+                    params: dict, pvalue: float = None, 
+                    alternative: str = None, critical_values=None, significance_levels=None):
         self.test_name = test_name
         self.statistic = statistic
         self.pvalue = pvalue
         self.alternative = alternative
         self.params = params
+        self.critical_values = critical_values
+        self.significance_levels = significance_levels
+
+        if pvalue is not None:
+            alpha = 0.05
+            if pvalue < alpha:
+                self.interpretation = "Se RECHAZA la hipótesis nula"
+            else:
+                self.interpretation = "Se RECHAZA la hipótesis alternativa"
         
     def __repr__(self):
         return self._format_output()
@@ -1328,19 +1379,46 @@ class TestResult:
         output.append("\nRESULTADOS:")
         output.append("-" * 80)
         output.append(f"{'Estadístico':<40} {self.statistic:>20.6f}")
-        output.append(f"{'Valor p':<40} {self.pvalue:>20.6e}")
-        
-        # Interpretación
-        alpha = 0.05
-        if self.pvalue < alpha:
-            interpretation = "❌ Se RECHAZA la hipótesis nula"
+        if self.critical_values is not None and self.significance_levels is not None:
+            output.append("Valores Críticos:")
+            for sl, cv in zip(self.significance_levels, self.critical_values):
+                output.append(f"  α = {sl:>6.3f} → {cv:.6f}")
         else:
-            interpretation = "✔️ No hay evidencia suficiente para rechazar la hipótesis nula"
+            output.append(f"{'Valor p':<40} {self.pvalue:>20.6e}")
         
-        output.append("\nINTERPRETACIÓN:")
-        output.append("-" * 80)
-        output.append(f"Alpha = {alpha}")
-        output.append(interpretation)
+        if self.pvalue is not None:
+            # Interpretación
+            alpha = 0.05
+            if self.pvalue < alpha:
+                interpretation = "❌ Se RECHAZA la hipótesis nula"
+            else:
+                interpretation = "✔️ No hay evidencia suficiente para rechazar la hipótesis nula"
+        
+            output.append("\nINTERPRETACIÓN:")
+            output.append("-" * 80)
+            output.append(f"Alpha = {alpha}")
+            output.append(interpretation)
+        else:
+            output.append("\nINTERPRETACIÓN:")
+            output.append("-" * 80)
+
+            alpha = 0.05
+
+            # Buscar índice del nivel de significancia más cercano a alpha
+            idx = list(self.significance_levels).index(
+                min(self.significance_levels, key=lambda x: abs(x - alpha))
+            )
+
+            critical_value = self.critical_values[idx]
+
+            output.append(f"Nivel de significancia (α) = {alpha}")
+            output.append(f"Estadístico A² = {self.statistic:.4f}")
+            output.append(f"Valor crítico = {critical_value:.4f}")
+
+            if self.statistic > critical_value:
+                output.append("❌ Se RECHAZA la hipótesis nula")
+            else:
+                output.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
         
         output.append("\nPARÁMETROS:")
         output.append("-" * 80)
