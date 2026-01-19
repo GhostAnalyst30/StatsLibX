@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import polars as pl
-from typing import Optional, Union, Literal, List, Dict, Any
+from typing import Optional, Union, Literal, List, Dict, Any, Tuple
 from datetime import datetime
 from scipy import stats
 import os
@@ -13,7 +13,8 @@ class InferentialStats:
     """
     
     def __init__(self, data: Union[pd.DataFrame, np.ndarray],
-                backend: Literal['pandas', 'polars'] = 'pandas'):
+                backend: Literal['pandas', 'polars'] = 'pandas',
+                lang: Literal['es-ES', 'en-US'] = 'es-ES'):
         """
         Initialize DataFrame
 
@@ -42,6 +43,7 @@ class InferentialStats:
         self.data = data
         self.backend = backend
         self._numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
+        self.lang = lang
 
     @classmethod
     def from_file(path: str):
@@ -134,7 +136,8 @@ class InferentialStats:
     
     def t_test_1sample(self, column: str, popmean: float = None, 
                         popmedian: float = None,
-                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided') -> 'TestResult':
+                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided',
+                        alpha: float = 0.05) -> 'TestResult':
         """
         One sample t test (for mean or median)
         
@@ -166,7 +169,8 @@ class InferentialStats:
                     'sample_mean': data.mean(), 
                     'n': len(data),
                     'df': len(data) - 1
-                }
+                },
+                alpha=alpha
             )
         
         elif popmedian is not None:
@@ -190,7 +194,7 @@ class InferentialStats:
     
     def t_test_2sample(self, column1: str, column2: str,
                         equal_var: bool = True,
-                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided') -> 'TestResult':
+                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
         """
         Prueba t de dos muestras independientes
         
@@ -220,11 +224,12 @@ class InferentialStats:
                 'std1': data1.std(), 'std2': data2.std(),
                 'n1': len(data1), 'n2': len(data2),
                 'equal_var': equal_var
-            }
+            },
+            alpha=alpha
         )
     
     def t_test_paired(self, column1: str, column2: str,
-                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided') -> 'TestResult':
+                        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
         """
         Prueba t pareada
 
@@ -247,11 +252,12 @@ class InferentialStats:
             statistic=statistic,
             pvalue=pvalue,
             alternative=alternative,
-            params={'mean_diff': (data1 - data2).mean(), 'n': len(data1)}
+            params={'mean_diff': (data1 - data2).mean(), 'n': len(data1)},
+            alpha=alpha
         )
     
     def mann_whitney_test(self, column1: str, column2: str,
-                            alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided') -> 'TestResult':
+                            alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
         """
         Prueba de Mann-Whitney U (alternativa no paramétrica al t-test)
         
@@ -279,10 +285,12 @@ class InferentialStats:
                 'median2': data2.median(),
                 'n1': len(data1),
                 'n2': len(data2)
-            }
+            },
+            alpha=alpha
         )
     
-    def chi_square_test(self, column1: str, column2: str) -> 'TestResult':
+    def chi_square_test(self, column1: str, column2: str,
+                        alpha: float = 0.05) -> 'TestResult':
         """
         Prueba Chi-cuadrado de independencia
         
@@ -301,10 +309,12 @@ class InferentialStats:
             statistic=chi2,
             pvalue=pvalue,
             alternative='two-sided',
-            params={'dof': dof, 'contingency_table': contingency_table}
+            params={'dof': dof, 'contingency_table': contingency_table},
+            alpha=alpha
         )
     
-    def anova_oneway(self, column: str, groups: str) -> 'TestResult':
+    def anova_oneway(self, column: str, groups: str,
+                        alpha: float = 0.05) -> 'TestResult':
         """
         ANOVA de un factor
         
@@ -333,10 +343,12 @@ class InferentialStats:
             params={
                 'groups': len(groups_data),
                 'n_total': sum(len(g) for g in groups_data)
-            }
+            },
+            alpha=alpha
         )
     
-    def kruskal_wallis_test(self, column: str, groups: str) -> 'TestResult':
+    def kruskal_wallis_test(self, column: str, groups: str,
+                            alpha: float = 0.05) -> 'TestResult':
         """
         Prueba de Kruskal-Wallis (ANOVA no paramétrico)
         
@@ -365,12 +377,14 @@ class InferentialStats:
             params={
                 'groups': len(groups_data),
                 'n_total': sum(len(g) for g in groups_data)
-            }
+            },
+            alpha=alpha
         )
     
     def normality_test(self, column: str, 
                         method: Literal['shapiro', 'ks', 'anderson', 'jarque_bera', 'all'] = 'shapiro',
-                        test_statistic: Literal['mean', 'median', 'mode'] = 'mean') -> Union['TestResult', dict]:
+                        test_statistic: Literal['mean', 'median', 'mode'] = 'mean',
+                        alpha: float = 0.05) -> Union['TestResult', dict]:
         """
         Prueba de normalidad con múltiples métodos y estadísticos
         
@@ -508,7 +522,8 @@ class InferentialStats:
             alternative='two-sided',
             params=params,
             critical_values=critical_values,
-            significance_levels=significance_levels
+            significance_levels=significance_levels,
+            alpha=alpha
         )
 
     def hypothesis_test(
@@ -516,6 +531,8 @@ class InferentialStats:
             method: Literal["mean", "difference_mean", "proportion", "variance"] = "mean",
             column1: str = None,
             column2: str = None,
+            pop_mean: float = None,
+            pop_proportion: Union[float, Tuple[float, float]] = 0.5,
             alpha: float = 0.05,
             homoscedasticity: Literal["levene", "bartlett", "var_test"] = "levene") -> Dict[str, Any]:
             
@@ -530,11 +547,14 @@ class InferentialStats:
             Columnas numéricas a comparar
         alpha : float
             Nivel de significancia (default 0.05)
+        pop_mean : float
+            Media poblacional
+        pop_proportion : float
+            Proporción poblacional (default 0.5)
         homoscedasticity : str
             Método de homocedasticidad
             'levene', 'bartlett' o 'var_test' 
         """
-
         data = self.data
 
         if column1 is None:
@@ -555,7 +575,7 @@ class InferentialStats:
         # --- MAIN HYPOTHESIS TESTS ---
         if method == "mean":
             # One-sample t-test
-            t_stat, p_value = stats.ttest_1samp(x, popmean=np.mean(x))
+            t_stat, p_value = stats.ttest_1samp(x, popmean=pop_mean)
             test_name = "One-sample t-test"
 
         elif method == "difference_mean":
@@ -566,12 +586,45 @@ class InferentialStats:
 
         elif method == "proportion":
             # Proportion test (z-test)
-            p_hat = np.mean(x)
+
+            x = np.asarray(x)
+
+            # Caso 1: datos ya binarios
+            unique_vals = np.unique(x)
+            if set(unique_vals).issubset({0, 1}):
+
+                if pop_proportion is None:
+                    raise ValueError("Debe especificarse pop_proportion")
+
+                pop_p = pop_proportion
+
+            # Caso 2: datos continuos → binarizar
+            else:
+                if not isinstance(pop_proportion, tuple):
+                    raise ValueError(
+                        "Para datos continuos, pop_proportion debe ser (p0, binizar_value)"
+                    )
+
+                pop_p, binizar_value = pop_proportion
+                x = (x > binizar_value).astype(int)
+
+            if not (0 < pop_p < 1):
+                raise ValueError("pop_proportion debe estar entre 0 y 1")
+
             n = len(x)
-            z_stat = (p_hat - 0.5) / np.sqrt(0.5 * 0.5 / n)
+            p_hat = np.mean(x)
+
+            if n * pop_p < 5 or n * (1 - pop_p) < 5:
+                raise ValueError(
+                    "Condiciones del Z-test no cumplidas: np0 y n(1-p0) deben ser ≥ 5"
+                )
+
+            z_stat = (p_hat - pop_p) / np.sqrt(pop_p * (1 - pop_p) / n)
             p_value = 2 * (1 - stats.norm.cdf(abs(z_stat)))
+
             t_stat = z_stat
             test_name = "Proportion Z-test"
+
 
         elif method == "variance":
             # Classic F-test
@@ -585,54 +638,19 @@ class InferentialStats:
             t_stat = F
             test_name = "Variance F-test"
 
-        return print(self._format_hypothesis_test_result({
-            "test": test_name,
-            "statistic": t_stat,
-            "p_value": p_value,
-            "alpha": alpha,
-            "reject_H0": p_value < alpha,
-            "homoscedasticity_test": homo_result
-        }))
-    
-    def _format_hypothesis_test_result(self, result: Dict[str, Any]) -> str:
-        lines = []
-        lines.append("=" * 80)
-        lines.append(f"\n{result['test']:^80}\n")
-        lines.append("=" * 80)
-
-        # Resultados principales
-        lines.append("RESULTADOS:")
-        lines.append("-" * 80)
-        lines.append(f"{'Estadístico':<35} {result['statistic']:.6f}")
-        lines.append(f"{'Valor p':<35} {result['p_value']:.6e}")
-
-        # Interpretación
-        lines.append("\nINTERPRETACIÓN:")
-        lines.append("-" * 80)
-        lines.append(f"Alpha = {result['alpha']}")
-
-        if result["reject_H0"]:
-            lines.append("❌ Se RECHAZA la hipótesis nula")
+        if p_value < alpha:
+            self.interpretation = "Se RECHAZA la hipótesis nula"
         else:
-            lines.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
-
-        # Homocedasticidad (si existe)
-        homo = result.get("homoscedasticity_test")
-        if homo is not None:
-            lines.append("\nTEST DE HOMOCEDASTICIDAD:")
-            lines.append("-" * 80)
-            lines.append(f"Método: {homo['method']}")
-            lines.append(f"Estadístico: {homo['statistic']:.6f}")
-            lines.append(f"Valor p: {homo['p_value']:.6e}")
-
-            if homo["equal_var"]:
-                lines.append("✔️ Se asume igualdad de varianzas")
-            else:
-                lines.append("❌ No se asume igualdad de varianzas")
-
-        lines.append("=" * 80)
-        return "\n".join(lines)
-
+            self.interpretation = ("Se RECHAZA la hipotesis alternativa")
+        return TestResult(
+            test_name=test_name,
+            statistic=t_stat,
+            pvalue=p_value,
+            alternative='two-sided',
+            alpha=alpha,
+            homo_result=homo_result
+        )
+    
     def _homoscedasticity_test(
         self,
         x,
@@ -664,8 +682,8 @@ class InferentialStats:
     
     def variance_test(self, column1: str, column2: str,
                     method: Literal['levene', 'bartlett', 'var_test'] = 'levene',
-                    center: Literal['mean', 'median', 'trimmed'] = 'median'
-                    ) -> 'TestResult':
+                    center: Literal['mean', 'median', 'trimmed'] = 'median',
+                    alpha: float = 0.05) -> 'TestResult':
         """
         Prueba de igualdad de varianzas entre dos columnas.
 
@@ -737,11 +755,12 @@ class InferentialStats:
             statistic=statistic,
             pvalue=pvalue,
             alternative='two-sided',
-            params=params
+            params=params,
+            alpha=alpha
         )
 
     
-    def help(self, lang = "es-ES"):
+    def help(self):
         """
         Muestra ayuda completa de la clase DescriptiveStats
 
@@ -751,12 +770,13 @@ class InferentialStats:
             Idioma Usuario: Codigo de Idioma (es-Es) o "Español"
             User Language: Languaje Code (en-Us) or "English"
         """
-        if lang in ["en-US", "English", "english"]:
-            lang = "en-US"
+
+        if self.lang in ["en-US", "English", "english"]:
+            self.lang = "en-US"
         else:
-            lang = "es-ES"
+            self.lang = "es-ES"
         help_text = " "
-        match lang:
+        match self.lang:
             case "es-ES":
                 help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
@@ -1345,9 +1365,10 @@ class InferentialStats:
 class TestResult:
     """Clase para resultados de pruebas de hipótesis"""
     
-    def __init__(self, test_name: str, statistic: float,
-                    params: dict, pvalue: float = None, 
-                    alternative: str = None, critical_values=None, significance_levels=None):
+    def __init__(self, test_name: str, statistic: float, alpha: float = 0.05,
+                    params: dict = None, pvalue: float = None, 
+                    alternative: str = None, critical_values=None, 
+                    significance_levels=None, homo_result=None):
         self.test_name = test_name
         self.statistic = statistic
         self.pvalue = pvalue
@@ -1355,10 +1376,12 @@ class TestResult:
         self.params = params
         self.critical_values = critical_values
         self.significance_levels = significance_levels
+        self.interpretation = "Aun no hay interpretacion"
+        self.homo_result = homo_result
+        self.alpha = alpha
 
-        if pvalue is not None:
-            alpha = 0.05
-            if pvalue < alpha:
+        if self.pvalue is not None:
+            if self.pvalue < self.alpha:
                 self.interpretation = "Se RECHAZA la hipótesis nula"
             else:
                 self.interpretation = "Se RECHAZA la hipótesis alternativa"
@@ -1375,55 +1398,83 @@ class TestResult:
         output.append(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         output.append(f"Hipótesis Alternativa: {self.alternative}")
         output.append("-" * 80)
-        
+            
         output.append("\nRESULTADOS:")
         output.append("-" * 80)
         output.append(f"{'Estadístico':<40} {self.statistic:>20.6f}")
+
+        # Mostrar valores críticos o p-value
         if self.critical_values is not None and self.significance_levels is not None:
             output.append("Valores Críticos:")
             for sl, cv in zip(self.significance_levels, self.critical_values):
                 output.append(f"  α = {sl:>6.3f} → {cv:.6f}")
-        else:
+        elif self.pvalue is not None:
             output.append(f"{'Valor p':<40} {self.pvalue:>20.6e}")
-        
+
+        # -------------------------
+        # INTERPRETACIÓN
+        # -------------------------
+        output.append("\nINTERPRETACIÓN:")
+        output.append("-" * 80)
+
+        alpha = 0.05
+
+        # Caso tests con p-value
         if self.pvalue is not None:
-            # Interpretación
-            alpha = 0.05
-            if self.pvalue < alpha:
-                interpretation = "❌ Se RECHAZA la hipótesis nula"
-            else:
-                interpretation = "✔️ No hay evidencia suficiente para rechazar la hipótesis nula"
-        
-            output.append("\nINTERPRETACIÓN:")
-            output.append("-" * 80)
             output.append(f"Alpha = {alpha}")
-            output.append(interpretation)
-        else:
-            output.append("\nINTERPRETACIÓN:")
-            output.append("-" * 80)
 
-            alpha = 0.05
-
-            # Buscar índice del nivel de significancia más cercano a alpha
-            idx = list(self.significance_levels).index(
-                min(self.significance_levels, key=lambda x: abs(x - alpha))
-            )
-
-            critical_value = self.critical_values[idx]
-
-            output.append(f"Nivel de significancia (α) = {alpha}")
-            output.append(f"Estadístico A² = {self.statistic:.4f}")
-            output.append(f"Valor crítico = {critical_value:.4f}")
-
-            if self.statistic > critical_value:
+            if self.pvalue < alpha:
                 output.append("❌ Se RECHAZA la hipótesis nula")
             else:
                 output.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
-        
-        output.append("\nPARÁMETROS:")
-        output.append("-" * 80)
-        for k, v in self.params.items():
-            output.append(f"{k:<40} {str(v):>20}")
-        
+
+        # Caso tests con valores críticos (ej. Anderson-Darling)
+        else:
+            # Protección mínima
+            if self.significance_levels is None or self.critical_values is None:
+                output.append("Resultado no disponible")
+            else:
+                idx = min(
+                    range(len(self.significance_levels)),
+                    key=lambda i: abs(self.significance_levels[i] - alpha)
+                )
+
+                critical_value = self.critical_values[idx]
+
+                output.append(f"Nivel de significancia (α) = {alpha}")
+                output.append(f"Estadístico A² = {self.statistic:.4f}")
+                output.append(f"Valor crítico = {critical_value:.4f}")
+
+                if self.statistic > critical_value:
+                    output.append("❌ Se RECHAZA la hipótesis nula")
+                else:
+                    output.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
+
+        # -------------------------
+        # HOMOCEDASTICIDAD
+        # -------------------------
+        if isinstance(self.homo_result, dict):
+            homo = self.homo_result
+
+            if isinstance(homo, dict):
+                output.append("\nTEST DE HOMOCEDASTICIDAD:")
+                output.append(f"Método: {homo['method']}")
+                output.append(f"Estadístico: {homo['statistic']:.6f}")
+                output.append(f"Valor p: {homo['p_value']:.6e}")
+
+                if homo.get("equal_var") is True:
+                    output.append("✔️ Se asume igualdad de varianzas")
+                elif homo.get("equal_var") is False:
+                    output.append("❌ No se asume igualdad de varianzas")
+
+        # -------------------------
+        # PARÁMETROS
+        # -------------------------
+        if isinstance(self.params, dict):
+            output.append("\nPARÁMETROS:")
+            output.append("-" * 80)
+            for k, v in self.params.items():
+                output.append(f"{k:<40} {str(v):>20}")
+                
         output.append("=" * 80)
         return "\n".join(output)
