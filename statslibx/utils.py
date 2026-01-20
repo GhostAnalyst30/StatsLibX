@@ -398,11 +398,35 @@ class UtilsStats:
         
         return outliers
 
-    def calculate_effect_size(self, group1: np.ndarray, group2: np.ndarray, 
-                                method: Literal['cohen', 'hedges'] = 'cohen') -> dict:
+    def calculate_effect_size(self, 
+                            data: Union[pd.Series, np.ndarray, pd.DataFrame, str, Path] = None,                             
+                            group1: Union[str, pd.Series, np.ndarray] = None, 
+                            group2: Union[str, pd.Series, np.ndarray] = None,
+                            method: Literal['cohen', 'hedges'] = 'cohen') -> dict:
         """
         Calcula el tamaño del efecto entre dos grupos
         """
+
+        # --- Preparar arrays ---
+        # Caso 1: data es DataFrame y group1/group2 son nombres de columna
+        if isinstance(data, pd.DataFrame):
+            group1 = np.array(data[group1])
+            group2 = np.array(data[group2])
+        # Caso 2: data no es None, y es una serie o array, usarlo como group1
+        elif isinstance(data, (pd.Series, np.ndarray)) and group2 is not None:
+            group1 = np.array(data)
+            group2 = np.array(group2)
+        # Caso 3: group1 y group2 ya son arrays o Series
+        else:
+            group1 = np.array(group1)
+            group2 = np.array(group2)
+            
+        # Eliminar nan automáticamente
+        group1 = group1[~np.isnan(group1)]
+        group2 = group2[~np.isnan(group2)]
+
+
+        # --- Calcular estadísticas ---
         mean1, mean2 = np.mean(group1), np.mean(group2)
         std1, std2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
         n1, n2 = len(group1), len(group2)
@@ -433,6 +457,7 @@ class UtilsStats:
             'mean_diff': mean1 - mean2,
             'pooled_std': pooled_std
         }
+
 
     # ============= MÉTODOS DE VISUALIZACIÓN COMPLETOS =============
 
@@ -528,89 +553,7 @@ class UtilsStats:
             plt.tight_layout()
         
         return fig
-
-    def plot_distribution(self, 
-                            data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
-                            column: Optional[str] = None,
-                            plot_type: Literal['hist', 'kde', 'box', 'violin', 'all'] = 'hist',
-                            backend: Optional[Literal['matplotlib', 'seaborn', 'plotly']] = "seaborn",
-                            bins: int = 30,
-                            figsize: Optional[Tuple[int, int]] = None,
-                            save_fig: Optional[bool] = None,
-                            filename: Optional[str] = None,
-                            **kwargs):
-        """
-        Graficar distribución de una variable
-        
-        Parameters:
-        -----------
-        data : DataFrame, Series, ndarray, str o Path
-            Datos a graficar o ruta al archivo
-        column : str, optional
-            Columna a graficar (si data es DataFrame o archivo)
-        plot_type : str
-            Tipo de gráfico
-        backend : str, optional
-            Backend de visualización
-        bins : int
-            Número de bins para histograma
-        figsize : tuple, optional
-            Tamaño de la figura
-        save_fig : bool, optional
-            Si guardar la figura
-        filename : str, optional
-            Nombre del archivo
-            
-        Examples:
-        ---------
-        >>> utils.plot_distribution("datos.csv", column="edad")
-        >>> utils.plot_distribution(df, column="salario", plot_type="all")
-        """
-        backend = backend or self._plot_backend
-        figsize = figsize or self._default_figsize
-        save_fig = save_fig if save_fig is not None else self._save_fig
-        
-        # Resolver datos
-        data, source = self._resolve_data(data, column)
-        
-        # Extraer datos
-        if isinstance(data, pd.DataFrame):
-            if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
-            plot_data = data[column].dropna()
-            title = f"Distribución de {column}"
-            default_filename = f"distribucion_{column}"
-        elif isinstance(data, pd.Series):
-            plot_data = data.dropna()
-            title = f"Distribución de {data.name if data.name else 'Variable'}"
-            default_filename = f"distribucion_{data.name if data.name else 'variable'}"
-        else:
-            plot_data = pd.Series(data).dropna()
-            title = "Distribución"
-            default_filename = "distribucion"
-        
-        filename = filename or default_filename
-        
-        try:
-            if backend == 'seaborn':
-                fig = self._plot_distribution_seaborn(plot_data, plot_type, bins, figsize, title, **kwargs)
-            elif backend == 'matplotlib':
-                fig = self._plot_distribution_matplotlib(plot_data, plot_type, bins, figsize, title, **kwargs)
-            elif backend == 'plotly':
-                fig = self._plot_distribution_plotly(plot_data, plot_type, bins, title, **kwargs)
-            else:
-                raise ValueError(f"Backend '{backend}' no soportado")
-            
-            # Guardar figura si está activado
-            if save_fig and backend != 'plotly':
-                self._save_figure(fig, filename)
-            
-            return fig
-            
-        except Exception as e:
-            print(f"Error en plot_distribution: {e}")
-            raise
-
+    
     def _plot_distribution_plotly(self, data, plot_type, bins, title, **kwargs):
         """Implementación con plotly"""
         try:
@@ -652,12 +595,96 @@ class UtilsStats:
         
         return fig
 
+    def plot_distribution(self, 
+                            data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
+                            column: Optional[str] = None,
+                            plot_type: Literal['hist', 'kde', 'box', 'violin', 'all'] = 'hist',
+                            backend: Optional[Literal['matplotlib', 'seaborn', 'plotly']] = "seaborn",
+                            bins: int = 30,
+                            figsize: Optional[Tuple[int, int]] = None,
+                            save_fig: Optional[bool] = False,
+                            filename: Optional[str] = None,
+                            **kwargs):
+        """
+        Graficar distribución de una variable
+        
+        Parameters:
+        -----------
+        data : DataFrame, Series, ndarray, str o Path
+            Datos a graficar o ruta al archivo
+        column : str, optional
+            Columna a graficar (si data es DataFrame o archivo)
+        plot_type : str
+            Tipo de gráfico
+        backend : str, optional
+            Backend de visualización
+        bins : int
+            Número de bins para histograma
+        figsize : tuple, optional
+            Tamaño de la figura
+        save_fig : bool, optional
+            Si guardar la figura
+        filename : str, optional
+            Nombre del archivo
+            
+        Examples:
+        ---------
+        >>> utils.plot_distribution("datos.csv", column="edad")
+        >>> utils.plot_distribution(df, column="salario", plot_type="all")
+        """
+        backend = backend or self._plot_backend
+        figsize = figsize or self._default_figsize
+        self._save_fig = save_fig
+        
+        # Resolver datos
+        data, source = self._resolve_data(data, column)
+        
+        # Extraer datos
+        if isinstance(data, pd.DataFrame):
+            if column is None:
+                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+            plot_data = data[column].dropna()
+            title = f"Distribución de {column}"
+            default_filename = f"distribucion_{column}"
+        elif isinstance(data, pd.Series):
+            plot_data = data.dropna()
+            title = f"Distribución de {data.name if data.name else 'Variable'}"
+            default_filename = f"distribucion_{data.name if data.name else 'variable'}"
+        else:
+            plot_data = pd.Series(data).dropna()
+            title = "Distribución"
+            default_filename = "distribucion"
+        
+        filename = filename or default_filename
+        
+        try:
+            if backend == 'seaborn':
+                fig = self._plot_distribution_seaborn(plot_data, plot_type, bins, figsize, title, **kwargs)
+            elif backend == 'matplotlib':
+                fig = self._plot_distribution_matplotlib(plot_data, plot_type, bins, figsize, title, **kwargs)
+            elif backend == 'plotly':
+                fig = self._plot_distribution_plotly(plot_data, plot_type, bins, title, **kwargs)
+            else:
+                raise ValueError(f"Backend '{backend}' no soportado")
+            
+            # Guardar figura si está activado
+            if save_fig and backend != 'plotly':
+                self._save_figure(fig, filename)
+            
+            if backend == 'plotly':
+                return fig
+            
+        except Exception as e:
+            print(f"Error en plot_distribution: {e}")
+            raise
+
     def plot_correlation_matrix(self, 
                                 data: Union[pd.DataFrame, str, Path],
-                                method: str = 'pearson',
-                                backend: Optional[Literal['seaborn', 'plotly']] = None,
+                                method: Literal['pearson', 'kendall', 'spearman'] = 'pearson',
+                                backend: Optional[Literal['seaborn', 'plotly']] = "seaborn",
+                                triangular: Optional[bool] = False,
                                 figsize: Optional[Tuple[int, int]] = None,
-                                save_fig: Optional[bool] = None,
+                                save_fig: Optional[bool] = False,
                                 filename: Optional[str] = None,
                                 **kwargs):
         """
@@ -674,25 +701,32 @@ class UtilsStats:
         """
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
-        save_fig = save_fig if save_fig is not None else self._save_fig
+        self.save_fig = save_fig 
         filename = filename or "matriz_correlacion"
-        
+
         # Resolver datos
         data, source = self._resolve_data(data)
         
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Se requiere un DataFrame para calcular matriz de correlación")
+        else:
+            data = data.select_dtypes(include=['float64', 'int64'])
         
         # Calcular matriz de correlación
         corr_matrix = data.corr(method=method)
         
         if backend == 'seaborn':
             fig, ax = plt.subplots(figsize=figsize)
-            mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+            if triangular:
+                mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
             
-            sns.heatmap(corr_matrix, mask=mask, annot=True, fmt='.2f', 
-                        cmap='coolwarm', center=0, ax=ax,
-                        square=True, linewidths=0.5, **kwargs)
+                sns.heatmap(corr_matrix, mask=mask, annot=True, fmt='.2f', 
+                            cmap='coolwarm', center=0, ax=ax,
+                            square=True, linewidths=0.5, **kwargs)
+            else:
+                sns.heatmap(corr_matrix, annot=True, fmt='.2f', 
+                            cmap='coolwarm', center=0, ax=ax,
+                            square=True, linewidths=0.5, **kwargs)
             ax.set_title(f'Matriz de Correlación ({method})', fontsize=14, pad=20)
             plt.tight_layout()
             
@@ -731,15 +765,15 @@ class UtilsStats:
                     print(f"✓ Figura Plotly guardada: {filepath}")
                 except Exception as e:
                     print(f"✗ Error guardando figura Plotly: {e}")
-        
-        return fig
+        if backend == 'plotly':
+            return fig
 
     def plot_scatter_matrix(self, 
                             data: Union[pd.DataFrame, str, Path],
                             columns: Optional[List[str]] = None,
                             backend: Optional[Literal['seaborn', 'plotly', 'pandas']] = None,
                             figsize: Optional[Tuple[int, int]] = None,
-                            save_fig: Optional[bool] = None,
+                            save_fig: Optional[bool] = False,
                             filename: Optional[str] = None,
                             **kwargs):
         """
@@ -752,7 +786,7 @@ class UtilsStats:
         """
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
-        save_fig = save_fig if save_fig is not None else self._save_fig
+        self.save_fig = save_fig 
         filename = filename or "scatter_matrix"
         
         # Resolver datos
@@ -791,7 +825,8 @@ class UtilsStats:
                 except Exception as e:
                     print(f"✗ Error guardando figura Plotly: {e}")
         
-        return fig
+        if backend == 'plotly':
+            return fig
 
     # ============= GRÁFICOS CON INTERVALOS DE CONFIANZA =============
 
@@ -802,7 +837,7 @@ class UtilsStats:
                                 ci_method: str = 'parametric',
                                 bins: int = 30,
                                 figsize: Optional[Tuple[int, int]] = None,
-                                save_fig: Optional[bool] = None,
+                                save_fig: Optional[bool] = False,
                                 filename: Optional[str] = None,
                                 **kwargs) -> plt.Figure:
         """
@@ -838,7 +873,7 @@ class UtilsStats:
         x_range = np.linspace(data_array.min(), data_array.max(), 300)
 
         # ======= FIGURA =======
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize or (14, 6))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize or (14, 6))
 
         # ============================================================
         # PANEL 1: HISTOGRAMA + KDE
@@ -903,109 +938,37 @@ class UtilsStats:
         plt.tight_layout()
 
         # Guardado opcional
-        save_fig = save_fig if save_fig is not None else self._save_fig
+        self.save_fig = save_fig
         if save_fig:
             self._save_figure(fig, filename)
 
-        return fig
-
-
-    def plot_multiple_distributions_with_ci(self, 
-                                            data_dict: dict,
-                                            confidence_level: float = 0.95,
-                                            figsize: Optional[Tuple[int, int]] = None,
-                                            save_fig: Optional[bool] = None,
-                                            filename: Optional[str] = None,
-                                            **kwargs) -> plt.Figure:
-        """
-        Grafica múltiples distribuciones con sus intervalos de confianza
-        """
-        n_distributions = len(data_dict)
-        fig, axes = plt.subplots(n_distributions, 2, 
-                               figsize=figsize or (14, 5 * n_distributions))
-        
-        if n_distributions == 1:
-            axes = axes.reshape(1, -1)
-        
-        colors = plt.cm.Set3(np.linspace(0, 1, n_distributions))
-        
-        for idx, (name, data) in enumerate(data_dict.items()):
-            ax1, ax2 = axes[idx]
-            
-            if isinstance(data, pd.Series):
-                data_array = data.dropna().values
-            else:
-                data_array = np.array(data)
-                data_array = data_array[~np.isnan(data_array)]
-            
-            # Calcular estadísticas
-            ci_result = self.calculate_confidence_intervals(data_array, confidence_level=confidence_level)
-            
-            # Gráfica izquierda: Distribución básica
-            ax1.hist(data_array, bins=30, alpha=0.7, color=colors[idx], 
-                    edgecolor='black', density=True)
-            
-            kde = stats.gaussian_kde(data_array)
-            x_range = np.linspace(data_array.min(), data_array.max(), 200)
-            ax1.plot(x_range, kde(x_range), 'k-', linewidth=2)
-            ax1.axvline(ci_result['mean'], color='red', linestyle='--', linewidth=2)
-            
-            ax1.set_title(f'{name}\nMedia: {ci_result["mean"]:.2f}')
-            ax1.grid(True, alpha=0.3)
-            
-            # Gráfica derecha: Con intervalos de confianza
-            ax2.hist(data_array, bins=30, alpha=0.7, color=colors[idx], 
-                    edgecolor='black', density=True)
-            ax2.plot(x_range, kde(x_range), 'k-', linewidth=2)
-            
-            ax2.axvline(ci_result['mean'], color='red', linestyle='-', linewidth=3)
-            ax2.axvspan(ci_result['ci_lower'], ci_result['ci_upper'], 
-                        alpha=0.3, color='orange')
-            ax2.axvline(ci_result['ci_lower'], color='orange', linestyle='--', linewidth=2)
-            ax2.axvline(ci_result['ci_upper'], color='orange', linestyle='--', linewidth=2)
-            
-            ax2.set_title(f'{name} con IC {confidence_level*100}%')
-            ax2.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        
-        # Guardar figura si está activado
-        save_fig = save_fig if save_fig is not None else self._save_fig
-        if save_fig:
-            filename = filename or "multiples_distribuciones_ci"
-            self._save_figure(fig, filename)
-        
-        return fig
 
     # ============= MÉTODOS UTILITARIOS ADICIONALES =============
 
-    def get_descriptive_stats(self, 
-                                data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
-                                column: Optional[str] = None) -> dict:
-        """
-        Obtiene estadísticas descriptivas completas
-        
-        Ahora acepta rutas de archivos
-        """
-        # Resolver datos
-        data, source = self._resolve_data(data, column)
-        
+    def get_descriptive_stats(self, data, column=None):
+
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("Debe especificarse una columna")
             data_series = data[column]
-        elif isinstance(data, pd.Series):
-            data_series = data
         else:
             data_series = pd.Series(data)
-        
+
         data_clean = data_series.dropna()
-        
+
+        if len(data_clean) == 0:
+            return {k: np.nan for k in [
+                'count','mean','median','mode','std','variance',
+                'min','max','q1','q3','iqr','skewness','kurtosis','range'
+            ]}
+
+        mode_result = stats.mode(data_clean, keepdims=False)
+
         return {
             'count': len(data_clean),
             'mean': np.mean(data_clean),
             'median': np.median(data_clean),
-            'mode': stats.mode(data_clean)[0][0] if len(data_clean) > 0 else np.nan,
+            'mode': mode_result.mode,
             'std': np.std(data_clean, ddof=1),
             'variance': np.var(data_clean, ddof=1),
             'min': np.min(data_clean),
@@ -1017,7 +980,6 @@ class UtilsStats:
             'kurtosis': stats.kurtosis(data_clean),
             'range': np.max(data_clean) - np.min(data_clean)
         }
-
     def help(self):
         """
         Muestra ayuda completa de la clase DescriptiveStats
