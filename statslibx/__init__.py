@@ -10,21 +10,23 @@ __author__ = "Emmanuel Ascendra"
 # Importar las clases principales
 from .descriptive import DescriptiveStats, DescriptiveSummary
 from .inferential import InferentialStats, TestResult
+from .probability import ProbabilityStats
+from .computacional import ComputacionalStats
 from .utils import UtilsStats
 from .preprocessing import Preprocessing
-from .datasets import load_dataset
+from .datasets import load_dataset, generate_dataset
 
 # Definir qué se expone cuando se hace: from statslib import *
 __all__ = [
     # Clases principales
     'DescriptiveStats',
-    'InferentialStats', 
-    'LinearRegressionResult',
-    'DescriptiveSummary',
-    'TestResult',
+    'InferentialStats',
+    'ProbabilityStats',
+    'ComputacionalStats',
     'UtilsStats',
     'Preprocessing',
-    'load_dataset'
+    'load_dataset',
+    'generate_dataset'
 ]
 
 # Mensaje de bienvenida (opcional)
@@ -37,6 +39,7 @@ def welcome():
     print(f"  - DescriptiveStats: Estadística descriptiva")
     print(f"  - InferentialStats: Estadística inferencial")
     print(f"  - UtilsStats: Utilidades Extras")
+    print(f"\nMódulos disponibles:")
     print(f"  - Datasets: Carga de Datasets")
     print(f"  - Preprocessing: Preprocesamiento de datos")
     print(f"\nPara más información: help(statslibx)")

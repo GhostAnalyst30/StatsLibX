@@ -4,6 +4,8 @@ StatsLibX es un paquete de Python diseñado para proporcionar una solución senc
 
 Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y ligera que permita a desarrolladores y entusiastas integrar la **estadistica descriptiva e inferencial** sin complicaciones, con multiples funcionalidades y utilidades pensadas para el futuro.
 
+GitHub del Proyecto: [text](https://github.com/GhostAnalyst30/StatsLibX)
+
 ## ✨ Características principales
 
 - ⚡ Rápido y eficiente: optimizado para ofrecer un rendimiento suave incluso en tareas exigentes.
@@ -19,10 +21,15 @@ Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y 
 ## 🚀 Ejemplo rápido
 ```python
 from statslibx import DescriptiveStats, InferentialStats, UtilsStats
+from statslibx.datasets import load_iris()
+
+data = load_iris()
 
 stats = DescriptiveStats(data) # InferentialStats(data), UtilsStats()
-stats.help()
+
+stats.summary()
 ```
+Para ver mas funciones: [text](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb)
 
 ##  📦 Instalación
 ```bash
