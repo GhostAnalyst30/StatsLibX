@@ -48,10 +48,21 @@ def _X_y(
         )
 
 
+import io
+import pkgutil
+import pandas as pd
+import polars as pl
+from typing import Literal, Optional, Tuple, List, Union
+from numpy.typing import NDArray
+
+_SUPPORTED_BACKENDS = {"pandas", "polars"}
+
 def load_dataset(
     name: str,
     backend: Literal["pandas", "polars"] = "pandas",
-    return_X_y: Optional[Tuple[List[str], str]] = None
+    return_X_y: Optional[Tuple[List[str], str]] = None,
+    save: Optional[bool] = False,
+    filename: Optional[str] = None
 ) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
     """
     Carga un dataset interno del paquete.
@@ -76,24 +87,29 @@ def load_dataset(
     -------
     DataFrame o (X, y)
     """
+
     if backend not in _SUPPORTED_BACKENDS:
         raise ValueError(
             f"Backend '{backend}' no soportado. "
             f"Use uno de {_SUPPORTED_BACKENDS}."
         )
 
+    df = None
+
     # ---------- 1️⃣ Intentar cargar desde el paquete ----------
-    data_bytes = pkgutil.get_data("statslibx.datasets", name)
+    try:
+        data_bytes = pkgutil.get_data("statslibx.datasets", name)
+        if data_bytes is not None:
+            df = (
+                pd.read_csv(io.BytesIO(data_bytes))
+                if backend == "pandas"
+                else pl.read_csv(io.BytesIO(data_bytes))
+            )
+    except FileNotFoundError:
+        pass  # seguimos al siguiente intento
 
-    if data_bytes is not None:
-        df = (
-            pd.read_csv(io.BytesIO(data_bytes))
-            if backend == "pandas"
-            else pl.read_csv(io.BytesIO(data_bytes))
-        )
-
-    # ---------- 2️⃣ Si no está en el paquete, buscar en ruta actual ----------
-    else:
+    # ---------- 2️⃣ Intentar cargar desde ruta local ----------
+    if df is None:
         try:
             df = (
                 pd.read_csv(name)
