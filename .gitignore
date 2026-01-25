@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 .env
 statslibx.egg-info/
+figures/
