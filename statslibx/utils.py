@@ -11,22 +11,80 @@ from pathlib import Path
 
 class UtilsStats:
     """
-    Clase utilitaria para operaciones estadísticas comunes y visualización
+    UtilsStats
+    A utility class for common statistical operations and visualization.
+    This class provides methods for data validation, basic statistical analysis,
+    and visualization of results. It also supports loading data directly from files.
+    >>> # Load data from a file
+    >>> data = utils.load_data("data.csv")
+    >>> utils.check_normality(data, column='age')
+    >>> # Analyze data from an array
+    Methods:
+    --------
+    _setup_plotting_style():
+        Configures default plotting styles for matplotlib.
     
-    Esta clase proporciona métodos para validación de datos, análisis estadísticos
-    básicos y visualización de resultados. Ahora con soporte para leer archivos directamente.
+    set_plot_backend(backend: Literal['matplotlib', 'seaborn', 'plotly']):
+        Sets the default visualization backend.
     
-    Examples:
-    ---------
-    >>> utils = UtilsStats()
-    >>> # Desde archivo
-    >>> data = utils.load_data("datos.csv")
-    >>> utils.check_normality(data, column='edad')
-    >>> # Desde array
-    >>> data = np.random.normal(0, 1, 100)
-    >>> utils.check_normality(data)
-    >>> utils.plot_distribution(data)
+    set_default_figsize(figsize: Tuple[int, int]):
+        Sets the default figure size for plots.
+    
+    set_save_fig_options(save_fig: Optional[bool] = False, fig_format: str = 'png', 
+                         fig_dpi: int = 300, figures_dir: str = 'figures'):
+        Configures options for saving figures.
+    
+    load_data(path: Union[str, Path], **kwargs) -> pd.DataFrame:
+        Loads data from a file in various formats (CSV, Excel, JSON, etc.).
+    
+    validate_dataframe(data: Union[pd.DataFrame, np.ndarray, list, str, Path]) -> pd.DataFrame:
+        Validates and converts data to a DataFrame. Also accepts file paths.
+    
+    format_number(num: float, decimals: int = 6, scientific: bool = False) -> str:
+        Formats a number with specified decimal places.
+    
+    check_normality(data: Union[pd.Series, np.ndarray, pd.DataFrame, str, Path], 
+                    column: Optional[str] = None, alpha: float = 0.05) -> dict:
+        Checks if the data follows a normal distribution using the Shapiro-Wilk test.
+    
+    calculate_confidence_intervals(data: Union[pd.Series, np.ndarray, pd.DataFrame, str, Path],
+                                    column: Optional[str] = None, confidence_level: float = 0.95,
+        Calculates confidence intervals for the mean using parametric or bootstrap methods.
+    
+    detect_outliers(data: Union[pd.Series, np.ndarray, pd.DataFrame, str, Path],
+                    column: Optional[str] = None, method: Literal['iqr', 'zscore', 'isolation_forest'] = 'iqr',
+        Detects outliers using different methods: 'iqr', 'zscore', or 'isolation_forest'.
+    
+    calculate_effect_size(data: Union[pd.Series, np.ndarray, pd.DataFrame, str, Path] = None, 
+        Calculates the effect size between two groups using Cohen's d or Hedges' g.
+    
+    plot_distribution(data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
+                      column: Optional[str] = None, plot_type: Literal['hist', 'kde', 'box', 'violin', 'all'] = 'hist',
+                      bins: int = 30, figsize: Optional[Tuple[int, int]] = None,
+                      save_fig: Optional[bool] = False, filename: Optional[str] = None, **kwargs):
+        Plots the distribution of a variable using various plot types and backends.
+    
+    plot_correlation_matrix(data: Union[pd.DataFrame, str, Path],
+                            filename: Optional[str] = None, **kwargs):
+        Visualizes the correlation matrix using a heatmap.
+    
+    plot_scatter_matrix(data: Union[pd.DataFrame, str, Path],
+                        filename: Optional[str] = None, **kwargs):
+        Creates a scatter matrix (pairplot) for visualizing relationships between variables.
+    
+    plot_distribution_with_ci(data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
+                              column: Optional[str] = None, confidence_level: float = 0.95,
+                              ci_method: str = 'parametric', bins: int = 30,
+                              filename: Optional[str] = None, **kwargs) -> plt.Figure:
+        Plots the distribution of a variable with confidence intervals.
+    
+    get_descriptive_stats(data, column=None) -> dict:
+        Returns a dictionary of descriptive statistics for the given data.
+    
+    help():
+        Displays a complete help guide for the UtilsStats class.
     """
+    
     
     def __init__(self):
         """Inicializar la clase utilitaria"""

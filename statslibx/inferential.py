@@ -8,12 +8,69 @@ from scipy import stats
 import os
 
 class InferentialStats:
-    """
-    Class for inferential statistics (hypothesis tests, confidence intervals, etc.)
+    """    
+    InferentialStats
+    A class for performing inferential statistical analysis, including hypothesis tests, confidence intervals, 
+    normality tests, and more. This class supports operations on pandas DataFrame or numpy arrays.
+    Attributes:
+    -----------
+    data : pd.DataFrame
+        The dataset to analyze.
+        The backend used for processing ('pandas' or 'polars').
+    sep : str
+        Separator for reading files.
+    decimal : str
+        Decimal separator for reading files.
+    thousand : str
+        Thousand separator for reading files.
+    lang : str
+        Language for help and error messages ('es-ES' or 'en-US').
+    
+    Methods:
+    --------
+    from_file(path: str):
+        Load data from a file and return an instance of InferentialStats.
+    
+    confidence_interval(column: str, confidence: float = 0.95, statistic: Literal['mean', 'median', 'proportion'] = 'mean') -> tuple:
+        Calculate confidence intervals for mean, median, or proportion.
+    
+    t_test_1sample(column: str, popmean: float = None, popmedian: float = None, alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
+        Perform a one-sample t-test or Wilcoxon signed-rank test for median.
+    
+    t_test_2sample(column1: str, column2: str, equal_var: bool = True, alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
+        Perform a two-sample independent t-test.
+    
+    t_test_paired(column1: str, column2: str, alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
+        Perform a paired t-test for dependent samples.
+    
+    mann_whitney_test(column1: str, column2: str, alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided', alpha: float = 0.05) -> 'TestResult':
+        Perform the Mann-Whitney U test, a non-parametric alternative to the two-sample t-test.
+    
+    chi_square_test(column1: str, column2: str, alpha: float = 0.05) -> 'TestResult':
+        Perform a Chi-square test of independence between two categorical variables.
+    
+    anova_oneway(column: str, groups: str, alpha: float = 0.05) -> 'TestResult':
+        Perform a one-way ANOVA test to compare means across multiple groups.
+    
+    kruskal_wallis_test(column: str, groups: str, alpha: float = 0.05) -> 'TestResult':
+        Perform the Kruskal-Wallis test, a non-parametric alternative to one-way ANOVA.
+    
+    normality_test(column: str, method: Literal['shapiro', 'ks', 'anderson', 'jarque_bera', 'all'] = 'shapiro', test_statistic: Literal['mean', 'median', 'mode'] = 'mean', alpha: float = 0.05) -> Union['TestResult', dict]:
+        Perform normality tests using various methods.
+    
+    hypothesis_test(method: Literal["mean", "difference_mean", "proportion", "variance"] = "mean", column1: str = None, column2: str = None, pop_mean: float = None, pop_proportion: Union[float, Tuple[float, float]] = 0.5, alpha: float = 0.05, homoscedasticity: Literal["levene", "bartlett", "var_test"] = "levene") -> Dict[str, Any]:
+        Perform hypothesis testing for mean, difference of means, proportion, or variance.
+    
+    variance_test(column1: str, column2: str, method: Literal['levene', 'bartlett', 'var_test'] = 'levene', center: Literal['mean', 'median', 'trimmed'] = 'median', alpha: float = 0.05) -> 'TestResult':
+        Perform a test for equality of variances between two columns.
+    
+    help():
+        Display a detailed help guide for the InferentialStats class and its methods.
     """
     
     def __init__(self, data: Union[pd.DataFrame, np.ndarray],
                 backend: Literal['pandas', 'polars'] = 'pandas',
+                sep: str = None, decimal: str = None, thousand: str = None, 
                 lang: Literal['es-ES', 'en-US'] = 'es-ES'):
         """
         Initialize DataFrame
@@ -43,6 +100,9 @@ class InferentialStats:
         self.data = data
         self.backend = backend
         self._numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
+        self.sep = sep
+        self.decimal = decimal
+        self.thousand = thousand
         self.lang = lang
 
     @classmethod
@@ -51,19 +111,20 @@ class InferentialStats:
         Carga automática de archivos y devuelve instancia de Intelligence.
         Soporta CSV, Excel, TXT, JSON, Parquet, Feather, TSV.
         """
+
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Archivo no encontrado: {path}")
+            raise FileNotFoundError(f"Archivo no encontrado / File not found: {path}")
 
         ext = os.path.splitext(path)[1].lower()
 
         if ext == ".csv":
-            df = pd.read_csv(path)
+            df = pd.read_csv(path, sep=self.sep, decimal=self.decimal, thousand=self.thousand)
 
         elif ext in [".xlsx", ".xls"]:
-            df = pd.read_excel(path)
+            df = pd.read_excel(path, decimal=self.decimal, thousand=self.thousand)
 
         elif ext in [".txt", ".tsv"]:
-            df = pd.read_table(path)
+            df = pd.read_table(path, sep=self.sep, decimal=self.decimal, thousand=self.thousand)
 
         elif ext == ".json":
             df = pd.read_json(path)

@@ -12,15 +12,80 @@ import base64
 import plotly.express as px
 
 class DescriptiveStats:
-    """
-    Class for univariate and multivariate descriptive statistics
+    """    
+    DescriptiveStats
+    A class for performing univariate and multivariate descriptive statistical analysis. 
+    It provides tools for exploratory data analysis, measures of central tendency, 
+    dispersion, distribution shape, and linear regression.
+    Attributes:
+    -----------
+    data : pd.DataFrame
+        The dataset to analyze.
+    sep : str, optional
+        Column separator for file input.
+    decimal : str, optional
+        Decimal separator for file input.
+    thousand : str, optional
+        Thousand separator for file input.
+    backend : str, optional
+        Backend to use for processing ('pandas' or 'polars'). Default is 'pandas'.
+    lang : str, optional
+        Language for output ('es-ES' or 'en-US'). Default is 'es-ES'.
+    
+    Methods:
+    --------
+    from_file(path: str)
+        Load data from a file and return an instance of DescriptiveStats.
+    
+    mean(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the arithmetic mean of a column or all numeric columns.
+    
+    median(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the median of a column or all numeric columns.
+    
+    mode(column: Optional[str] = None)
+        Calculate the mode of a column or all numeric columns.
+    
+    variance(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the variance of a column or all numeric columns.
+    
+    std(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the standard deviation of a column or all numeric columns.
+    
+    skewness(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the skewness of a column or all numeric columns.
+    
+    kurtosis(column: Optional[str] = None) -> Union[float, pd.Series]
+        Calculate the kurtosis of a column or all numeric columns.
+    
+    quantile(q: Union[float, List[float]], column: Optional[str] = None)
+        Calculate quantiles for a column or all numeric columns.
+    
+    outliers(column: str, method: Literal['iqr', 'zscore'] = 'iqr', threshold: float = 1.5) -> pd.Series
+        Detect outliers in a column using IQR or z-score methods.
+    
+    correlation(method: Literal['pearson', 'spearman', 'kendall'] = 'pearson', columns: Optional[List[str]] = None) -> pd.DataFrame
+        Compute the correlation matrix for specified columns or all numeric columns.
+    
+    covariance(columns: Optional[List[str]] = None) -> pd.DataFrame
+        Compute the covariance matrix for specified columns or all numeric columns.
+    
+    summary(columns: Optional[List[str]] = None, show_plot: bool = False, plot_backend: str = 'seaborn') -> 'DescriptiveSummary'
+        Generate a complete descriptive statistics summary for specified columns or all numeric columns.
+    
+    linear_regression(X: Union[str, List[str]], y: str, engine: Literal['statsmodels', 'scikit-learn'] = 'statsmodels', fit_intercept: bool = True, show_plot: bool = False, plot_backend: str = 'seaborn', handle_missing: Literal['drop', 'error', 'warn'] = 'drop') -> tuple
+        Perform simple or multiple linear regression with optional visualization.
+    
+    help()
+        Display the complete help documentation for the DescriptiveStats class.
     """
     
     def __init__(self, data: Union[pd.DataFrame, np.ndarray],
                 sep: str = None,
                 decimal: str = None,
                 thousand: str = None,
-                backend: Literal['pandas', 'polars'] = 'pandas'):
+                backend: Literal['pandas', 'polars'] = 'pandas',
+                lang: Literal['es-ES', 'en-US'] = 'es-ES'):
         """
         # Initialize DataFrame
         
@@ -62,6 +127,7 @@ class DescriptiveStats:
         self.sep = sep
         self.decimal = decimal
         self.thousand = thousand
+        self.lang = lang
     
     @classmethod
     def from_file(self, path: str):
@@ -394,7 +460,7 @@ class DescriptiveStats:
 
 
     
-    def help(self, lang="es-ES"):
+    def help(self):
         """
         Muestra ayuda completa de la clase DescriptiveStats
 
@@ -404,13 +470,13 @@ class DescriptiveStats:
             Idioma Usuario: Codigo de Idioma (es-Es) o "Español"
             User Language: Languaje Code (en-Us) or "English"
         """
-        if lang in ["en-US", "English", "english"]:
-            lang = "en-US"
+        if self.lang in ["en-US", "English", "english"]:
+            self.lang = "en-US"
         else:
-            lang = "es-ES"
+            self.lang = "es-ES"
         help_text = " "
 
-        match lang:
+        match self.lang:
             case "es-ES":
                 help_text = """
 ╔════════════════════════════════════════════════════════════════════════════╗
