@@ -1,7 +1,7 @@
 from typing import Optional, Union, Literal, List, Tuple
 import io
 import pkgutil
-
+from pathlib import Path
 import pandas as pd
 import polars as pl
 import numpy as np
@@ -56,14 +56,39 @@ from typing import Literal, Optional, Tuple, List, Union
 from numpy.typing import NDArray
 
 _SUPPORTED_BACKENDS = {"pandas", "polars"}
+_SUPPORTED_EXTENSIONS = {".csv", ".parquet", ".xlsx", ".xls", ".json"}
+
+def _read_file(
+    buffer_or_path,
+    ext: str,
+    backend: str,
+    sep: str,
+):
+    if backend == "pandas":
+        if ext == ".csv":
+            return pd.read_csv(buffer_or_path, sep=sep)
+        if ext == ".parquet":
+            return pd.read_parquet(buffer_or_path)
+        if ext in {".xlsx", ".xls"}:
+            return pd.read_excel(buffer_or_path)
+        if ext == ".json":
+            return pd.read_json(buffer_or_path)
+    else:  # polars
+        if ext == ".csv":
+            return pl.read_csv(buffer_or_path)
+        if ext == ".parquet":
+            return pl.read_parquet(buffer_or_path)
+        if ext == ".json":
+            return pl.read_json(buffer_or_path)
+
+    raise ValueError(f"Extensión '{ext}' no soportada para backend '{backend}'.")
+
 
 def load_dataset(
     name: str,
     backend: Literal["pandas", "polars"] = "pandas",
     return_X_y: Optional[Tuple[List[str], str]] = None,
-    sep: str = ",",
-    save: Optional[bool] = False,
-    filename: Optional[str] = None,
+    sep: str = ","
 ) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
     """
     Carga un dataset interno del paquete.
@@ -95,28 +120,29 @@ def load_dataset(
             f"Use uno de {_SUPPORTED_BACKENDS}."
         )
 
+    ext = Path(name).suffix.lower()
+
+    if ext not in _SUPPORTED_EXTENSIONS:
+        raise ValueError(
+            f"Extensión '{ext}' no soportada. "
+            f"Soportadas: {_SUPPORTED_EXTENSIONS}"
+        )
+
     df = None
 
     # ---------- 1️⃣ Intentar cargar desde el paquete ----------
     try:
         data_bytes = pkgutil.get_data("statslibx.datasets", name)
         if data_bytes is not None:
-            df = (
-                pd.read_csv(io.BytesIO(data_bytes), sep=sep)
-                if backend == "pandas"
-                else pl.read_csv(io.BytesIO(data_bytes))
-            )
+            buffer = io.BytesIO(data_bytes)
+            df = _read_file(buffer, ext, backend, sep)
     except FileNotFoundError:
-        pass  # seguimos al siguiente intento
+        pass
 
     # ---------- 2️⃣ Intentar cargar desde ruta local ----------
     if df is None:
         try:
-            df = (
-                pd.read_csv(name, sep=sep)
-                if backend == "pandas"
-                else pl.read_csv(name)
-            )
+            df = _read_file(name, ext, backend, sep)
         except FileNotFoundError:
             raise FileNotFoundError(
                 f"Dataset '{name}' no encontrado "
@@ -129,6 +155,7 @@ def load_dataset(
         return _X_y(df, X_columns, y_column)
 
     return df
+
 
 # =========================
 # Datasets específicos
