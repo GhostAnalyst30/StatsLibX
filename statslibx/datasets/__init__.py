@@ -61,8 +61,9 @@ def load_dataset(
     name: str,
     backend: Literal["pandas", "polars"] = "pandas",
     return_X_y: Optional[Tuple[List[str], str]] = None,
+    sep: str = ",",
     save: Optional[bool] = False,
-    filename: Optional[str] = None
+    filename: Optional[str] = None,
 ) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
     """
     Carga un dataset interno del paquete.
@@ -101,7 +102,7 @@ def load_dataset(
         data_bytes = pkgutil.get_data("statslibx.datasets", name)
         if data_bytes is not None:
             df = (
-                pd.read_csv(io.BytesIO(data_bytes))
+                pd.read_csv(io.BytesIO(data_bytes), sep=sep)
                 if backend == "pandas"
                 else pl.read_csv(io.BytesIO(data_bytes))
             )
@@ -112,7 +113,7 @@ def load_dataset(
     if df is None:
         try:
             df = (
-                pd.read_csv(name)
+                pd.read_csv(name, sep=sep)
                 if backend == "pandas"
                 else pl.read_csv(name)
             )

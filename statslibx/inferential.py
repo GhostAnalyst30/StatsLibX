@@ -69,8 +69,6 @@ class InferentialStats:
     """
     
     def __init__(self, data: Union[pd.DataFrame, np.ndarray],
-                backend: Literal['pandas', 'polars'] = 'pandas',
-                sep: str = None, decimal: str = None, thousand: str = None, 
                 lang: Literal['es-ES', 'en-US'] = 'es-ES'):
         """
         Initialize DataFrame
@@ -79,17 +77,16 @@ class InferentialStats:
         -----------
         data : DataFrame o ndarray
             Data to analyze
-        backend : str
-            'pandas' or 'polars' for processing
         """
 
-        if isinstance(data, str) and os.path.exists(data):
-                data = InferentialStats.from_file(data).data
-
-        if isinstance(data, pl.DataFrame):
+        if isinstance(data, pd.DataFrame):
+            self.data = data
+        elif isinstance(data, np.ndarray):
+            self.data = pd.DataFrame(data)
+        else:
             raise TypeError(
-                "Polars aún no soportado. Use pandas.DataFrame."
-            )
+                "Data must be a pandas.DataFrame or numpy.ndarray."
+            )   
 
         if isinstance(data, np.ndarray):
             if data.ndim == 1:
@@ -98,48 +95,9 @@ class InferentialStats:
                 data = pd.DataFrame(data, columns=[f'var_{i}' for i in range(data.shape[1])])
         
         self.data = data
-        self.backend = backend
         self._numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
-        self.sep = sep
-        self.decimal = decimal
-        self.thousand = thousand
         self.lang = lang
 
-    @classmethod
-    def from_file(path: str):
-        """
-        Carga automática de archivos y devuelve instancia de Intelligence.
-        Soporta CSV, Excel, TXT, JSON, Parquet, Feather, TSV.
-        """
-
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"Archivo no encontrado / File not found: {path}")
-
-        ext = os.path.splitext(path)[1].lower()
-
-        if ext == ".csv":
-            df = pd.read_csv(path, sep=self.sep, decimal=self.decimal, thousand=self.thousand)
-
-        elif ext in [".xlsx", ".xls"]:
-            df = pd.read_excel(path, decimal=self.decimal, thousand=self.thousand)
-
-        elif ext in [".txt", ".tsv"]:
-            df = pd.read_table(path, sep=self.sep, decimal=self.decimal, thousand=self.thousand)
-
-        elif ext == ".json":
-            df = pd.read_json(path)
-
-        elif ext == ".parquet":
-            df = pd.read_parquet(path)
-
-        elif ext == ".feather":
-            df = pd.read_feather(path)
-
-        else:
-            raise ValueError(f"Formato no soportado: {ext}")
-
-        return InferentialStats(df)
-    
     # ============= INTERVALOS DE CONFIANZA =============
     
     def confidence_interval(self, column: str, confidence: float = 0.95,
