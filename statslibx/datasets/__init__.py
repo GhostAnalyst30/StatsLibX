@@ -83,13 +83,12 @@ def _read_file(
 
     raise ValueError(f"Extensión '{ext}' no soportada para backend '{backend}'.")
 
-
 def load_dataset(
-    name: str,
-    backend: Literal["pandas", "polars"] = "pandas",
-    return_X_y: Optional[Tuple[List[str], str]] = None,
-    sep: str = ","
-) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
+        name: str,
+        backend: Literal["pandas", "polars"] = "pandas",
+        return_X_y: Optional[Tuple[List[str], str]] = None,
+        sep: str = ","
+    ) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
     """
     Carga un dataset interno del paquete.
 
@@ -120,7 +119,10 @@ def load_dataset(
             f"Use uno de {_SUPPORTED_BACKENDS}."
         )
 
-    ext = Path(name).suffix.lower()
+    path = Path(name)
+    resource_name = path.name
+    ext = path.suffix.lower()
+
 
     if ext not in _SUPPORTED_EXTENSIONS:
         raise ValueError(
@@ -130,31 +132,32 @@ def load_dataset(
 
     df = None
 
-    # ---------- 1️⃣ Intentar cargar desde el paquete ----------
+    # 1️⃣ Intentar cargar desde el paquete
     try:
-        data_bytes = pkgutil.get_data("statslibx.datasets", name)
+        data_bytes = pkgutil.get_data("statslibx.datasets", resource_name)
+
         if data_bytes is not None:
             buffer = io.BytesIO(data_bytes)
             df = _read_file(buffer, ext, backend, sep)
     except FileNotFoundError:
         pass
 
-    # ---------- 2️⃣ Intentar cargar desde ruta local ----------
+    # 2️⃣ Intentar cargar desde ruta local
     if df is None:
-        try:
-            df = _read_file(name, ext, backend, sep)
-        except FileNotFoundError:
+        if not path.exists():
             raise FileNotFoundError(
                 f"Dataset '{name}' no encontrado "
-                f"ni en statslibx.datasets ni en la ruta actual."
+                f"ni en statslibx.datasets ni en la ruta local."
             )
+        df = _read_file(path, ext, backend, sep)
 
-    # ---------- 3️⃣ Devolver X, y si se solicita ----------
+    # 3️⃣ Devolver X, y si se solicita
     if return_X_y is not None:
         X_columns, y_column = return_X_y
         return _X_y(df, X_columns, y_column)
 
     return df
+
 
 
 # =========================

@@ -1,5 +1,5 @@
 import argparse
-from statslibx.io import load_file
+from statslibx.datasets import load_dataset
 from statslibx.preprocessing import Preprocessing
 
 
@@ -30,7 +30,7 @@ def main():
         parser.print_help()
         return
 
-    df = load_file(args.file)
+    df = load_dataset(args.file)
     pp = Preprocessing(df)
 
     if args.command == "describe":
