@@ -15,7 +15,7 @@ slx <- import("statslibx")
 
 slx$welcome()
 
-df <- slx$load_dataset("tests/bank (1).csv", sep=";")
+df <- slx$load_dataset("tests/bank (1).csv", sep = ";")
 
 stats <- slx$DescriptiveStats(df)
 

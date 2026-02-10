@@ -9,7 +9,7 @@ import pandas as pd
 # infer = InferentialStats(df)
 # print(infer.data)
 
-df = load_dataset(r"C:\Users\Usuario\Documents\Emmanuel Ascendra\Ciencia de Datos\Librerias Python\__huggingface_repos__.json")
+df = load_dataset(r"statslibx\datasets\Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")
 
 ds = DescriptiveStats(df)
 
