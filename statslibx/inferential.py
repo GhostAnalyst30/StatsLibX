@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-import polars as pl
-from typing import Optional, Union, Literal, List, Dict, Any, Tuple
+from typing import Union, Literal, Dict, Any, Tuple
 from datetime import datetime
 from scipy import stats
-import os
 
 class InferentialStats:
     """    
@@ -94,8 +92,8 @@ class InferentialStats:
             else:
                 data = pd.DataFrame(data, columns=[f'var_{i}' for i in range(data.shape[1])])
         
-        self.data = data
         self._numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
+        self._categorical_cols = self.data.select_dtypes(include=[np.object]).columns.tolist()
         self.lang = lang
 
     # ============= INTERVALOS DE CONFIANZA =============

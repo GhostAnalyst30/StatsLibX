@@ -10,6 +10,7 @@ class Preprocessing:
         if not isinstance(data, (pd.DataFrame, pl.DataFrame)):
             raise TypeError("data must be a pandas or polars DataFrame")
         self.data = data
+        self.columns = list(self.data.columns)
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -27,11 +28,11 @@ class Preprocessing:
         return int(self.data[column].null_count())
 
     def _get_columns(self, columns):
-        if columns is None:
-            return list(self.data.columns)
-        if isinstance(columns, str):
-            return [columns]
-        return columns
+            if columns is None:
+                return list(self.data.columns)
+            if isinstance(columns, str):
+                return [columns]
+            return columns 
 
     # ------------------------------------------------------------------
     # Inspection
@@ -226,3 +227,66 @@ class Preprocessing:
 
         return pd.DataFrame(rows)
 
+    def change_dtypes(
+        self,
+        columns: Union[List[str], str, None] = None,
+        from_type: Optional[str] = None,
+        to_type: Optional[str] = None
+    ) -> pd.DataFrame:
+
+        data = self.data
+
+        TYPE_MAP = {
+            "string": "string",
+            "object": "object",
+            "int": "int64",
+            "float": "float64",
+            "int64": "int64",
+            "float64": "float64",
+            "number": "float64"
+        }
+
+        if columns is None:
+            columns = list(data.columns)
+        elif isinstance(columns, str):
+            columns = [columns]
+
+        if to_type and to_type not in TYPE_MAP:
+            raise ValueError(f"Unsupported to_type: {to_type}")
+
+        if self._is_pandas():
+
+            for col in columns:
+
+                if col not in data.columns:
+                    print(f"Column '{col}' does not exist in the DataFrame")
+                    return
+
+                if from_type is not None:
+                    current_type = str(data[col].dtype)
+
+                    if from_type not in current_type:
+                        continue
+
+                if to_type is not None:
+                    try:
+
+                        if to_type in ["int", "float", "number"]:
+                            data[col] = pd.to_numeric(data[col], errors="raise")
+
+                            if to_type == "int":
+                                data[col] = data[col].astype("int64")
+
+                        elif to_type == "string":
+                            data[col] = data[col].astype("string")
+
+                        elif to_type == "object":
+                            data[col] = data[col].astype("object")
+
+                        else:
+                            data[col] = data[col].astype(TYPE_MAP[to_type])
+
+                    except Exception:
+                        print(f"Cannot convert column '{col}' to {to_type}")
+
+        return data

@@ -3,7 +3,6 @@ import io
 import pkgutil
 from pathlib import Path
 import pandas as pd
-import polars as pl
 import numpy as np
 from numpy.typing import NDArray
 
@@ -12,10 +11,10 @@ _SUPPORTED_BACKENDS = ("pandas", "polars")
 
 
 def _validate_columns(
-    df: Union[pd.DataFrame, pl.DataFrame],
-    X_columns: List[str],
-    y_column: str
-) -> None:
+    df: pd.DataFrame,  # 输入的数据框，可以是pandas或polars DataFrame
+    X_columns: List[str],  # 特征列名列表
+    y_column: str  # 目标列名
+) -> None:  # 无返回值，函数仅用于验证
     columns = set(df.columns)
     missing = set(X_columns + [y_column]) - columns
     if missing:
@@ -23,7 +22,7 @@ def _validate_columns(
 
 
 def _X_y(
-    df: Union[pd.DataFrame, pl.DataFrame],
+    df: pd.DataFrame,
     X_columns: List[str],
     y_column: str
 ) -> Tuple[NDArray, NDArray]:
@@ -37,25 +36,19 @@ def _X_y(
         y = df[y_column].to_numpy().ravel()
         return X, y
 
-    elif isinstance(df, pl.DataFrame):
-        X = df.select(X_columns).to_numpy()
-        y = df.select(y_column).to_numpy().ravel()
-        return X, y
-
     else:
         raise TypeError(
-            "Backend no soportado. Use pandas.DataFrame o polars.DataFrame."
+            "Backend no soportado. Use pandas.DataFrame"
         )
 
 
 import io
 import pkgutil
 import pandas as pd
-import polars as pl
 from typing import Literal, Optional, Tuple, List, Union
 from numpy.typing import NDArray
 
-_SUPPORTED_BACKENDS = {"pandas", "polars"}
+_SUPPORTED_BACKENDS = {"pandas"}
 _SUPPORTED_EXTENSIONS = {".csv", ".parquet", ".xlsx", ".xls", ".json"}
 
 def _read_file(
@@ -73,22 +66,15 @@ def _read_file(
             return pd.read_excel(buffer_or_path)
         if ext == ".json":
             return pd.read_json(buffer_or_path)
-    else:  # polars
-        if ext == ".csv":
-            return pl.read_csv(buffer_or_path)
-        if ext == ".parquet":
-            return pl.read_parquet(buffer_or_path)
-        if ext == ".json":
-            return pl.read_json(buffer_or_path)
 
     raise ValueError(f"Extensión '{ext}' no soportada para backend '{backend}'.")
 
 def load_dataset(
         name: str,
-        backend: Literal["pandas", "polars"] = "pandas",
+        backend: str = "pandas",
         return_X_y: Optional[Tuple[List[str], str]] = None,
         sep: str = ","
-    ) -> Union[pd.DataFrame, pl.DataFrame, Tuple[NDArray, NDArray]]:
+    ) -> Union[pd.DataFrame, Tuple[NDArray, NDArray]]:
     """
     Carga un dataset interno del paquete.
 
@@ -98,6 +84,7 @@ def load_dataset(
     - sp500_companies.csv
     - titanic.csv
     - course_completion.csv
+    - Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx
 
     Parámetros
     ----------
@@ -165,7 +152,7 @@ def load_dataset(
 # =========================
 
 def load_iris(
-    backend: Literal["pandas", "polars"] = "pandas",
+    backend: str = "pandas",
     return_X_y: Optional[Tuple[List[str], str]] = None
 ):
     return load_dataset(
@@ -176,7 +163,7 @@ def load_iris(
 
 
 def load_penguins(
-    backend: Literal["pandas", "polars"] = "pandas",
+    backend: str = "pandas",
     return_X_y: Optional[Tuple[List[str], str]] = None
 ):
     return load_dataset(

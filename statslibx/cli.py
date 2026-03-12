@@ -1,4 +1,5 @@
 import argparse
+import statslibx as slx
 from statslibx.datasets import load_dataset
 from statslibx.preprocessing import Preprocessing
 
@@ -27,7 +28,7 @@ def main():
     args = parser.parse_args()
 
     if not args.command:
-        parser.print_help()
+        print(slx.welcome())
         return
 
     df = load_dataset(args.file)

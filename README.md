@@ -38,6 +38,7 @@ pip install statslibx
 
 ## 👩‍💻 ¡Usalo en la terminal! (De forma preliminar)
 ```bash
+statslibx                        # Informacion general de la libreria
 statslibx describe .\archive.csv # Devuelve una descripcion de la data
 statslibx quality .\archive.csv # Devuelve la calidad de los datos
 statslibx preview .\archive.csv # Devuelve una visualizacion de los datos
