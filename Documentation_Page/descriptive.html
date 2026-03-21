@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descriptive</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f9fafc; color: #1e293b; line-height: 1.5; }
+        .navbar { background: #0f172a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
+        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #a5f3fc); background-clip: text; -webkit-background-clip: text; color: transparent; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .nav-links a { color: #cbd5e6; text-decoration: none; font-weight: 500; transition: color 0.3s; display: flex; align-items: center; gap: 8px; }
+        .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+        .page-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 3rem 2rem; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid #3b82f6; padding-left: 1rem; }
+        .method-card { background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #eef2ff; }
+        .method-name { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
+        .method-desc { color: #475569; margin-bottom: 1rem; }
+        .code-block { background: #0f172a; border-radius: 16px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+        .code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        .badge { display: inline-block; background: #eef2ff; color: #1e293b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-right: 0.5rem; }
+        footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 2rem; margin-top: 2rem; }
+        @media (max-width: 700px) { .nav-container { flex-direction: column; } .nav-links { justify-content: center; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
+        <div class="nav-links">
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html" class="active"><i class="fas fa-chart-simple"></i> Descriptive</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html"><i class="fas fa-chart-scatter"></i> Inferential</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html"><i class="fas fa-brain"></i> Computacional</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-chart-simple"></i> DescriptiveStats Module</h1>
+        <p style="font-size: 1.2rem; margin-top: 0.5rem;">Análisis estadístico descriptivo completo para DataFrames, listas y arrays NumPy</p>
+    </div>
+</div>
+
+<main style="padding: 2rem;">
+    <div class="container">
+        <div class="section-title">
+            📊 Métodos Disponibles
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.summary()</div>
+            <div class="method-desc">Genera un resumen estadístico completo incluyendo media, mediana, moda, varianza, desviación estándar, asimetría, curtosis, percentiles, mínimo y máximo.</div>
+            <div class="badge">Parámetros: format="wide" | "long"</div>
+            <div class="code-block">
+                <pre><code class="language-python">from statslibx import DescriptiveStats
+import pandas as pd
+
+df = pd.read_csv("datos.csv")
+ds = DescriptiveStats(df)
+resumen = ds.summary().to_dataframe(format="wide")
+print(resumen)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.central_tendency()</div>
+            <div class="method-desc">Calcula media, mediana y moda para todas las columnas numéricas.</div>
+            <div class="code-block">
+                <pre><code class="language-python">ct = ds.central_tendency()
+print(ct)  # {'col1': {'mean': 10.5, 'median': 10.0, 'mode': 8}}</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.dispersion()</div>
+            <div class="method-desc">Calcula varianza, desviación estándar, rango, rango intercuartil (IQR) y coeficiente de variación.</div>
+            <div class="code-block">
+                <pre><code class="language-python">dispersion = ds.dispersion()
+print(dispersion)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.shape()</div>
+            <div class="method-desc">Calcula asimetría (skewness) y curtosis (kurtosis) para evaluar la forma de la distribución.</div>
+            <div class="code-block">
+                <pre><code class="language-python">forma = ds.shape()
+# Retorna {'skewness': 0.45, 'kurtosis': 2.1}</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.percentiles()</div>
+            <div class="method-desc">Calcula percentiles personalizados (25, 50, 75 por defecto).</div>
+            <div class="code-block">
+                <pre><code class="language-python">pct = ds.percentiles(percentiles=[10, 25, 50, 75, 90])
+print(pct)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.outliers()</div>
+            <div class="method-desc">Detecta valores atípicos usando método IQR o Z-score.</div>
+            <div class="badge">method="iqr" | "zscore", threshold=1.5</div>
+            <div class="code-block">
+                <pre><code class="language-python">outliers_info = ds.outliers(method="iqr", threshold=1.5)
+print(outliers_info)  # {'col1': [índices de outliers]}</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.correlation()</div>
+            <div class="method-desc">Calcula matriz de correlación (Pearson, Spearman o Kendall).</div>
+            <div class="badge">method="pearson" | "spearman" | "kendall"</div>
+            <div class="code-block">
+                <pre><code class="language-python">corr_matrix = ds.correlation(method="pearson")
+print(corr_matrix)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.covariance()</div>
+            <div class="method-desc">Calcula matriz de covarianza entre variables numéricas.</div>
+            <div class="code-block">
+                <pre><code class="language-python">cov_matrix = ds.covariance()
+print(cov_matrix)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.linear_regression()</div>
+            <div class="method-desc">Ajusta un modelo de regresión lineal simple con visualización opcional.</div>
+            <div class="badge">X: str (columna independiente), y: str (columna dependiente), show_plot: bool</div>
+            <div class="code-block">
+                <pre><code class="language-python">resultado = ds.linear_regression(X="body_mass_g", y="flipper_length_mm", show_plot=True)
+print(f"Coef: {resultado.coef}, R²: {resultado.r2}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.frequency_table()</div>
+            <div class="method-desc">Genera tabla de frecuencias para variables categóricas.</div>
+            <div class="code-block">
+                <pre><code class="language-python">freq = ds.frequency_table(column="species")
+print(freq)  # Frecuencia absoluta y relativa</code></pre>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>📊 StatsLibX — DescriptiveStats Module v2.4</p>
+        <p><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" style="color: #3b82f6;">Volver al inicio</a></p>
+    </div>
+</footer>
+
+<script>Prism.highlightAll();</script>
+</body>
+</html>

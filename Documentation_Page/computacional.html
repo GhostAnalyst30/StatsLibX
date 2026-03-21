@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatsLibX - ComputationalStats Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f9fafc; color: #1e293b; line-height: 1.5; }
+        .navbar { background: #0f172a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
+        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #a5f3fc); background-clip: text; -webkit-background-clip: text; color: transparent; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .nav-links a { color: #cbd5e6; text-decoration: none; font-weight: 500; transition: color 0.3s; display: flex; align-items: center; gap: 8px; }
+        .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+        .page-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 3rem 2rem; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid #3b82f6; padding-left: 1rem; }
+        .method-card { background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #eef2ff; }
+        .method-name { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
+        .method-desc { color: #475569; margin-bottom: 1rem; }
+        .code-block { background: #0f172a; border-radius: 16px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+        .code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        .badge { display: inline-block; background: #eef2ff; color: #1e293b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-right: 0.5rem; }
+        footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 2rem; margin-top: 2rem; }
+        @media (max-width: 700px) { .nav-container { flex-direction: column; } .nav-links { justify-content: center; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
+        <div class="nav-links">
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html"><i class="fas fa-home"></i> Inicio</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html"><i class="fas fa-chart-simple"></i> Descriptive</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html"><i class="fas fa-chart-scatter"></i> Inferential</a>
+            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html" class="active"><i class="fas fa-brain"></i> Computacional</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-brain"></i> ComputationalStats Module (En Desarrollo)</h1>
+        <p style="font-size: 1.2rem; margin-top: 0.5rem;">Métodos computacionales avanzados: bootstrapping, simulación, optimización y más</p>
+    </div>
+</div>
+
+<main style="padding: 2rem;">
+    <div class="container">
+        <div class="section-title">
+            🚀 Métodos Computacionales
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.bootstrap()</div>
+            <div class="method-desc">Realiza bootstrapping para estimar intervalos de confianza y distribuciones muestrales.</div>
+            <div class="badge">column: str, statistic="mean", n_bootstrap=1000, confidence=0.95</div>
+            <div class="code-block">
+                <pre><code class="language-python">from statslibx import ComputationalStats
+from statslibx.datasets import load_iris
+
+data = load_iris()
+comp = ComputationalStats(data)
+
+boot_result = comp.bootstrap(column="sepal_length", statistic="mean", n_bootstrap=5000)
+print(f"IC Bootstrap 95%: ({boot_result.lower}, {boot_result.upper})")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.cross_validation()</div>
+            <div class="method-desc">Realiza validación cruzada k-fold para modelos de regresión/clasificación.</div>
+            <div class="badge">model: str, X_cols: list, y_col: str, k_folds=5, metric="rmse"</div>
+            <div class="code-block">
+                <pre><code class="language-python">cv_scores = comp.cross_validation(
+    model="linear_regression",
+    X_cols=["sepal_length", "sepal_width"],
+    y_col="petal_length",
+    k_folds=5
+)
+print(f"RMSE promedio: {cv_scores.mean():.3f}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.monte_carlo_simulation()</div>
+            <div class="method-desc">Simula escenarios usando muestreo Monte Carlo para variables especificadas.</div>
+            <div class="badge">distributions: dict, n_simulations=10000, target_func: callable</div>
+            <div class="code-block">
+                <pre><code class="language-python"># Simulación de rendimiento de inversión
+distribuciones = {
+    "retorno": {"type": "normal", "mean": 0.08, "std": 0.15},
+    "inflacion": {"type": "normal", "mean": 0.02, "std": 0.01}
+}
+
+resultados = comp.monte_carlo_simulation(
+    distributions=distribuciones,
+    n_simulations=10000,
+    target_func=lambda x: (1 + x["retorno"]) / (1 + x["inflacion"]) - 1
+)</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.time_series_analysis()</div>
+            <div class="method-desc">Análisis de series temporales: descomposición, autocorrelación, pruebas de estacionariedad.</div>
+            <div class="badge">column: str, date_col: str, decomposition="additive"|"multiplicative"</div>
+            <div class="code-block">
+                <pre><code class="language-python">ts_result = comp.time_series_analysis(
+    column="ventas",
+    date_col="fecha",
+    decomposition="additive"
+)
+print(f"Tendencia: {ts_result.trend}, Estacionalidad: {ts_result.seasonal}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.optimize_hyperparameters()</div>
+            <div class="method-desc">Optimiza hiperparámetros de modelos usando grid search o random search.</div>
+            <div class="badge">model_type: str, param_grid: dict, X_cols: list, y_col: str, method="grid"</div>
+            <div class="code-block">
+                <pre><code class="language-python">best_params = comp.optimize_hyperparameters(
+    model_type="linear_regression",
+    param_grid={"fit_intercept": [True, False]},
+    X_cols=["sepal_length", "sepal_width"],
+    y_col="petal_length"
+)
+print(f"Mejores parámetros: {best_params}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.power_analysis()</div>
+            <div class="method-desc">Análisis de potencia estadística para determinar tamaño de muestra requerido.</div>
+            <div class="badge">test_type="ttest", effect_size=0.5, alpha=0.05, power=0.8</div>
+            <div class="code-block">
+                <pre><code class="language-python">sample_size = comp.power_analysis(
+    test_type="ttest",
+    effect_size=0.5,
+    alpha=0.05,
+    power=0.8
+)
+print(f"Tamaño de muestra necesario: {sample_size}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.principal_component_analysis()</div>
+            <div class="method-desc">Realiza Análisis de Componentes Principales (PCA) para reducción de dimensionalidad.</div>
+            <div class="badge">columns: list, n_components=None (explica varianza), scale=True</div>
+            <div class="code-block">
+                <pre><code class="language-python">pca_result = comp.principal_component_analysis(
+    columns=["sepal_length", "sepal_width", "petal_length", "petal_width"],
+    n_components=2
+)
+print(f"Varianza explicada: {pca_result.explained_variance_ratio_}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.cluster_analysis()</div>
+            <div class="method-desc">Análisis de clustering (K-means, jerárquico) para segmentación de datos.</div>
+            <div class="badge">columns: list, n_clusters=3, method="kmeans"</div>
+            <div class="code-block">
+                <pre><code class="language-python">clusters = comp.cluster_analysis(
+    columns=["sepal_length", "sepal_width", "petal_length", "petal_width"],
+    n_clusters=3,
+    method="kmeans"
+)
+print(f"Labels: {clusters.labels_}")</code></pre>
+            </div>
+        </div>
+
+        <div class="method-card">
+            <div class="method-name">.bayesian_inference()</div>
+            <div class="method-desc">Inferencia Bayesiana con MCMC para estimación de parámetros.</div>
+            <div class="badge">column: str, prior: dict, n_samples=5000</div>
+            <div class="code-block">
+                <pre><code class="language-python">bayes_result = comp.bayesian_inference(
+    column="sepal_length",
+    prior={"mean": {"type": "normal", "mu": 5, "sigma": 1}, "sigma": {"type": "uniform", "low": 0, "high": 2}},
+    n_samples=5000
+)
+print(f"Posterior media: {bayes_result.posterior_mean}")</code></pre>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>📊 StatsLibX — ComputationalStats Module v2.4</p>
+        <p><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" style="color: #3b82f6;">Volver al inicio</a></p>
+    </div>
+</footer>
+
+<script>Prism.highlightAll();</script>
+</body>
+</html>
