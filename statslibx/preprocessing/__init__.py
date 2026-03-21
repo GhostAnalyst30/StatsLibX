@@ -290,3 +290,40 @@ class Preprocessing:
                         print(f"Cannot convert column '{col}' to {to_type}")
 
         return data
+
+    def clean_data(
+        self,
+        # 🔍 Missing values
+        handle_missing: bool = False,
+        missing_strategy: str = "mean",  # mean, median, mode, drop, constant
+        fill_value=None,
+        
+        # 🧹 Duplicados
+        remove_duplicates: bool = False,
+        
+        # 📊 Tipos de datos
+        convert_dtypes: bool = False,
+        
+        # 🚨 Outliers
+        detect_outliers: bool = False,
+        remove_outliers: bool = False,
+        outlier_method: str = "iqr",  # iqr, zscore
+        z_thresh: float = 3.0,
+        
+        # 📏 Escalado / Normalización
+        scale: bool = False,
+        scaling_method: str = "standard",  # standard, minmax, robust
+        
+        # 🔢 Transformaciones
+        log_transform: bool = False,
+        sqrt_transform: bool = False,
+        
+        # 🧱 Columnas
+        drop_columns: list = None,
+        keep_columns: list = None,
+
+        
+        # 🧪 Analisis
+        analizer: bool = True,
+        text_analizer: bool = False) -> pd.DataFrame | str:
+        pass

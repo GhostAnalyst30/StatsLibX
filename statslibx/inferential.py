@@ -92,8 +92,8 @@ class InferentialStats:
             else:
                 data = pd.DataFrame(data, columns=[f'var_{i}' for i in range(data.shape[1])])
         
-        self._numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
-        self._categorical_cols = self.data.select_dtypes(include=[np.object]).columns.tolist()
+        self._numeric_cols = data.select_dtypes(include=["number"]).columns.tolist()
+        self._categorical_cols = self.data.select_dtypes(include=["object", "category"]).columns.tolist()
         self.lang = lang
 
     # ============= INTERVALOS DE CONFIANZA =============

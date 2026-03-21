@@ -9,12 +9,22 @@ import pandas as pd
 # infer = InferentialStats(df)
 # print(infer.data)
 
-df = load_dataset(r"statslibx\datasets\Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")
+# df = load_dataset(r"statslibx\datasets\Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")
 
-ds = DescriptiveStats(df)
+# ds = DescriptiveStats(df)
 
-print(ds.data)
+# print(ds.data)
 
+import statslibx as slx
+
+df = slx.datasets.load_penguins()
+infer = slx.InferentialStats(df)
+
+# Confidence Interval + Point Estimate
+print(infer.confidence_interval(
+    column="bill_length_mm",
+    statistic="mean"
+))
 
 
 

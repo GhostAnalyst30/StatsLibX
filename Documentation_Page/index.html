@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>StatsLibX</title>
+    <!-- Font Awesome 6 (Free Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter + Fira Code para código -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Syntax Highlighting (Prism.js) para código bonito -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f9fafc;
+            color: #1e293b;
+            scroll-behavior: smooth;
+            line-height: 1.5;
+        }
+
+        /* Header / Hero con gradiente moderno */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: white;
+            padding: 4rem 2rem 6rem 2rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(15,23,42,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(15,23,42,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #c7d2fe, #a5f3fc);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .hero .tagline {
+            font-size: 1.3rem;
+            color: #cbd5e6;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .pip-badge {
+            background: #0f172a;
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            border: 1px solid #334155;
+            backdrop-filter: blur(4px);
+            margin-top: 1rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .pip-badge i {
+            color: #38bdf8;
+            margin-right: 8px;
+        }
+
+        .btn-group {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(59,130,246,0.5);
+        }
+
+        .btn-outline {
+            border: 1.5px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Secciones generales */
+        section {
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .section-title span {
+            background: linear-gradient(135deg, #1e293b, #3b82f6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #eef2ff;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
+            border-color: #cbdffc;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+
+        .card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: #475569;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-block {
+            background: #0f172a;
+            border-radius: 24px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 2rem 0;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .code-block code {
+            color: #e2e8f0;
+        }
+
+        .example-demo {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 1rem 1.5rem;
+            border-left: 5px solid #3b82f6;
+            margin-top: 1.2rem;
+        }
+
+        .flex-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .link-icon {
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eef2ff;
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        .link-icon i {
+            color: #3b82f6;
+        }
+
+        .link-icon:hover {
+            background: #e0e7ff;
+            transform: scale(1.02);
+        }
+
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        @media (max-width: 700px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .hero .tagline {
+                font-size: 1.1rem;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="container hero-content">
+        <h1>StatsLibX</h1>
+        <div class="tagline">
+            <i class="fas fa-chart-line"></i> Análisis estadístico potente, simple y moderno para Python
+        </div>
+        <div class="pip-badge">
+            <i class="fab fa-python"></i> pip install statslibx
+        </div>
+        <div class="btn-group">
+            <a href="#documentacion" class="btn btn-primary"><i class="fas fa-book-open"></i> Documentación</a>
+            <a href="#ejemplos" class="btn btn-outline"><i class="fas fa-code"></i> Ejemplos de código</a>
+            <a href="#recursos" class="btn btn-outline"><i class="fab fa-github"></i> Repositorio</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- Sección funcionalidades principales -->
+    <section id="funcionalidades">
+        <div class="container">
+            <div class="section-title">
+                <span>⚡ Funcionalidades avanzadas</span>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-chart-simple"></i></div>
+                    <h3 style="text-align: center;">Estadística Descriptiva</h3>
+                    <p style="text-align: center;">Media, Mediana, Moda, Varianza, Desviación Estándar, Asimetría, Curtosis, Percentiles, Outliers, Correlacion, Covarinza y Regresion Lineal. Todo con un solo método.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-chart-scatter"></i></div>
+                    <h3 style="text-align: center;">Pruebas de Hipótesis</h3>
+                    <p style="text-align: center;">Intervalos de Confianza, T-Test, Test no Parametricos, Chi-Square-Test, ANOVA, Test de Normalidad, Test de Hipotesis, Test de Varianza</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-brain"></i></div>
+                    <h3>Modelado Predictivo</h3>
+                    <p>Regresión lineal, logística, análisis de series temporales y métricas de evaluación integradas.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Visualización Rápida</h3>
+                    <p>Histogramas, boxplots, gráficos Q-Q, matrices de correlación con matplotlib y plotly backend.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-database"></i></div>
+                    <h3>Manejo de Datos</h3>
+                    <p>Detección de outliers, imputación de valores nulos, normalización y encoding de variables categóricas.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h3>Distribuciones Estadísticas</h3>
+                    <p>Normal, t, F, chi2, exponencial y más: cálculos de probabilidad y generación aleatoria.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección documentación + ejemplos de código integrados -->
+    <section id="documentacion" style="background: #f8fafc;">
+        <div class="container">
+            <div class="section-title">
+                <span>📘 Documentación rápida</span>
+            </div>
+            <div class="card" style="background: white; padding: 2rem; border-radius: 32px;">
+                <h3><i class="fas fa-cogs"></i> Primeros pasos</h3>
+                <p>StatsLibx está diseñada para ser intuitiva. Importa el módulo principal y empieza a analizar datos en pocas líneas:</p>
+                <div class="code-block">
+                    <pre><code class="language-python">from statslibx import DescriptiveStats, InferentialStats, UtilsStats
+from statslibx.datasets import load_iris
+
+data = load_iris()
+
+ds = DescriptiveStats(data)
+inf = InferentialStats(data)
+utils = UtilsStats()
+
+stats.summary()</code></pre>
+                </div>
+                <div class="example-demo">
+                    <i class="fas fa-lightbulb" style="color: #3b82f6; margin-right: 8px;"></i> <strong>Tip:</strong> StatsLibx soporta DataFrames de pandas, listas y arrays de numpy de forma nativa.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de EJEMPLOS DE CÓDIGO (más detallado) -->
+    <section id="ejemplos">
+        <div class="container">
+            <div class="section-title">
+                <span>🧪 Ejemplos de código reales</span>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <h3><i class="fas fa-calculator"></i> Estadística descriptiva avanzada</h3>
+                    <div class="code-block" style="background: #0f172a; margin: 1rem 0;">
+                        <pre><code class="language-python">import statslibx as slx
+
+ds = slx.DescriptiveStats(df)
+
+ds.summary().to_dataframe(
+    format="wide"
+)
+</code></pre>
+                    </div>
+                    <p>Obtén métricas robustas con manejo automático de valores atípicos.</p>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-chart-line"></i> Regresión lineal con diagnóstico</h3>
+                    <div class="code-block" style="background: #0f172a;">
+                        <pre><code class="language-python">import statslibx as slx
+
+ds = slx.DescriptiveStats(load_penguins())
+
+ds.linear_regression(
+    X = "body_mass_g", 
+    y = "flipper_length_mm",
+    show_plot = True
+    )</code></pre>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-chart-pie"></i> Intervalos de Confianza</h3>
+                    <div class="code-block" style="background: #0f172a;">
+                        <pre><code class="language-python">import statslibx as slx
+
+df = slx.datasets.load_iris()
+infer = slx.InferentialStats(df)
+
+# Confidence Interval + Point Estimate
+infer.confidence_interval(
+    column="bill_length_mm",
+    statistic="mean"
+)
+</code></pre>
+                    </div>
+                    <p>Interpretación: si p < 0.05, existen diferencias significativas entre grupos.</p>
+                </div>
+        </div>
+    </section>
+
+    <!-- Sección recursos: repositorio, PyPI, comunidad -->
+    <section id="recursos" style="background: #f1f5f9;">
+        <div class="container">
+            <div class="section-title">
+                <span>📦 Repositorio y comunidad</span>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-github"></i></div>
+                    <h3>GitHub Repository</h3>
+                    <p>Código abierto, issues, contribuciones y roadmap. Stars bienvenidas ⭐</p>
+                    <a href="#" class="link-icon" id="githubMockLink"><i class="fab fa-github"></i> github.com/GhostAnalyst30/StatsLibX</a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fab fa-python"></i></div>
+                    <h3>PyPI Official</h3>
+                    <p>Instalación directa: <strong>pip install statslibx</strong>. Versión estable 1.2.0</p>
+                    <a href="#" class="link-icon" id="pypiMockLink"><i class="fas fa-box"></i> Ver en PyPI</a>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-comments"></i></div>
+                    <h3>Comunidad & Soporte</h3>
+                    <p>Discord, documentación en ReadTheDocs, ejemplos interactivos y reporte de bugs.</p>
+                    <a href="#" class="link-icon" id="docsMockLink"><i class="fas fa-book"></i> Leer la documentación oficial</a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2.5rem;">
+                <a href="mailto:ascendraemmanuel@gmail.com" class="btn btn-primary" id="startContributing" style="background:#334155;"><i class="fas fa-code-branch"></i> Contribuir al proyecto</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección extra: instalación rápida + badges -->
+    <section style="padding: 2rem 2rem 3rem 2rem; background: white;">
+        <div class="container" style="text-align: center;">
+            <div class="pip-badge" style="background: #eef2ff; color:#0f172a; border: none; box-shadow: none; font-size: 1.2rem;">
+                <i class="fas fa-terminal"></i> pip install statslibx
+            </div>
+            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                <span style="background: #e2e8f0; padding: 0.3rem 1rem; border-radius: 30px;"><i class="fas fa-chart-line"></i> Python 3.8+</span>
+                <span style="background: #e2e8f0; padding: 0.3rem 1rem; border-radius: 30px;"><i class="fas fa-check-circle"></i> MIT License</span>
+                <span style="background: #e2e8f0; padding: 0.3rem 1rem; border-radius: 30px;"><i class="fas fa-chart-simple"></i> 30+ funciones estadísticas</span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">
+        <p>📊 StatsLibx — Estadística al alcance de todos. Desarrollado con ❤️ para la comunidad científica y data science.</p>
+        <p>-- Emmanuel Ascendra --</p>
+        <p style="margin-top: 1rem; font-size: 0.85rem;">
+            <i class="fab fa-python"></i> PyPI · <i class="fab fa-github"></i> GitHub · Documentación v2.4
+        </p>
+    </div>
+</footer>
+
+<!-- Pequeño script para simular links reales (pueden redirigir a páginas oficiales) y también un modal o alerta educativa -->
+<script>
+    // Simulamos enlaces que podrían llevar a páginas reales de documentación/repositorio
+    // Para una página real, reemplazar con URLs reales de PyPI, GitHub, etc.
+    const githubUrl = "https://github.com/GhostAnalyst30/StatsLibX";
+    const pypiUrl = "https://pypi.org/project/statslibx";
+    const docsUrl = "https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb";
+
+    // Asignar eventos a elementos mock (si existen en el DOM)
+    function setLink(selector, url) {
+        const el = document.querySelector(selector);
+        if(el) {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.open(url, '_blank');
+            });
+        }
+    }
+
+    setLink('#githubMockLink', githubUrl);
+    setLink('#pypiMockLink', pypiUrl);
+    setLink('#docsMockLink', docsUrl);
+
+    // También todos los botones que tengan clase .btn-outline o .btn-primary que apunten a secciones internas ya están bien.
+    // Agregamos smooth scroll para los enlaces internos manualmente
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if(targetId === "#" || targetId === "") return;
+            const targetElement = document.querySelector(targetId);
+            if(targetElement) {
+                e.preventDefault();
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // Para resaltar el código con prism después de que el DOM esté listo
+    if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+    }
+    // También agregar un pequeño efecto al cargar
+    console.log("StatsLibx Web - Demo atractiva con documentación, ejemplos y recursos");
+</script>
+</body>
+</html>

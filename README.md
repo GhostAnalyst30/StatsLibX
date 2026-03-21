@@ -4,6 +4,8 @@ StatsLibX es un paquete de Python diseñado para proporcionar una solución senc
 
 Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y ligera que permita a desarrolladores y entusiastas integrar la **estadistica descriptiva, inferencial y computacional (En desarrollo)** sin complicaciones, con multiples funcionalidades y utilidades pensadas para el futuro.
 
+Pagina Web: [StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html)
+
 GitHub del Proyecto: [https://github.com/GhostAnalyst30/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
 
 ## ✨ Características principales

@@ -101,8 +101,8 @@ class DescriptiveStats:
                 "Data must be a pandas.DataFrame or numpy.ndarray."
             )
         
-        self._numeric_cols = self.data.select_dtypes(include=[np.number]).columns.tolist()
-        self._categorical_cols = self.data.select_dtypes(include=[np.object]).columns.tolist()
+        self._numeric_cols = self.data.select_dtypes(include=["number"]).columns.tolist()
+        self._categorical_cols = self.data.select_dtypes(include=["object", "category"]).columns.tolist()
         self.lang = lang
 
         
