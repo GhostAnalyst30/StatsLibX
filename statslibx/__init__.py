@@ -10,7 +10,7 @@ __author__ = "Emmanuel Ascendra"
 # Importar las clases principales
 from .descriptive import DescriptiveStats, DescriptiveSummary
 from .inferential import InferentialStats, TestResult
-from .computacional import ComputationalStats
+from .computational import ComputationalStats
 from .utils import UtilsStats
 from .preprocessing import Preprocessing
 from .datasets import load_dataset, generate_dataset
