@@ -1,207 +1,237 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Computational</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f9fafc; color: #1e293b; line-height: 1.5; }
-        .navbar { background: #0f172a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
-        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #a5f3fc); background-clip: text; -webkit-background-clip: text; color: transparent; text-decoration: none; }
-        .nav-links { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .nav-links a { color: #cbd5e6; text-decoration: none; font-weight: 500; transition: color 0.3s; display: flex; align-items: center; gap: 8px; }
-        .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
-        .page-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 3rem 2rem; }
-        .container { max-width: 1300px; margin: 0 auto; }
-        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid #3b82f6; padding-left: 1rem; }
-        .method-card { background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #eef2ff; }
-        .method-name { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
-        .method-desc { color: #475569; margin-bottom: 1rem; }
-        .code-block { background: #0f172a; border-radius: 16px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
-        .code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
-        .badge { display: inline-block; background: #eef2ff; color: #1e293b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-right: 0.5rem; }
-        footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 2rem; margin-top: 2rem; }
-        @media (max-width: 700px) { .nav-container { flex-direction: column; } .nav-links { justify-content: center; } }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ComputationalStats — StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root{--bg:#09090f;--surface:#111118;--border:rgba(255,255,255,0.07);--text:#e8e8f0;--muted:#7a7a90;--accent:#f6ad55;--accent2:#7c6af7;--accent3:#4fd1c5;--card:#14141e;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;}
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}.logo span{color:#7c6af7;}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;}
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(246,173,85,0.05) 0%,transparent 100%);}
+.page-header .container{max-width:1240px;margin:0 auto;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb span{margin:0 0.4rem;}
+.page-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(246,173,85,0.1);color:var(--accent);border:1px solid rgba(246,173,85,0.2);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
+.page-title span{color:var(--accent);}
+.page-desc{font-size:1rem;color:var(--muted);max-width:640px;line-height:1.75;}
+.init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
+.init-block:hover{border-color:rgba(246,173,85,0.4);}
+.kw{color:#c792ea;}.cls{color:var(--accent);}.cm{color:var(--muted);}
+.layout{display:grid;grid-template-columns:220px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
+.sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
+.sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar a{display:block;font-size:0.83rem;color:var(--muted);text-decoration:none;padding:0.3rem 0.6rem;border-radius:6px;transition:all 0.15s;margin-bottom:0.1rem;font-family:'DM Mono',monospace;}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.sidebar a.active{color:var(--accent);background:rgba(246,173,85,0.08);}
+.content{padding:2.5rem 0 4rem 2.5rem;}
+.method-section{margin-bottom:3.5rem;}
+.method-section-title{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
+.method-card:hover{border-color:rgba(246,173,85,0.2);}
+.method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
+.method-name .paren{color:var(--muted);}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
+.method-returns{font-size:0.72rem;background:rgba(246,173,85,0.1);color:var(--accent);border:1px solid rgba(246,173,85,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-body{padding:0 1.5rem 1.5rem;}
+.method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
+.params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+.params-table tr:last-child td{border-bottom:none;}
+.param-name{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);}
+.param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent2);}
+.param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+.param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+.code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.35rem;}.dot{width:10px;height:10px;border-radius:50%;}.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.code-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#7c6af7;color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+.note-box{background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.18);border-radius:10px;padding:1rem 1.25rem;margin-top:1rem;font-size:0.85rem;color:var(--muted);line-height:1.65;}
+.note-box strong{color:var(--accent);}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
+</style>
 </head>
 <body>
-
-<nav class="navbar">
-    <div class="nav-container">
-        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
-        <div class="nav-links">
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html"><i class="fas fa-home"></i> Inicio</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html"><i class="fas fa-chart-simple"></i> Descriptive</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html"><i class="fas fa-chart-scatter"></i> Inferential</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html" class="active"><i class="fas fa-brain"></i> Computacional</a>
-        </div>
+<div class="copied-toast" id="toast">¡Copiado!</div>
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html" class="active">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
     </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
 </nav>
 
 <div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-brain"></i> ComputationalStats Module (En Desarrollo)</h1>
-        <p style="font-size: 1.2rem; margin-top: 0.5rem;">Métodos computacionales avanzados: bootstrapping, simulación, optimización y más</p>
+  <div class="container">
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>ComputationalStats</div>
+    <div class="page-badge">🧠 Módulo</div>
+    <h1 class="page-title"><span>Computational</span>Stats</h1>
+    <p class="page-desc">Métodos estadísticos computacionales avanzados. Actualmente incluye simulaciones de Monte Carlo flexibles para cualquier función definida por el usuario.</p>
+    <div class="init-block" onclick="copyText('from statslibx import ComputationalStats\ncs = ComputationalStats(seed=42)')">
+      <span class="kw">from</span> statslibx <span class="kw">import</span> <span class="cls">ComputationalStats</span>
+      &nbsp;·&nbsp;
+      <span class="cls">ComputationalStats</span><span style="color:var(--muted)">(seed=42)</span>
     </div>
+  </div>
 </div>
 
-<main style="padding: 2rem;">
-    <div class="container">
-        <div class="section-title">
-            🚀 Métodos Computacionales
-        </div>
+<div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
+<div class="layout" style="padding:0;">
+<aside class="sidebar">
+  <div class="sidebar-title">Constructor</div>
+  <a href="#init">__init__()</a>
+  <div class="sidebar-title">Métodos</div>
+  <a href="#monte_carlo">.monte_carlo()</a>
+</aside>
 
-        <div class="method-card">
-            <div class="method-name">.bootstrap()</div>
-            <div class="method-desc">Realiza bootstrapping para estimar intervalos de confianza y distribuciones muestrales.</div>
-            <div class="badge">column: str, statistic="mean", n_bootstrap=1000, confidence=0.95</div>
-            <div class="code-block">
-                <pre><code class="language-python">from statslibx import ComputationalStats
-from statslibx.datasets import load_iris
-
-data = load_iris()
-comp = ComputationalStats(data)
-
-boot_result = comp.bootstrap(column="sepal_length", statistic="mean", n_bootstrap=5000)
-print(f"IC Bootstrap 95%: ({boot_result.lower}, {boot_result.upper})")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.cross_validation()</div>
-            <div class="method-desc">Realiza validación cruzada k-fold para modelos de regresión/clasificación.</div>
-            <div class="badge">model: str, X_cols: list, y_col: str, k_folds=5, metric="rmse"</div>
-            <div class="code-block">
-                <pre><code class="language-python">cv_scores = comp.cross_validation(
-    model="linear_regression",
-    X_cols=["sepal_length", "sepal_width"],
-    y_col="petal_length",
-    k_folds=5
-)
-print(f"RMSE promedio: {cv_scores.mean():.3f}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.monte_carlo_simulation()</div>
-            <div class="method-desc">Simula escenarios usando muestreo Monte Carlo para variables especificadas.</div>
-            <div class="badge">distributions: dict, n_simulations=10000, target_func: callable</div>
-            <div class="code-block">
-                <pre><code class="language-python"># Simulación de rendimiento de inversión
-distribuciones = {
-    "retorno": {"type": "normal", "mean": 0.08, "std": 0.15},
-    "inflacion": {"type": "normal", "mean": 0.02, "std": 0.01}
-}
-
-resultados = comp.monte_carlo_simulation(
-    distributions=distribuciones,
-    n_simulations=10000,
-    target_func=lambda x: (1 + x["retorno"]) / (1 + x["inflacion"]) - 1
-)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.time_series_analysis()</div>
-            <div class="method-desc">Análisis de series temporales: descomposición, autocorrelación, pruebas de estacionariedad.</div>
-            <div class="badge">column: str, date_col: str, decomposition="additive"|"multiplicative"</div>
-            <div class="code-block">
-                <pre><code class="language-python">ts_result = comp.time_series_analysis(
-    column="ventas",
-    date_col="fecha",
-    decomposition="additive"
-)
-print(f"Tendencia: {ts_result.trend}, Estacionalidad: {ts_result.seasonal}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.optimize_hyperparameters()</div>
-            <div class="method-desc">Optimiza hiperparámetros de modelos usando grid search o random search.</div>
-            <div class="badge">model_type: str, param_grid: dict, X_cols: list, y_col: str, method="grid"</div>
-            <div class="code-block">
-                <pre><code class="language-python">best_params = comp.optimize_hyperparameters(
-    model_type="linear_regression",
-    param_grid={"fit_intercept": [True, False]},
-    X_cols=["sepal_length", "sepal_width"],
-    y_col="petal_length"
-)
-print(f"Mejores parámetros: {best_params}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.power_analysis()</div>
-            <div class="method-desc">Análisis de potencia estadística para determinar tamaño de muestra requerido.</div>
-            <div class="badge">test_type="ttest", effect_size=0.5, alpha=0.05, power=0.8</div>
-            <div class="code-block">
-                <pre><code class="language-python">sample_size = comp.power_analysis(
-    test_type="ttest",
-    effect_size=0.5,
-    alpha=0.05,
-    power=0.8
-)
-print(f"Tamaño de muestra necesario: {sample_size}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.principal_component_analysis()</div>
-            <div class="method-desc">Realiza Análisis de Componentes Principales (PCA) para reducción de dimensionalidad.</div>
-            <div class="badge">columns: list, n_components=None (explica varianza), scale=True</div>
-            <div class="code-block">
-                <pre><code class="language-python">pca_result = comp.principal_component_analysis(
-    columns=["sepal_length", "sepal_width", "petal_length", "petal_width"],
-    n_components=2
-)
-print(f"Varianza explicada: {pca_result.explained_variance_ratio_}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.cluster_analysis()</div>
-            <div class="method-desc">Análisis de clustering (K-means, jerárquico) para segmentación de datos.</div>
-            <div class="badge">columns: list, n_clusters=3, method="kmeans"</div>
-            <div class="code-block">
-                <pre><code class="language-python">clusters = comp.cluster_analysis(
-    columns=["sepal_length", "sepal_width", "petal_length", "petal_width"],
-    n_clusters=3,
-    method="kmeans"
-)
-print(f"Labels: {clusters.labels_}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.bayesian_inference()</div>
-            <div class="method-desc">Inferencia Bayesiana con MCMC para estimación de parámetros.</div>
-            <div class="badge">column: str, prior: dict, n_samples=5000</div>
-            <div class="code-block">
-                <pre><code class="language-python">bayes_result = comp.bayesian_inference(
-    column="sepal_length",
-    prior={"mean": {"type": "normal", "mu": 5, "sigma": 1}, "sigma": {"type": "uniform", "low": 0, "high": 2}},
-    n_samples=5000
-)
-print(f"Posterior media: {bayes_result.posterior_mean}")</code></pre>
-            </div>
-        </div>
+<main class="content">
+<div class="method-section">
+  <div class="method-section-title">Constructor</div>
+  <div class="method-card" id="init">
+    <div class="method-header">
+      <div><div class="method-name"><span style="color:var(--accent)">ComputationalStats</span><span class="paren">(seed)</span></div>
+      <div class="method-signature">seed: int | None = None</div></div>
     </div>
+    <div class="method-body">
+      <p class="method-desc">Inicializa la clase de estadística computacional. El parámetro <code>seed</code> está disponible para garantizar reproducibilidad en futuras versiones.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('cinit-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="cinit-ex">from statslibx import ComputationalStats
+cs = ComputationalStats(seed=42)</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Simulación Monte Carlo</div>
+  <div class="method-card" id="monte_carlo">
+    <div class="method-header">
+      <div><div class="method-name">.monte_carlo<span class="paren">(function, n, return_simulations, **kwargs)</span></div>
+      <div class="method-signature">function: callable · n: int = 100 · return_simulations: bool = False</div></div>
+      <span class="method-returns">→ dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Realiza <code>n</code> simulaciones de Monte Carlo llamando a <code>function(**kwargs)</code> en cada iteración. Calcula automáticamente media y desviación estándar de los resultados. Con <code>return_simulations=True</code> incluye todos los valores simulados.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">function</td><td class="param-type">callable</td><td class="param-default">—</td><td class="param-desc">Función a simular. Debe retornar un valor numérico escalar. Recibirá **kwargs en cada llamada.</td></tr>
+        <tr><td class="param-name">n</td><td class="param-type">int</td><td class="param-default">100</td><td class="param-desc">Número de simulaciones a ejecutar</td></tr>
+        <tr><td class="param-name">return_simulations</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Si True, incluye la lista completa de simulaciones en el resultado</td></tr>
+        <tr><td class="param-name">**kwargs</td><td class="param-type">any</td><td class="param-default">—</td><td class="param-desc">Argumentos adicionales que se pasan a <code>function</code> en cada simulación</td></tr>
+      </tbody></table>
+
+      <p class="method-desc" style="margin-top:1rem;margin-bottom:0.5rem;"><strong style="color:#fff;">Retorna:</strong></p>
+      <table class="params-table"><thead><tr><th>Clave</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">mean</td><td class="param-type">float</td><td class="param-desc">Media de los n resultados simulados</td></tr>
+        <tr><td class="param-name">std</td><td class="param-type">float</td><td class="param-desc">Desviación estándar de los resultados</td></tr>
+        <tr><td class="param-name">samples</td><td class="param-type">List[float]</td><td class="param-desc">Lista completa (solo si return_simulations=True)</td></tr>
+      </tbody></table>
+
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 1: Estimación de π</span><button class="code-copy-btn" onclick="copyCode('mc-ex1')">Copiar</button></div>
+      <pre><code class="language-python" id="mc-ex1">import numpy as np
+from statslibx import ComputationalStats
+
+cs = ComputationalStats()
+
+def estimar_pi(n_points=10000):
+    """Estima π usando el método de Monte Carlo."""
+    x = np.random.uniform(-1, 1, n_points)
+    y = np.random.uniform(-1, 1, n_points)
+    dentro = np.sum(x**2 + y**2 <= 1)
+    return 4 * dentro / n_points
+
+resultado = cs.monte_carlo(estimar_pi, n=500, n_points=5000)
+print(f"Estimación de π: {resultado['mean']:.4f}")
+print(f"Desviación estándar: {resultado['std']:.4f}")</code></pre></div>
+
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 2: Valoración de opciones financieras</span><button class="code-copy-btn" onclick="copyCode('mc-ex2')">Copiar</button></div>
+      <pre><code class="language-python" id="mc-ex2">import numpy as np
+
+cs = ComputationalStats(seed=42)
+
+def option_payoff(S0=100, K=105, T=1, r=0.05, sigma=0.2):
+    """Black-Scholes Monte Carlo para una call europea."""
+    ST = S0 * np.exp((r - 0.5*sigma**2)*T + sigma*np.sqrt(T)*np.random.normal())
+    return max(ST - K, 0) * np.exp(-r*T)
+
+resultado = cs.monte_carlo(option_payoff, n=100000, return_simulations=False)
+print(f"Precio estimado de la opción: ${resultado['mean']:.4f}")
+print(f"Error estándar: ${resultado['std']:.4f}")</code></pre></div>
+
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 3: Con simulaciones completas</span><button class="code-copy-btn" onclick="copyCode('mc-ex3')">Copiar</button></div>
+      <pre><code class="language-python" id="mc-ex3">import numpy as np
+import matplotlib.pyplot as plt
+
+def lanzar_dado():
+    return np.random.randint(1, 7)
+
+# Retornar todas las simulaciones
+resultado = cs.monte_carlo(lanzar_dado, n=10000, return_simulations=True)
+
+print(f"Media: {resultado['mean']:.3f}")  # ~ 3.5
+print(f"Std: {resultado['std']:.3f}")
+
+# Graficar distribución de resultados
+plt.hist(resultado['samples'], bins=6, edgecolor='black')
+plt.title('Distribución de 10,000 lanzamientos')
+plt.show()</code></pre></div>
+
+      <div class="note-box">
+        <strong>Nota:</strong> La función pasada a <code>monte_carlo()</code> debe retornar un único valor numérico escalar. Los <code>**kwargs</code> se pasan directamente a la función en cada iteración, por lo que son parámetros fijos — no cambian entre simulaciones. Para variar parámetros entre runs, inclúye la aleatoriedad dentro de la función.
+      </div>
+    </div>
+  </div>
+</div>
 </main>
+</div>
+</div>
 
 <footer>
-    <div class="container">
-        <p>📊 StatsLibX — ComputationalStats Module v2.4</p>
-        <p><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" style="color: #3b82f6;">Volver al inicio</a></p>
-    </div>
+  <div class="footer-meta">StatsLibX · v2.4 · Emmanuel Ascendra</div>
+  <div class="footer-links">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+    <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+  </div>
 </footer>
 
-<script>Prism.highlightAll();</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+Prism.highlightAll();
+</script>
 </body>
 </html>

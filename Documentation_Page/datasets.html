@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Datasets — StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root{--bg:#09090f;--surface:#111118;--border:rgba(255,255,255,0.07);--text:#e8e8f0;--muted:#7a7a90;--accent:#60a5fa;--accent2:#7c6af7;--accent3:#f6ad55;--card:#14141e;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}
+.logo span{color:#7c6af7;}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:rgba(124,106,247,0.2);}
+
+/* PAGE HEADER */
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(96,165,250,0.05) 0%,transparent 100%);}
+.page-header .container{max-width:1240px;margin:0 auto;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:#fff;}
+.breadcrumb span{margin:0 0.4rem;}
+.page-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(96,165,250,0.1);color:var(--accent);border:1px solid rgba(96,165,250,0.2);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
+.page-title span{color:var(--accent);}
+.page-desc{font-size:1rem;color:var(--muted);max-width:640px;line-height:1.75;}
+.init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
+.init-block:hover{border-color:rgba(96,165,250,0.4);}
+.kw{color:#c792ea;}.cls{color:var(--accent);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:230px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
+
+/* SIDEBAR */
+.sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
+.sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar a{display:block;font-size:0.83rem;color:var(--muted);text-decoration:none;padding:0.3rem 0.6rem;border-radius:6px;transition:all 0.15s;margin-bottom:0.1rem;font-family:'DM Mono',monospace;}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.sidebar a.active{color:var(--accent);background:rgba(96,165,250,0.08);}
+
+/* CONTENT */
+.content{padding:2.5rem 0 4rem 2.5rem;}
+.method-section{margin-bottom:3.5rem;}
+.method-section-title{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+
+/* METHOD CARDS */
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
+.method-card:hover{border-color:rgba(96,165,250,0.2);}
+.method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
+.method-name .paren{color:var(--muted);}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
+.method-returns{font-size:0.72rem;background:rgba(96,165,250,0.1);color:var(--accent);border:1px solid rgba(96,165,250,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-body{padding:0 1.5rem 1.5rem;}
+.method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
+
+/* PARAMS TABLE */
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-top:1rem;}
+.params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
+.params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+.params-table tr:last-child td{border-bottom:none;}
+.param-name{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);}
+.param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent2);}
+.param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+.param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+
+/* CODE BLOCKS */
+.code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.35rem;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.code-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+
+/* DATASETS GRID */
+.datasets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1.5rem;}
+.dataset-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color 0.2s,background 0.2s;}
+.dataset-card:hover{border-color:rgba(96,165,250,0.25);background:#17172a;}
+.dataset-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;}
+.dataset-icon{font-size:1.5rem;}
+.dataset-name{font-family:'DM Mono',monospace;font-size:0.9rem;color:#fff;font-weight:500;}
+.dataset-meta{font-size:0.75rem;color:var(--muted);margin-top:0.15rem;}
+.dataset-desc{font-size:0.82rem;color:var(--muted);line-height:1.65;}
+.dataset-fn{display:inline-flex;align-items:center;gap:0.35rem;font-family:'DM Mono',monospace;font-size:0.72rem;background:rgba(96,165,250,0.08);color:var(--accent);border:1px solid rgba(96,165,250,0.18);padding:0.18rem 0.55rem;border-radius:4px;margin-top:0.75rem;cursor:pointer;transition:background 0.2s;}
+.dataset-fn:hover{background:rgba(96,165,250,0.15);}
+
+/* DISTRIBUTIONS GRID */
+.dist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-top:1.25rem;}
+.dist-card{background:rgba(96,165,250,0.04);border:1px solid rgba(96,165,250,0.12);border-radius:10px;padding:1rem 1.1rem;}
+.dist-card h4{font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--accent);margin-bottom:0.5rem;}
+.dist-card p{font-size:0.8rem;color:var(--muted);line-height:1.65;}
+.dist-card code{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+
+/* NOTE BOX */
+.note-box{background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15);border-radius:10px;padding:1rem 1.25rem;margin-top:1.25rem;font-size:0.85rem;color:var(--muted);line-height:1.7;}
+.note-box strong{color:var(--accent);}
+
+/* TOAST */
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#7c6af7;color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .content{padding:2rem 0;}
+  .datasets-grid{grid-template-columns:1fr;}
+  .dist-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){.dist-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="copied-toast" id="toast">¡Copiado!</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html" class="active">Datasets</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>Datasets
+    </div>
+    <div class="page-badge">🗄️ Módulo</div>
+    <h1 class="page-title"><span>Datasets</span></h1>
+    <p class="page-desc">Datasets internos listos para usar y generación de datos sintéticos con distribuciones configurables por esquema. Ideal para exploración, pruebas y aprendizaje estadístico.</p>
+    <div class="init-block" onclick="copyText('from statslibx.datasets import load_iris, load_dataset, generate_dataset')">
+      <span class="kw">from</span>&nbsp;statslibx.datasets&nbsp;<span class="kw">import</span>&nbsp;<span class="cls">load_iris, load_dataset, generate_dataset</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
+<div class="layout" style="padding:0;">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-title">Datasets Internos</div>
+  <a href="#builtin">Disponibles</a>
+  <a href="#load_iris">load_iris()</a>
+  <a href="#load_penguins">load_penguins()</a>
+  <a href="#load_dataset">load_dataset()</a>
+  <div class="sidebar-title">Generación Sintética</div>
+  <a href="#generate_dataset">generate_dataset()</a>
+  <a href="#schema">Esquema (schema)</a>
+  <a href="#distributions">Distribuciones</a>
+  <a href="#full_example">Ejemplo completo</a>
+</aside>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- ────────── BUILT-IN DATASETS ────────── -->
+<div class="method-section">
+  <div class="method-section-title">Datasets Internos Disponibles</div>
+
+  <div class="method-card" id="builtin">
+    <div class="method-header">
+      <div>
+        <div class="method-name">Datasets incluidos en statslibx</div>
+        <div class="method-signature">Disponibles sin descargas adicionales · listos para usar</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Todos los datasets están empaquetados dentro de <code>statslibx.datasets</code>. Se cargan automáticamente sin necesidad de rutas locales.</p>
+      <div class="datasets-grid">
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">🌸</span>
+            <div>
+              <div class="dataset-name">iris.csv</div>
+              <div class="dataset-meta">150 filas · 5 columnas · Clasificación</div>
+            </div>
+          </div>
+          <p class="dataset-desc">El clásico dataset de Fisher. Medidas de sépalos y pétalos de 3 especies de iris (setosa, versicolor, virginica). Ideal para análisis descriptivo y clasificación.</p>
+          <span class="dataset-fn" onclick="copyText('from statslibx.datasets import load_iris\ndf = load_iris()')">load_iris()</span>
+        </div>
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">🐧</span>
+            <div>
+              <div class="dataset-name">penguins.csv</div>
+              <div class="dataset-meta">344 filas · 8 columnas · Clasificación</div>
+            </div>
+          </div>
+          <p class="dataset-desc">Medidas de pingüinos Palmer de 3 especies (Adelie, Chinstrap, Gentoo). Alternativa moderna al iris con datos reales de campo y valores nulos.</p>
+          <span class="dataset-fn" onclick="copyText('from statslibx.datasets import load_penguins\ndf = load_penguins()')">load_penguins()</span>
+        </div>
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">🚢</span>
+            <div>
+              <div class="dataset-name">titanic.csv</div>
+              <div class="dataset-meta">891 filas · 12 columnas · Supervivencia</div>
+            </div>
+          </div>
+          <p class="dataset-desc">Pasajeros del Titanic con variable de supervivencia. Ideal para Chi-cuadrado, análisis categórico, regresión logística y exploración de datos faltantes.</p>
+          <span class="dataset-fn" onclick="copyText(`from statslibx.datasets import load_dataset\ndf = load_dataset('titanic.csv')`)">load_dataset("titanic.csv")</span>
+        </div>
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">📈</span>
+            <div>
+              <div class="dataset-name">sp500_companies.csv</div>
+              <div class="dataset-meta">503 empresas · Datos financieros</div>
+            </div>
+          </div>
+          <p class="dataset-desc">Información de las empresas del índice S&P 500: sector, capitalización de mercado, ingresos y más. Ideal para análisis financiero y agrupamiento.</p>
+          <span class="dataset-fn" onclick="copyText(`from statslibx.datasets import load_dataset\ndf = load_dataset('sp500_companies.csv')`)">load_dataset("sp500_companies.csv")</span>
+        </div>
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">📚</span>
+            <div>
+              <div class="dataset-name">course_completion.csv</div>
+              <div class="dataset-meta">Datos educativos · Comportamiento</div>
+            </div>
+          </div>
+          <p class="dataset-desc">Datos de completitud de cursos en línea. Útil para análisis de comportamiento educativo, tasas de abandono y estudios de retención.</p>
+          <span class="dataset-fn" onclick="copyText(`from statslibx.datasets import load_dataset\ndf = load_dataset('course_completion.csv')`)">load_dataset("course_completion.csv")</span>
+        </div>
+
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-icon">🍫</span>
+            <div>
+              <div class="dataset-name">Cocoa_Bubbles_...xlsx</div>
+              <div class="dataset-meta">Nigeria · Ghana · 1980–2023 · Excel</div>
+            </div>
+          </div>
+          <p class="dataset-desc">Inversiones en Nigeria y Ghana entre 1980 y 2023. Datos financieros reales en formato Excel. Perfecto para series temporales y análisis económico.</p>
+          <span class="dataset-fn" onclick="copyText(`from statslibx.datasets import load_dataset\ndf = load_dataset('Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx')`)">load_dataset("Cocoa...xlsx")</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── LOAD FUNCTIONS ────────── -->
+<div class="method-section">
+  <div class="method-section-title">Funciones de Carga Específicas</div>
+
+  <!-- load_iris -->
+  <div class="method-card" id="load_iris">
+    <div class="method-header">
+      <div>
+        <div class="method-name">load_iris<span class="paren">(backend, return_X_y)</span></div>
+        <div class="method-signature">backend: str = 'pandas' &nbsp;·&nbsp; return_X_y: Tuple[List[str], str] | None = None</div>
+      </div>
+      <span class="method-returns">→ pd.DataFrame | (X, y)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Carga el dataset Iris directamente. Con <code>return_X_y</code> retorna arrays numpy <code>(X, y)</code> listos para machine learning, donde el primer elemento de la tupla es la lista de columnas predictoras y el segundo la columna objetivo.</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">backend</td><td class="param-type">str</td><td class="param-default">'pandas'</td><td class="param-desc">Backend de DataFrame. Actualmente solo <code>'pandas'</code> soportado.</td></tr>
+          <tr><td class="param-name">return_X_y</td><td class="param-type">Tuple | None</td><td class="param-default">None</td><td class="param-desc">Si se especifica, retorna <code>(X, y)</code> como arrays numpy. Formato: <code>([col1, col2, ...], 'col_target')</code></td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python</span>
+          <button class="code-copy-btn" onclick="copyCode('iris-ex')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="iris-ex">from statslibx.datasets import load_iris
+
+# Como DataFrame
+df = load_iris()
+print(df.shape)          # (150, 5)
+print(df.columns.tolist())
+# ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+
+# Como arrays numpy (X, y) para ML
+X, y = load_iris(
+    return_X_y=(
+        ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
+        'species'
+    )
+)
+print(X.shape)   # (150, 4)
+print(y.shape)   # (150,)
+print(y[:5])     # ['setosa' 'setosa' 'setosa' ...]</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- load_penguins -->
+  <div class="method-card" id="load_penguins">
+    <div class="method-header">
+      <div>
+        <div class="method-name">load_penguins<span class="paren">(backend, return_X_y)</span></div>
+        <div class="method-signature">Mismos parámetros que load_iris()</div>
+      </div>
+      <span class="method-returns">→ pd.DataFrame | (X, y)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Carga el dataset Palmer Penguins. Este dataset contiene valores nulos en algunas columnas, lo que lo hace ideal para practicar preprocesamiento antes del análisis.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python</span>
+          <button class="code-copy-btn" onclick="copyCode('penguins-ex')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="penguins-ex">from statslibx.datasets import load_penguins
+
+df = load_penguins()
+print(df.head())
+print(df.dtypes)
+
+# Con return_X_y
+X, y = load_penguins(
+    return_X_y=(
+        ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm'],
+        'species'
+    )
+)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── LOAD_DATASET ────────── -->
+<div class="method-section">
+  <div class="method-section-title">Función Genérica de Carga</div>
+
+  <div class="method-card" id="load_dataset">
+    <div class="method-header">
+      <div>
+        <div class="method-name">load_dataset<span class="paren">(name, backend, return_X_y, sep)</span></div>
+        <div class="method-signature">name: str &nbsp;·&nbsp; backend: str = 'pandas' &nbsp;·&nbsp; return_X_y: Tuple | None &nbsp;·&nbsp; sep: str = ','</div>
+      </div>
+      <span class="method-returns">→ pd.DataFrame | (X, y)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Función genérica para cargar cualquier dataset por nombre. Primero busca en el paquete interno <code>statslibx.datasets</code>; si no lo encuentra, intenta cargarlo como ruta local. Soporta múltiples formatos de archivo detectados automáticamente por extensión.</p>
+
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">name</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Nombre del dataset interno (ej: <code>"iris.csv"</code>) o ruta local completa.</td></tr>
+          <tr><td class="param-name">backend</td><td class="param-type">str</td><td class="param-default">'pandas'</td><td class="param-desc">Backend de procesamiento. Solo <code>'pandas'</code> disponible actualmente.</td></tr>
+          <tr><td class="param-name">return_X_y</td><td class="param-type">Tuple | None</td><td class="param-default">None</td><td class="param-desc">Si se especifica, retorna <code>(X, y)</code>. Formato: <code>([col1, col2], 'target')</code></td></tr>
+          <tr><td class="param-name">sep</td><td class="param-type">str</td><td class="param-default">','</td><td class="param-desc">Separador de columnas para archivos CSV. Ej: <code>';'</code> para CSV europeo.</td></tr>
+        </tbody>
+      </table>
+
+      <p class="method-desc" style="margin-top:1.25rem;margin-bottom:0.5rem;"><strong style="color:#fff;">Formatos soportados:</strong></p>
+      <table class="params-table">
+        <thead><tr><th>Extensión</th><th>Formato</th><th>Función interna</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">.csv</td><td class="param-desc">CSV con separador configurable</td><td class="param-type">pd.read_csv()</td></tr>
+          <tr><td class="param-name">.parquet</td><td class="param-desc">Formato columnar Apache Parquet</td><td class="param-type">pd.read_parquet()</td></tr>
+          <tr><td class="param-name">.xlsx / .xls</td><td class="param-desc">Libro de Excel</td><td class="param-type">pd.read_excel()</td></tr>
+          <tr><td class="param-name">.json</td><td class="param-desc">JSON plano compatible con pandas</td><td class="param-type">pd.read_json()</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python</span>
+          <button class="code-copy-btn" onclick="copyCode('loaddataset-ex')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="loaddataset-ex">from statslibx.datasets import load_dataset
+
+# Datasets internos del paquete
+df_titanic  = load_dataset("titanic.csv")
+df_penguins = load_dataset("penguins.csv")
+df_sp500    = load_dataset("sp500_companies.csv")
+df_cocoa    = load_dataset("Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")
+
+# Archivo local externo (CSV con separador punto y coma)
+df_local = load_dataset("mis_datos/ventas_2024.csv", sep=";")
+
+# Retornar (X, y) como arrays numpy
+X, y = load_dataset(
+    "titanic.csv",
+    return_X_y=(['pclass', 'age', 'fare'], 'survived')
+)
+print(X.shape)   # (891, 3)
+print(y.shape)   # (891,)</code></pre>
+      </div>
+
+      <div class="note-box">
+        <strong>Resolución automática:</strong> Si el nombre proporcionado no existe dentro del paquete, <code>load_dataset()</code> intenta cargarlo como ruta del sistema de archivos local. Si tampoco existe localmente, lanza <code>FileNotFoundError</code> con mensaje descriptivo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ────────── GENERATE_DATASET ────────── -->
+<div class="method-section">
+  <div class="method-section-title">Generación de Datos Sintéticos</div>
+
+  <div class="method-card" id="generate_dataset">
+    <div class="method-header">
+      <div>
+        <div class="method-name">generate_dataset<span class="paren">(n_rows, schema, seed, save, filename)</span></div>
+        <div class="method-signature">n_rows: int &nbsp;·&nbsp; schema: dict &nbsp;·&nbsp; seed: int | None &nbsp;·&nbsp; save: bool = False &nbsp;·&nbsp; filename: str | None</div>
+      </div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Genera un DataFrame sintético con la cantidad de filas y esquema de columnas especificado. Cada columna se define con una distribución estadística y tipo de datos. El resultado es reproducible con <code>seed</code>. Si <code>save=True</code> y se provee <code>filename</code>, guarda el resultado como CSV; de lo contrario guarda como <code>dataset.csv</code>.</p>
+
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">n_rows</td><td class="param-type">int</td><td class="param-default">—</td><td class="param-desc">Número de filas a generar (requerido).</td></tr>
+          <tr><td class="param-name">schema</td><td class="param-type">dict</td><td class="param-default">—</td><td class="param-desc">Diccionario donde cada clave es un nombre de columna y el valor es su configuración de distribución (requerido).</td></tr>
+          <tr><td class="param-name">seed</td><td class="param-type">int | None</td><td class="param-default">None</td><td class="param-desc">Semilla de aleatoriedad. Si es <code>None</code> usa 42 por defecto. Debe ser entero.</td></tr>
+          <tr><td class="param-name">save</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Si <code>True</code>, guarda el DataFrame como CSV en disco.</td></tr>
+          <tr><td class="param-name">filename</td><td class="param-type">str | None</td><td class="param-default">None</td><td class="param-desc">Nombre del archivo sin extensión. Si <code>save=True</code> y <code>filename=None</code>, guarda como <code>dataset.csv</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python — Uso básico</span>
+          <button class="code-copy-btn" onclick="copyCode('gen-basic')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="gen-basic">from statslibx.datasets import generate_dataset
+
+schema = {
+    'edad':        {'dist': 'normal',      'mean': 35, 'std': 10, 'type': 'int'},
+    'salario':     {'dist': 'lognormal',   'mean': 10.5, 'std': 0.5, 'type': 'float', 'round': 2},
+    'experiencia': {'dist': 'exponential', 'scale': 5, 'type': 'float', 'round': 1},
+}
+
+df = generate_dataset(n_rows=200, schema=schema, seed=42)
+print(df.head())
+print(df.describe())</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEMA -->
+  <div class="method-card" id="schema">
+    <div class="method-header">
+      <div>
+        <div class="method-name">Estructura del Schema</div>
+        <div class="method-signature">Diccionario de configuración de columnas para generate_dataset()</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Cada columna del <code>schema</code> es un diccionario con las siguientes claves:</p>
+      <table class="params-table">
+        <thead><tr><th>Clave</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">dist</td><td class="param-type">str</td><td style="color:#f87171;font-size:0.8rem;">Sí</td><td class="param-desc">Distribución estadística. Ver tabla de distribuciones abajo.</td></tr>
+          <tr><td class="param-name">type</td><td class="param-type">str</td><td class="param-default">No</td><td class="param-desc"><code>'int'</code> o <code>'float'</code>. Default: <code>'float'</code>. Para <code>'categorical'</code> no aplica.</td></tr>
+          <tr><td class="param-name">round</td><td class="param-type">int</td><td class="param-default">No</td><td class="param-desc">Decimales de redondeo. Default: <code>2</code> (o <code>0</code> si <code>type='int'</code>).</td></tr>
+          <tr><td class="param-name">choices</td><td class="param-type">list</td><td class="param-default">Condicional</td><td class="param-desc">Requerido solo para <code>dist='categorical'</code>. Lista de valores posibles.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DISTRIBUTIONS -->
+  <div class="method-card" id="distributions">
+    <div class="method-header">
+      <div>
+        <div class="method-name">Distribuciones Disponibles</div>
+        <div class="method-signature">7 distribuciones · númerica y categórica</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Cada distribución tiene sus propios parámetros de configuración. Los valores entre paréntesis son los defaults.</p>
+      <div class="dist-grid">
+
+        <div class="dist-card">
+          <h4>'normal'</h4>
+          <p>
+            <code>mean</code>: Media μ (def: <code>0</code>)<br/>
+            <code>std</code>: Desviación estándar σ (def: <code>1</code>)<br/>
+            <code>type</code>: <code>'float'</code> | <code>'int'</code>
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'uniform'</h4>
+          <p>
+            <code>low</code>: Límite inferior (def: <code>0</code>)<br/>
+            <code>high</code>: Límite superior (def: <code>1</code>)<br/>
+            <code>type</code>: <code>'float'</code> | <code>'int'</code>
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'exponential'</h4>
+          <p>
+            <code>scale</code>: Parámetro β = 1/λ (def: <code>1</code>)<br/>
+            <code>type</code>: <code>'float'</code> | <code>'int'</code>
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'lognormal'</h4>
+          <p>
+            <code>mean</code>: Media del logaritmo μ (def: <code>0</code>)<br/>
+            <code>std</code>: Desv. estándar log σ (def: <code>1</code>)<br/>
+            Ideal para salarios y precios.
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'poisson'</h4>
+          <p>
+            <code>lam</code>: Lambda λ — tasa esperada de eventos (def: <code>1</code>)<br/>
+            Siempre genera enteros.
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'binomial'</h4>
+          <p>
+            <code>n</code>: Número de ensayos (def: <code>1</code>)<br/>
+            <code>p</code>: Probabilidad de éxito (def: <code>0.5</code>)<br/>
+            Con <code>n=1</code> genera 0s y 1s.
+          </p>
+        </div>
+
+        <div class="dist-card">
+          <h4>'categorical'</h4>
+          <p>
+            <code>choices</code>: Lista de categorías (requerido)<br/>
+            Selección uniforme aleatoria.<br/>
+            No usa <code>type</code> ni <code>round</code>.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL EXAMPLE -->
+  <div class="method-card" id="full_example">
+    <div class="method-header">
+      <div>
+        <div class="method-name">Ejemplo Completo — Dataset de Empleados</div>
+        <div class="method-signature">Todas las distribuciones combinadas · guardado en CSV</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Ejemplo que usa las 7 distribuciones disponibles para generar un dataset realista de recursos humanos.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python — Ejemplo completo con todas las distribuciones</span>
+          <button class="code-copy-btn" onclick="copyCode('gen-full')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="gen-full">from statslibx.datasets import generate_dataset
+from statslibx import DescriptiveStats, Preprocessing
+
+schema = {
+    # Distribución normal → edad de empleados
+    'edad': {
+        'dist': 'normal',
+        'mean': 35, 'std': 10,
+        'type': 'int', 'round': 0
+    },
+    # Distribución log-normal → salarios (siempre positivos, sesgo derecho)
+    'salario': {
+        'dist': 'lognormal',
+        'mean': 10.5, 'std': 0.5,
+        'type': 'float', 'round': 2
+    },
+    # Distribución exponencial → años de experiencia
+    'experiencia_anos': {
+        'dist': 'exponential',
+        'scale': 6,
+        'type': 'float', 'round': 1
+    },
+    # Distribución uniforme → calificación de desempeño (1.0 a 5.0)
+    'calificacion': {
+        'dist': 'uniform',
+        'low': 1.0, 'high': 5.0,
+        'type': 'float', 'round': 1
+    },
+    # Distribución Poisson → número de proyectos completados
+    'proyectos_completados': {
+        'dist': 'poisson',
+        'lam': 8,
+        'type': 'int'
+    },
+    # Distribución binomial (n=1) → variable binaria activo/inactivo
+    'activo': {
+        'dist': 'binomial',
+        'n': 1, 'p': 0.88,
+        'type': 'int'
+    },
+    # Distribución categórica → departamento
+    'departamento': {
+        'dist': 'categorical',
+        'choices': ['Marketing', 'Ventas', 'IT', 'RRHH', 'Finanzas', 'Operaciones']
+    },
+    # Distribución categórica → nivel de educación
+    'educacion': {
+        'dist': 'categorical',
+        'choices': ['Bachiller', 'Tecnico', 'Universitario', 'Magister', 'Doctorado']
+    }
+}
+
+# Generar dataset reproducible de 1000 empleados
+df = generate_dataset(
+    n_rows=1000,
+    schema=schema,
+    seed=42,
+    save=True,
+    filename="empleados_rrhh"
+)
+
+print(f"Shape: {df.shape}")
+print(df.dtypes)
+print(df.head())
+
+# Análisis inmediato con DescriptiveStats
+ds = DescriptiveStats(df)
+print(ds.summary())
+
+# Revisar calidad con Preprocessing
+pp = Preprocessing(df)
+print(pp.data_quality())</code></pre>
+      </div>
+
+      <div class="code-block" style="margin-top:1rem;">
+        <div class="code-header">
+          <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <span class="code-label">Python — Generar con X, y para machine learning</span>
+          <button class="code-copy-btn" onclick="copyCode('gen-ml')">Copiar</button>
+        </div>
+        <pre><code class="language-python" id="gen-ml">from statslibx.datasets import generate_dataset, load_dataset
+
+# 1. Generar y guardar
+schema_ml = {
+    'feature_1': {'dist': 'normal',   'mean': 0, 'std': 1,   'type': 'float', 'round': 4},
+    'feature_2': {'dist': 'uniform',  'low': -2, 'high': 2,  'type': 'float', 'round': 4},
+    'feature_3': {'dist': 'exponential', 'scale': 1,         'type': 'float', 'round': 4},
+    'target':    {'dist': 'binomial', 'n': 1, 'p': 0.5,      'type': 'int'},
+}
+
+generate_dataset(n_rows=500, schema=schema_ml, seed=7, save=True, filename="ml_dataset")
+
+# 2. Recargar como (X, y)
+X, y = load_dataset(
+    "ml_dataset.csv",
+    return_X_y=(['feature_1', 'feature_2', 'feature_3'], 'target')
+)
+print(f"X shape: {X.shape}")   # (500, 3)
+print(f"y shape: {y.shape}")   # (500,)</code></pre>
+      </div>
+
+      <div class="note-box">
+        <strong>Tip:</strong> Combina <code>generate_dataset()</code> con <code>Preprocessing</code> para practicar pipelines completos de limpieza, o con <code>DescriptiveStats</code> e <code>InferentialStats</code> para exploración estadística controlada con datos reproducibles.
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- end method-section -->
+
+</main>
+</div>
+</div>
+<!-- end container -->
+
+<footer>
+  <div class="footer-meta">StatsLibX · v2.4 · Desarrollado por Emmanuel Ascendra</div>
+  <div class="footer-links">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+    <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(t) {
+  navigator.clipboard.writeText(t).then(() => showToast());
+}
+function copyCode(id) {
+  const el = document.getElementById(id);
+  if (el) navigator.clipboard.writeText(el.innerText).then(() => showToast());
+}
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+Prism.highlightAll();
+</script>
+</body>
+</html>

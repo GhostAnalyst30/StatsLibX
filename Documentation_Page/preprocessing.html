@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Preprocessing — StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root{--bg:#09090f;--surface:#111118;--border:rgba(255,255,255,0.07);--text:#e8e8f0;--muted:#7a7a90;--accent:#34d399;--accent2:#7c6af7;--accent3:#f6ad55;--card:#14141e;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;}
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}.logo span{color:#7c6af7;}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;}
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(52,211,153,0.05) 0%,transparent 100%);}
+.page-header .container{max-width:1240px;margin:0 auto;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb span{margin:0 0.4rem;}
+.page-badge{display:inline-flex;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(52,211,153,0.1);color:var(--accent);border:1px solid rgba(52,211,153,0.2);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
+.page-title span{color:var(--accent);}
+.page-desc{font-size:1rem;color:var(--muted);max-width:640px;line-height:1.75;}
+.init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
+.init-block:hover{border-color:rgba(52,211,153,0.4);}
+.kw{color:#c792ea;}.cls{color:var(--accent);}
+.layout{display:grid;grid-template-columns:230px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
+.sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
+.sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar a{display:block;font-size:0.83rem;color:var(--muted);text-decoration:none;padding:0.3rem 0.6rem;border-radius:6px;transition:all 0.15s;margin-bottom:0.1rem;font-family:'DM Mono',monospace;}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.sidebar a.active{color:var(--accent);background:rgba(52,211,153,0.08);}
+.content{padding:2.5rem 0 4rem 2.5rem;}
+.method-section{margin-bottom:3.5rem;}
+.method-section-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
+.method-card:hover{border-color:rgba(52,211,153,0.2);}
+.method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
+.method-name .paren{color:var(--muted);}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
+.method-returns{font-size:0.72rem;background:rgba(52,211,153,0.1);color:var(--accent);border:1px solid rgba(52,211,153,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-body{padding:0 1.5rem 1.5rem;}
+.method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
+.params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+.params-table tr:last-child td{border-bottom:none;}
+.param-name{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);}
+.param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent2);}
+.param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+.param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+.code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.35rem;}.dot{width:10px;height:10px;border-radius:50%;}.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.code-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+.chain-note{font-size:0.82rem;color:var(--muted);background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.15);border-radius:8px;padding:0.75rem 1rem;margin-top:1rem;}
+.chain-note strong{color:var(--accent);}
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#7c6af7;color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
+</style>
+</head>
+<body>
+<div class="copied-toast" id="toast">¡Copiado!</div>
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html" class="active">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>Preprocessing</div>
+    <div class="page-badge">🧹 Módulo</div>
+    <h1 class="page-title"><span>Preprocessing</span></h1>
+    <p class="page-desc">Limpieza y transformación de datos. Detección de nulos, normalización, estandarización, outliers, filtrado y calidad de datos. Compatible con pandas y polars DataFrames. Los métodos son encadenables (fluent API).</p>
+    <div class="init-block" onclick="copyText('from statslibx import Preprocessing\npp = Preprocessing(data)')">
+      <span class="kw">from</span> statslibx <span class="kw">import</span> <span class="cls">Preprocessing</span>
+      &nbsp;·&nbsp;
+      <span class="cls">Preprocessing</span><span style="color:var(--muted)">(data)</span>
+    </div>
+  </div>
+</div>
+
+<div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
+<div class="layout" style="padding:0;">
+<aside class="sidebar">
+  <div class="sidebar-title">Inspección</div>
+  <a href="#detect_nulls">.detect_nulls()</a>
+  <a href="#check_uniqueness">.check_uniqueness()</a>
+  <a href="#preview">.preview_data()</a>
+  <a href="#data_quality">.data_quality()</a>
+  <div class="sidebar-title">Descripción</div>
+  <a href="#describe">.describe_numeric()</a>
+  <a href="#describe">.describe_categorical()</a>
+  <div class="sidebar-title">Transformaciones</div>
+  <a href="#fill_nulls">.fill_nulls()</a>
+  <a href="#normalize">.normalize()</a>
+  <a href="#standardize">.standardize()</a>
+  <a href="#change_dtypes">.change_dtypes()</a>
+  <div class="sidebar-title">Filtrado</div>
+  <a href="#filter_rows">.filter_rows()</a>
+  <a href="#filter_columns">.filter_columns()</a>
+  <a href="#rename">.rename_columns()</a>
+  <div class="sidebar-title">Outliers</div>
+  <a href="#detect_outliers">.detect_outliers()</a>
+</aside>
+
+<main class="content">
+
+<div class="method-section">
+  <div class="method-section-title">Constructor</div>
+  <div class="method-card">
+    <div class="method-header"><div><div class="method-name"><span style="color:var(--accent)">Preprocessing</span><span class="paren">(data)</span></div>
+    <div class="method-signature">data: pd.DataFrame | pl.DataFrame</div></div></div>
+    <div class="method-body">
+      <p class="method-desc">Inicializa el preprocessor con un DataFrame de pandas o polars. Los métodos que retornan <code>self</code> son encadenables.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('pp-init')">Copiar</button></div>
+      <pre><code class="language-python" id="pp-init">from statslibx import Preprocessing
+import pandas as pd
+
+df = pd.read_csv("datos.csv")
+pp = Preprocessing(df)
+
+# Fluent API (encadenamiento)
+df_limpio = (
+    Preprocessing(df)
+    .fill_nulls(fill_with=0, columns=['col1', 'col2'])
+    .normalize('precio')
+    .standardize('edad')
+    .data
+)</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Inspección y Calidad</div>
+
+  <div class="method-card" id="detect_nulls">
+    <div class="method-header">
+      <div><div class="method-name">.detect_nulls<span class="paren">(columns)</span></div>
+      <div class="method-signature">columns: str | List[str] | None = None</div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Detecta valores nulos por columna. Retorna DataFrame con columnas: <code>column</code>, <code>nulls</code>, <code>non_nulls</code>, <code>null_pct</code>.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('nulls-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="nulls-ex">nulos = pp.detect_nulls()
+print(nulos)
+
+# Solo columnas específicas
+nulos = pp.detect_nulls(columns=['edad', 'salario'])</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="check_uniqueness">
+    <div class="method-header">
+      <div><div class="method-name">.check_uniqueness<span class="paren">()</span></div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Retorna el número de valores únicos por columna.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('uniq-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="uniq-ex">print(pp.check_uniqueness())</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="preview">
+    <div class="method-header">
+      <div><div class="method-name">.preview_data<span class="paren">(n)</span></div>
+      <div class="method-signature">n: int = 5</div></div>
+      <span class="method-returns">→ DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Muestra las primeras <code>n</code> filas del DataFrame.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('prev-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="prev-ex">pp.preview_data(n=10)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="data_quality">
+    <div class="method-header">
+      <div><div class="method-name">.data_quality<span class="paren">()</span></div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Reporte completo de calidad por columna: dtype, nulos, % nulos, valores únicos y % completitud.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('dq-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="dq-ex">report = pp.data_quality()
+# column | dtype | nulls | null_pct | unique_values | completeness_pct
+print(report)</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Descripción</div>
+  <div class="method-card" id="describe">
+    <div class="method-header">
+      <div><div class="method-name">.describe_numeric<span class="paren">()</span> / .describe_categorical<span class="paren">()</span></div></div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Estadísticas descriptivas para columnas numéricas o categóricas respectivamente.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('desc2-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="desc2-ex">pp.describe_numeric()      # count, mean, std, min, 25%, 50%, 75%, max
+pp.describe_categorical()  # count, unique, top, freq</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Transformaciones</div>
+
+  <div class="method-card" id="fill_nulls">
+    <div class="method-header">
+      <div><div class="method-name">.fill_nulls<span class="paren">(fill_with, columns)</span></div>
+      <div class="method-signature">fill_with: Any · columns: str | List[str] | None = None</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Rellena valores nulos con el valor especificado. Si <code>columns=None</code> aplica a todas las columnas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('fill-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="fill-ex">pp.fill_nulls(fill_with=0)                          # Todas las columnas
+pp.fill_nulls(fill_with='Desconocido', columns='ciudad')  # Una columna
+pp.fill_nulls(fill_with=-1, columns=['col1', 'col2'])     # Varias columnas</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="normalize">
+    <div class="method-header">
+      <div><div class="method-name">.normalize<span class="paren">(column)</span></div>
+      <div class="method-signature">column: str</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Normaliza una columna al rango [0, 1] usando Min-Max Scaling: <code>(x - min) / (max - min)</code>.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('norm2-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="norm2-ex">pp.normalize('precio')
+df_resultado = pp.data  # Acceder al DataFrame transformado</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="standardize">
+    <div class="method-header">
+      <div><div class="method-name">.standardize<span class="paren">(column)</span></div>
+      <div class="method-signature">column: str</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Estandariza una columna con Z-score: <code>(x - mean) / std</code>. Resultante tiene media≈0 y desv. std.≈1.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('std2-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="std2-ex">pp.standardize('edad')
+pp.standardize('salario')</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="change_dtypes">
+    <div class="method-header">
+      <div><div class="method-name">.change_dtypes<span class="paren">(columns, from_type, to_type)</span></div>
+      <div class="method-signature">to_type: 'int'|'float'|'string'|'object' · from_type: str | None</div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Convierte tipos de datos de columnas. Puede filtrar por tipo origen con <code>from_type</code>.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('dtypes-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="dtypes-ex">pp.change_dtypes(columns='precio', to_type='float')
+pp.change_dtypes(columns=['col1','col2'], to_type='string')
+pp.change_dtypes(from_type='object', to_type='string')  # Todas las object → string</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Filtrado y Renombrado</div>
+
+  <div class="method-card" id="filter_rows">
+    <div class="method-header">
+      <div><div class="method-name">.filter_rows<span class="paren">(condition)</span></div>
+      <div class="method-signature">condition: boolean mask / polars expression</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Filtra filas según una condición booleana compatible con pandas o polars.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('filter-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="filter-ex">pp.filter_rows(pp.data['edad'] >= 18)
+pp.filter_rows((pp.data['precio'] > 100) & (pp.data['stock'] > 0))</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="filter_columns">
+    <div class="method-header">
+      <div><div class="method-name">.filter_columns<span class="paren">(columns)</span></div>
+      <div class="method-signature">columns: List[str]</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Selecciona solo las columnas indicadas, descartando el resto.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('fcol-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="fcol-ex">pp.filter_columns(['nombre', 'edad', 'salario'])</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="rename">
+    <div class="method-header">
+      <div><div class="method-name">.rename_columns<span class="paren">(mapping)</span></div>
+      <div class="method-signature">mapping: Dict[str, str]</div></div>
+      <span class="method-returns">→ self (encadenable)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Renombra columnas usando un diccionario <code>{nombre_actual: nombre_nuevo}</code>.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('rename-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="rename-ex">pp.rename_columns({'old_name': 'new_name', 'sepal.length': 'sepal_length'})</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Outliers</div>
+  <div class="method-card" id="detect_outliers">
+    <div class="method-header">
+      <div><div class="method-name">.detect_outliers<span class="paren">(column, method)</span></div>
+      <div class="method-signature">column: str · method: 'iqr' | 'zscore' = 'iqr'</div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Detecta y retorna las filas que contienen outliers en la columna indicada. Si no hay outliers, imprime mensaje y retorna DataFrame vacío.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('outliers2-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="outliers2-ex">outliers_df = pp.detect_outliers('precio', method='iqr')
+print(f"Filas con outliers: {len(outliers_df)}")
+
+outliers_z = pp.detect_outliers('salario', method='zscore')</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<div class="method-section">
+  <div class="method-section-title">Fluent API — Ejemplo Completo</div>
+  <div class="method-card">
+    <div class="method-header"><div><div class="method-name">Pipeline de limpieza encadenado</div></div></div>
+    <div class="method-body">
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('pipeline-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="pipeline-ex">from statslibx import Preprocessing
+import pandas as pd
+
+df = pd.read_csv("ventas_brutas.csv")
+
+# Pipeline completo de limpieza
+pp = Preprocessing(df)
+
+reporte = pp.data_quality()
+print(reporte)
+
+df_limpio = (
+    Preprocessing(df)
+    .fill_nulls(fill_with=0, columns=['ventas', 'descuento'])
+    .fill_nulls(fill_with='Desconocido', columns='region')
+    .rename_columns({'Ventas_Brutas': 'ventas', 'Fecha_Venta': 'fecha'})
+    .filter_rows(df['ventas'] > 0)
+    .filter_columns(['fecha', 'region', 'ventas', 'descuento'])
+    .normalize('ventas')
+    .standardize('descuento')
+    .data
+)
+
+print(df_limpio.head())</code></pre></div>
+      <div class="chain-note"><strong>Tip:</strong> Accede al DataFrame resultante con <code>.data</code> al final de la cadena. Los métodos <code>fill_nulls</code>, <code>normalize</code>, <code>standardize</code>, <code>filter_rows</code>, <code>filter_columns</code> y <code>rename_columns</code> retornan <code>self</code> y son encadenables.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+</div>
+
+<footer>
+  <div class="footer-meta">StatsLibX · v2.4 · Emmanuel Ascendra</div>
+  <div class="footer-links">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+    <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+Prism.highlightAll();
+</script>
+</body>
+</html>

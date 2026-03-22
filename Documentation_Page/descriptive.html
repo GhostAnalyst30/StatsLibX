@@ -1,171 +1,491 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descriptive</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f9fafc; color: #1e293b; line-height: 1.5; }
-        .navbar { background: #0f172a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
-        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #a5f3fc); background-clip: text; -webkit-background-clip: text; color: transparent; text-decoration: none; }
-        .nav-links { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .nav-links a { color: #cbd5e6; text-decoration: none; font-weight: 500; transition: color 0.3s; display: flex; align-items: center; gap: 8px; }
-        .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
-        .page-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 3rem 2rem; }
-        .container { max-width: 1300px; margin: 0 auto; }
-        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid #3b82f6; padding-left: 1rem; }
-        .method-card { background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #eef2ff; }
-        .method-name { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
-        .method-desc { color: #475569; margin-bottom: 1rem; }
-        .code-block { background: #0f172a; border-radius: 16px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
-        .code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
-        .badge { display: inline-block; background: #eef2ff; color: #1e293b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-right: 0.5rem; }
-        footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 2rem; margin-top: 2rem; }
-        @media (max-width: 700px) { .nav-container { flex-direction: column; } .nav-links { justify-content: center; } }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DescriptiveStats — StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root{--bg:#09090f;--surface:#111118;--border:rgba(255,255,255,0.07);--text:#e8e8f0;--muted:#7a7a90;--accent:#7c6af7;--accent2:#4fd1c5;--accent3:#f6ad55;--card:#14141e;--color:#7c6af7;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;}
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:var(--accent);padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:rgba(124,106,247,0.2);}
+
+/* PAGE HEADER */
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(124,106,247,0.06) 0%,transparent 100%);}
+.page-header .container{max-width:1240px;margin:0 auto;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb a:hover{color:#fff;}
+.breadcrumb span{margin:0 0.4rem;}
+.page-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(124,106,247,0.12);color:var(--accent);border:1px solid rgba(124,106,247,0.25);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
+.page-title span{color:var(--accent);}
+.page-desc{font-size:1rem;color:var(--muted);max-width:620px;line-height:1.75;}
+.init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:all 0.2s;}
+.init-block:hover{border-color:rgba(124,106,247,0.4);}
+.init-block .kw{color:#c792ea;}.init-block .cls{color:var(--accent2);}.init-block .cm{color:var(--muted);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1240px;margin:0 auto;padding:0 2rem;}
+.sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
+.sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar a{display:block;font-size:0.83rem;color:var(--muted);text-decoration:none;padding:0.3rem 0.6rem;border-radius:6px;transition:all 0.15s;margin-bottom:0.1rem;font-family:'DM Mono',monospace;}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.sidebar a.active{color:var(--accent);background:rgba(124,106,247,0.1);}
+.content{padding:2.5rem 0 4rem 2.5rem;}
+
+/* METHOD CARDS */
+.method-section{margin-bottom:3.5rem;}
+.method-section-title{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
+.method-card:hover{border-color:rgba(124,106,247,0.2);}
+.method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;cursor:pointer;}
+.method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
+.method-name .cls{color:var(--accent2);}.method-name .paren{color:var(--muted);}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
+.method-returns{font-size:0.72rem;background:rgba(79,209,197,0.1);color:var(--accent2);border:1px solid rgba(79,209,197,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-body{padding:0 1.5rem 1.5rem;}
+.method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
+
+/* PARAMS TABLE */
+.params-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;}
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
+.params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+.params-table tr:last-child td{border-bottom:none;}
+.param-name{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);}
+.param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent2);}
+.param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+.param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+
+/* CODE */
+.code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.35rem;}
+.dot{width:10px;height:10px;border-radius:50%;}.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.code-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+
+@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
+</style>
 </head>
 <body>
+<div class="copied-toast" id="toast">¡Copiado!</div>
 
-<nav class="navbar">
-    <div class="nav-container">
-        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
-        <div class="nav-links">
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html"><i class="fas fa-home"></i> Inicio</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html" class="active"><i class="fas fa-chart-simple"></i> Descriptive</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html"><i class="fas fa-chart-scatter"></i> Inferential</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html"><i class="fas fa-brain"></i> Computacional</a>
-        </div>
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html" class="active">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
     </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
 </nav>
 
 <div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-chart-simple"></i> DescriptiveStats Module</h1>
-        <p style="font-size: 1.2rem; margin-top: 0.5rem;">Análisis estadístico descriptivo completo para DataFrames, listas y arrays NumPy</p>
+  <div class="container">
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>DescriptiveStats</div>
+    <div class="page-badge">📊 Módulo</div>
+    <h1 class="page-title"><span>Descriptive</span>Stats</h1>
+    <p class="page-desc">Análisis estadístico descriptivo univariado y multivariado. Tendencia central, dispersión, forma de distribución, outliers, correlación, covarianza y regresión lineal.</p>
+    <div class="init-block" onclick="copyText('from statslibx import DescriptiveStats\nds = DescriptiveStats(data)')">
+      <span class="kw">from</span> statslibx <span class="kw">import</span> <span class="cls">DescriptiveStats</span>
+      &nbsp;·&nbsp;
+      <span class="cls">DescriptiveStats</span><span class="paren">(data)</span>
     </div>
+  </div>
 </div>
 
-<main style="padding: 2rem;">
-    <div class="container">
-        <div class="section-title">
-            📊 Métodos Disponibles
-        </div>
+<div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
+<div class="layout" style="padding:0;">
+<aside class="sidebar">
+  <div class="sidebar-title">Tendencia Central</div>
+  <a href="#mean">.mean()</a>
+  <a href="#median">.median()</a>
+  <a href="#mode">.mode()</a>
+  <div class="sidebar-title">Dispersión</div>
+  <a href="#std">.std()</a>
+  <a href="#variance">.variance()</a>
+  <a href="#quantile">.quantile()</a>
+  <div class="sidebar-title">Forma</div>
+  <a href="#skewness">.skewness()</a>
+  <a href="#kurtosis">.kurtosis()</a>
+  <a href="#outliers">.outliers()</a>
+  <div class="sidebar-title">Multivariado</div>
+  <a href="#correlation">.correlation()</a>
+  <a href="#covariance">.covariance()</a>
+  <div class="sidebar-title">Resumen y Regresión</div>
+  <a href="#summary">.summary()</a>
+  <a href="#linear_regression">.linear_regression()</a>
+  <a href="#help">.help()</a>
+</aside>
 
-        <div class="method-card">
-            <div class="method-name">.summary()</div>
-            <div class="method-desc">Genera un resumen estadístico completo incluyendo media, mediana, moda, varianza, desviación estándar, asimetría, curtosis, percentiles, mínimo y máximo.</div>
-            <div class="badge">Parámetros: format="wide" | "long"</div>
-            <div class="code-block">
-                <pre><code class="language-python">from statslibx import DescriptiveStats
-import pandas as pd
+<main class="content">
 
-df = pd.read_csv("datos.csv")
-ds = DescriptiveStats(df)
-resumen = ds.summary().to_dataframe(format="wide")
-print(resumen)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.central_tendency()</div>
-            <div class="method-desc">Calcula media, mediana y moda para todas las columnas numéricas.</div>
-            <div class="code-block">
-                <pre><code class="language-python">ct = ds.central_tendency()
-print(ct)  # {'col1': {'mean': 10.5, 'median': 10.0, 'mode': 8}}</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.dispersion()</div>
-            <div class="method-desc">Calcula varianza, desviación estándar, rango, rango intercuartil (IQR) y coeficiente de variación.</div>
-            <div class="code-block">
-                <pre><code class="language-python">dispersion = ds.dispersion()
-print(dispersion)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.shape()</div>
-            <div class="method-desc">Calcula asimetría (skewness) y curtosis (kurtosis) para evaluar la forma de la distribución.</div>
-            <div class="code-block">
-                <pre><code class="language-python">forma = ds.shape()
-# Retorna {'skewness': 0.45, 'kurtosis': 2.1}</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.percentiles()</div>
-            <div class="method-desc">Calcula percentiles personalizados (25, 50, 75 por defecto).</div>
-            <div class="code-block">
-                <pre><code class="language-python">pct = ds.percentiles(percentiles=[10, 25, 50, 75, 90])
-print(pct)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.outliers()</div>
-            <div class="method-desc">Detecta valores atípicos usando método IQR o Z-score.</div>
-            <div class="badge">method="iqr" | "zscore", threshold=1.5</div>
-            <div class="code-block">
-                <pre><code class="language-python">outliers_info = ds.outliers(method="iqr", threshold=1.5)
-print(outliers_info)  # {'col1': [índices de outliers]}</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.correlation()</div>
-            <div class="method-desc">Calcula matriz de correlación (Pearson, Spearman o Kendall).</div>
-            <div class="badge">method="pearson" | "spearman" | "kendall"</div>
-            <div class="code-block">
-                <pre><code class="language-python">corr_matrix = ds.correlation(method="pearson")
-print(corr_matrix)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.covariance()</div>
-            <div class="method-desc">Calcula matriz de covarianza entre variables numéricas.</div>
-            <div class="code-block">
-                <pre><code class="language-python">cov_matrix = ds.covariance()
-print(cov_matrix)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.linear_regression()</div>
-            <div class="method-desc">Ajusta un modelo de regresión lineal simple con visualización opcional.</div>
-            <div class="badge">X: str (columna independiente), y: str (columna dependiente), show_plot: bool</div>
-            <div class="code-block">
-                <pre><code class="language-python">resultado = ds.linear_regression(X="body_mass_g", y="flipper_length_mm", show_plot=True)
-print(f"Coef: {resultado.coef}, R²: {resultado.r2}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.frequency_table()</div>
-            <div class="method-desc">Genera tabla de frecuencias para variables categóricas.</div>
-            <div class="code-block">
-                <pre><code class="language-python">freq = ds.frequency_table(column="species")
-print(freq)  # Frecuencia absoluta y relativa</code></pre>
-            </div>
-        </div>
+<!-- INIT -->
+<div class="method-section">
+  <div class="method-section-title">Inicialización</div>
+  <div class="method-card">
+    <div class="method-header">
+      <div>
+        <div class="method-name"><span class="cls">DescriptiveStats</span><span class="paren">(data, lang)</span></div>
+        <div class="method-signature">data: pd.DataFrame | np.ndarray &nbsp;·&nbsp; lang: 'es-ES' | 'en-US'</div>
+      </div>
     </div>
+    <div class="method-body">
+      <p class="method-desc">Inicializa la clase con un DataFrame de pandas o un array de numpy. Detecta automáticamente columnas numéricas y categóricas.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="init-ex">import pandas as pd
+from statslibx import DescriptiveStats
+from statslibx.datasets import load_iris
+
+# Con DataFrame
+data = load_iris()
+ds = DescriptiveStats(data)
+
+# Con numpy array
+import numpy as np
+arr = np.random.normal(0, 1, 1000)
+ds2 = DescriptiveStats(arr)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CENTRAL TENDENCY -->
+<div class="method-section">
+  <div class="method-section-title">Tendencia Central</div>
+
+  <div class="method-card" id="mean">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.mean<span class="paren">(column)</span></div>
+        <div class="method-signature">column: str | None = None</div>
+      </div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la media aritmética de una columna específica o de todas las columnas numéricas.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody><tr><td class="param-name">column</td><td class="param-type">str | None</td><td class="param-default">None</td><td class="param-desc">Nombre de la columna. Si es None, calcula para todas las columnas numéricas.</td></tr></tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('mean-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="mean-ex">ds.mean('sepal_length')   # → float
+ds.mean()                 # → pd.Series con todas las columnas</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="median">
+    <div class="method-header">
+      <div><div class="method-name">.median<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la mediana (valor central) de una columna o de todas las numéricas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('median-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="median-ex">ds.median('petal_width')   # → float
+ds.median()                # → pd.Series</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="mode">
+    <div class="method-header">
+      <div><div class="method-name">.mode<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ scalar | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la moda (valor más frecuente) de una columna o de todas las numéricas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('mode-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="mode-ex">ds.mode('species')   # → valor más frecuente
+ds.mode()            # → pd.Series</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- DISPERSION -->
+<div class="method-section">
+  <div class="method-section-title">Dispersión</div>
+
+  <div class="method-card" id="std">
+    <div class="method-header">
+      <div><div class="method-name">.std<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Desviación estándar muestral de una columna o de todas las numéricas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('std-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="std-ex">ds.std('sepal_length')   # → float
+ds.std()                 # → pd.Series</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="variance">
+    <div class="method-header">
+      <div><div class="method-name">.variance<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Varianza muestral de una columna o de todas las numéricas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('var-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="var-ex">ds.variance('petal_length')   # → float</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="quantile">
+    <div class="method-header">
+      <div><div class="method-name">.quantile<span class="paren">(q, column)</span></div><div class="method-signature">q: float | List[float] &nbsp;·&nbsp; column: str | None = None</div></div>
+      <span class="method-returns">→ float | DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula cuantiles / percentiles para una o todas las columnas numéricas.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">q</td><td class="param-type">float | List[float]</td><td class="param-desc">Cuantil(es) a calcular. Ej: 0.25, [0.25, 0.5, 0.75]</td></tr>
+        <tr><td class="param-name">column</td><td class="param-type">str | None</td><td class="param-desc">Columna específica. None para todas.</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('quant-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="quant-ex">ds.quantile(0.25, 'sepal_length')        # Q1 de una columna
+ds.quantile([0.25, 0.5, 0.75])           # Cuartiles de todas
+ds.quantile([0.1, 0.9], 'petal_width')  # Percentiles 10 y 90</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHAPE -->
+<div class="method-section">
+  <div class="method-section-title">Forma de la Distribución y Outliers</div>
+
+  <div class="method-card" id="skewness">
+    <div class="method-header">
+      <div><div class="method-name">.skewness<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Asimetría (sesgo) de la distribución. Valores positivos indican cola derecha, negativos cola izquierda.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('skew-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="skew-ex">skew = ds.skewness('sepal_length')
+# >0: sesgo positivo (cola derecha), <0: sesgo negativo</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="kurtosis">
+    <div class="method-header">
+      <div><div class="method-name">.kurtosis<span class="paren">(column)</span></div><div class="method-signature">column: str | None = None</div></div>
+      <span class="method-returns">→ float | Series</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Curtosis (apuntamiento) de la distribución. Mide cuánto difiere la distribución de la normal en sus colas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('kurt-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="kurt-ex">kurt = ds.kurtosis('petal_length')
+# >0: leptocúrtica (colas pesadas), <0: platicúrtica (colas ligeras)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="outliers">
+    <div class="method-header">
+      <div><div class="method-name">.outliers<span class="paren">(column, method, threshold)</span></div>
+      <div class="method-signature">column: str &nbsp;·&nbsp; method: 'iqr'|'zscore' = 'iqr' &nbsp;·&nbsp; threshold: float = 1.5</div></div>
+      <span class="method-returns">→ pd.Series[bool]</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Detecta outliers en una columna usando el método IQR (rango intercuartílico) o z-score. Retorna una máscara booleana.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">column</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Columna a analizar (requerido)</td></tr>
+        <tr><td class="param-name">method</td><td class="param-type">'iqr' | 'zscore'</td><td class="param-default">'iqr'</td><td class="param-desc">Método de detección</td></tr>
+        <tr><td class="param-name">threshold</td><td class="param-type">float</td><td class="param-default">1.5</td><td class="param-desc">1.5 para IQR, 3 para zscore típicamente</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('out-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="out-ex">mask = ds.outliers('sepal_length', method='iqr', threshold=1.5)
+print(f"Outliers encontrados: {mask.sum()}")
+
+# Con z-score
+mask_z = ds.outliers('petal_length', method='zscore', threshold=3)
+datos_limpios = data[~mask_z]  # Filtrar outliers</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- MULTIVARIATE -->
+<div class="method-section">
+  <div class="method-section-title">Análisis Multivariado</div>
+
+  <div class="method-card" id="correlation">
+    <div class="method-header">
+      <div><div class="method-name">.correlation<span class="paren">(method, columns)</span></div>
+      <div class="method-signature">method: 'pearson'|'spearman'|'kendall' = 'pearson' &nbsp;·&nbsp; columns: List[str] | None = None</div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la matriz de correlación entre variables numéricas usando el método seleccionado.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">method</td><td class="param-type">str</td><td class="param-default">'pearson'</td><td class="param-desc">'pearson', 'spearman' o 'kendall'</td></tr>
+        <tr><td class="param-name">columns</td><td class="param-type">List[str] | None</td><td class="param-default">None</td><td class="param-desc">Subconjunto de columnas. None para todas las numéricas.</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('corr-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="corr-ex"># Correlación de Pearson
+corr = ds.correlation(method='pearson')
+
+# Correlación de Spearman para columnas específicas
+corr_sub = ds.correlation(
+    method='spearman',
+    columns=['sepal_length', 'petal_length', 'petal_width']
+)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="covariance">
+    <div class="method-header">
+      <div><div class="method-name">.covariance<span class="paren">(columns)</span></div><div class="method-signature">columns: List[str] | None = None</div></div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la matriz de covarianza entre variables numéricas.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('cov-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="cov-ex">cov_matrix = ds.covariance()
+cov_sub = ds.covariance(columns=['sepal_length', 'petal_length'])</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="method-section">
+  <div class="method-section-title">Resumen y Regresión Lineal</div>
+
+  <div class="method-card" id="summary">
+    <div class="method-header">
+      <div><div class="method-name">.summary<span class="paren">(columns, show_plot, plot_backend)</span></div>
+      <div class="method-signature">columns: List[str] | None &nbsp;·&nbsp; show_plot: bool = False &nbsp;·&nbsp; plot_backend: str = 'seaborn'</div></div>
+      <span class="method-returns">→ DescriptiveSummary</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Resumen estadístico completo: conteo, media, mediana, moda, desviación estándar, varianza, mínimo, Q1, Q3, máximo, IQR, asimetría y curtosis. Retorna un objeto <code>DescriptiveSummary</code> con métodos de conversión.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">columns</td><td class="param-type">List[str] | None</td><td class="param-default">None</td><td class="param-desc">Columnas a resumir. None para todas las numéricas.</td></tr>
+        <tr><td class="param-name">show_plot</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Mostrar gráficos de distribución</td></tr>
+        <tr><td class="param-name">plot_backend</td><td class="param-type">str</td><td class="param-default">'seaborn'</td><td class="param-desc">'seaborn', 'plotly' o 'matplotlib'</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('summary-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="summary-ex">resumen = ds.summary()
+print(resumen)                           # Tabla formateada
+
+# Convertir a DataFrame
+df_wide    = resumen.to_dataframe(format='wide')    # estadísticas en filas
+df_compact = resumen.to_dataframe(format='compact') # variables en filas
+df_long    = resumen.to_dataframe(format='long')    # formato largo
+
+# DataFrame estilizado para Jupyter
+styled = resumen.to_styled_df()          # Heatmap de valores
+
+# Resumen por categorías
+cats = resumen.to_categorical_summary()
+print(cats['Tendencia Central'])
+print(cats['Dispersión'])</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="linear_regression">
+    <div class="method-header">
+      <div><div class="method-name">.linear_regression<span class="paren">(X, y, engine, ...)</span></div>
+      <div class="method-signature">X: str | List[str] &nbsp;·&nbsp; y: str &nbsp;·&nbsp; engine: 'statsmodels'|'scikit-learn'</div></div>
+      <span class="method-returns">→ LinearRegressionResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Regresión lineal simple o múltiple. Retorna un objeto completo con coeficientes, R², residuales, intervalos de confianza y métodos de predicción.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">X</td><td class="param-type">str | List[str]</td><td class="param-default">—</td><td class="param-desc">Variable(s) independiente(s)</td></tr>
+        <tr><td class="param-name">y</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Variable dependiente</td></tr>
+        <tr><td class="param-name">engine</td><td class="param-type">str</td><td class="param-default">'statsmodels'</td><td class="param-desc">'statsmodels' o 'scikit-learn'</td></tr>
+        <tr><td class="param-name">fit_intercept</td><td class="param-type">bool</td><td class="param-default">True</td><td class="param-desc">Incluir intercepto en el modelo</td></tr>
+        <tr><td class="param-name">show_plot</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Mostrar gráfico de regresión</td></tr>
+        <tr><td class="param-name">handle_missing</td><td class="param-type">str</td><td class="param-default">'drop'</td><td class="param-desc">'drop', 'error' o 'warn'</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('lr-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="lr-ex"># Regresión simple
+modelo = ds.linear_regression(X='sepal_length', y='petal_length')
+print(modelo.summary())
+print(f"R²: {modelo.r_squared:.4f}")
+print(f"Intercepto: {modelo.intercept_:.4f}")
+print(f"Coeficiente: {modelo.coef_[0]:.4f}")
+
+# Predicciones
+import numpy as np
+X_nuevo = np.array([[5.0], [6.5], [7.2]])
+preds = modelo.predict(X_nuevo)
+
+# Regresión múltiple
+modelo_m = ds.linear_regression(
+    X=['sepal_length', 'sepal_width'],
+    y='petal_length',
+    engine='statsmodels',
+    show_plot=True
+)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="help">
+    <div class="method-header">
+      <div><div class="method-name">.help<span class="paren">()</span></div><div class="method-signature">Sin parámetros</div></div>
+      <span class="method-returns">→ None (print)</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Muestra la documentación completa de la clase en la consola, en el idioma configurado (<code>lang</code>).</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('help-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="help-ex">ds = DescriptiveStats(data, lang='en-US')
+ds.help()   # Imprime guía completa en inglés</code></pre></div>
+    </div>
+  </div>
+</div>
+
 </main>
+</div>
+</div>
 
 <footer>
-    <div class="container">
-        <p>📊 StatsLibX — DescriptiveStats Module v2.4</p>
-        <p><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" style="color: #3b82f6;">Volver al inicio</a></p>
-    </div>
+  <div class="footer-meta">StatsLibX · v2.4 · Desarrollado por Emmanuel Ascendra</div>
+  <div class="footer-links">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+    <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+  </div>
 </footer>
 
-<script>Prism.highlightAll();</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+Prism.highlightAll();
+</script>
 </body>
 </html>

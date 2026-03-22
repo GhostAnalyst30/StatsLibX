@@ -1,430 +1,326 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StatsLibX</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StatsLibX — Estadística moderna para Python</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #09090f;
+  --surface: #111118;
+  --border: rgba(255,255,255,0.07);
+  --text: #e8e8f0;
+  --muted: #7a7a90;
+  --accent: #7c6af7;
+  --accent2: #4fd1c5;
+  --accent3: #f6ad55;
+  --card: #14141e;
+  --glow: rgba(124,106,247,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f9fafc;
-            color: #1e293b;
-            scroll-behavior: smooth;
-            line-height: 1.5;
-        }
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1.5rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;letter-spacing:-0.01em;}
+.logo span{color:var(--accent);}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:var(--accent);padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:rgba(124,106,247,0.2);}
 
-        /* Navbar */
-        .navbar {
-            background: #0f172a;
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid #334155;
-            backdrop-filter: blur(10px);
-        }
+/* HERO */
+.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(124,106,247,0.18) 0%,transparent 70%);pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+.hero-tag{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:500;color:var(--accent);background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.25);padding:0.3rem 0.9rem;border-radius:20px;margin-bottom:2rem;letter-spacing:0.05em;text-transform:uppercase;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(3.5rem,10vw,8rem);font-weight:800;letter-spacing:-0.03em;line-height:0.95;margin-bottom:1.5rem;}
+.hero h1 .line1{display:block;color:#fff;}
+.hero h1 .line2{display:block;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:560px;margin:0 auto 2.5rem;font-weight:400;}
+.pip-block{display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.95rem;background:var(--surface);border:1px solid var(--border);padding:0.75rem 1.5rem;border-radius:12px;cursor:pointer;margin-bottom:2.5rem;transition:all 0.2s;position:relative;z-index:1;}
+.pip-block:hover{border-color:rgba(124,106,247,0.5);background:rgba(124,106,247,0.05);}
+.pip-block .dollar{color:var(--accent);}
+.pip-copy{color:var(--muted);font-size:0.8rem;transition:color 0.2s;}
+.pip-block:hover .pip-copy{color:var(--accent);}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+.btn-primary{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.75rem;background:var(--accent);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:0.95rem;transition:all 0.2s;border:none;cursor:pointer;}
+.btn-primary:hover{background:#6a58e0;transform:translateY(-2px);}
+.btn-ghost{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.75rem;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;text-decoration:none;font-weight:500;font-size:0.95rem;transition:all 0.2s;cursor:pointer;}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
 
-        .nav-container {
-            max-width: 1300px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+/* STATS BAR */
+.stats-bar{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);padding:1.5rem 2rem;}
+.stats-inner{max-width:1240px;margin:0 auto;display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;}
+.stat-item{text-align:center;}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;}
+.stat-num span{color:var(--accent);}
+.stat-label{font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-top:0.15rem;}
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #ffffff, #a5f3fc);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            text-decoration: none;
-        }
+/* SECTION */
+section{padding:5rem 2rem;}
+.container{max-width:1240px;margin:0 auto;}
+.section-label{font-size:0.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:1rem;}
+.section-sub{font-size:1rem;color:var(--muted);max-width:520px;}
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
+/* MODULE CARDS */
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5px;margin-top:3rem;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border);}
+.module-card{background:var(--card);padding:2rem;transition:background 0.2s;display:flex;flex-direction:column;gap:0.75rem;}
+.module-card:hover{background:#1a1a28;}
+.module-icon{font-size:1.8rem;margin-bottom:0.25rem;}
+.module-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#fff;}
+.module-desc{font-size:0.88rem;color:var(--muted);line-height:1.7;flex:1;}
+.module-tags{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
+.tag{font-size:0.72rem;font-family:'DM Mono',monospace;background:rgba(124,106,247,0.1);color:var(--accent);padding:0.2rem 0.6rem;border-radius:4px;border:1px solid rgba(124,106,247,0.2);}
+.tag.teal{background:rgba(79,209,197,0.08);color:var(--accent2);border-color:rgba(79,209,197,0.2);}
+.tag.amber{background:rgba(246,173,85,0.08);color:var(--accent3);border-color:rgba(246,173,85,0.2);}
+.module-link{text-decoration:none;color:var(--accent);font-size:0.83rem;font-weight:600;margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.35rem;transition:gap 0.2s;}
+.module-link:hover{gap:0.6rem;}
 
-        .nav-links a {
-            color: #cbd5e6;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+/* CODE SECTION */
+.code-section{background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-top:3rem;}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.4rem;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot-r{background:#ff5f57;}
+.dot-y{background:#febc2e;}
+.dot-g{background:#28c840;}
+.code-copy{font-size:0.78rem;color:var(--muted);cursor:pointer;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:6px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-section pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.75rem!important;font-size:0.875rem!important;}
 
-        .nav-links a:hover, .nav-links a.active {
-            color: #3b82f6;
-        }
+/* DATASETS */
+.datasets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:2.5rem;}
+.dataset-pill{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;transition:border-color 0.2s;}
+.dataset-pill:hover{border-color:rgba(124,106,247,0.3);}
+.dataset-pill .icon{font-size:1.2rem;}
+.dataset-pill .name{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--text);}
 
-        .hero {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            color: white;
-            padding: 4rem 2rem 6rem 2rem;
-            position: relative;
-            overflow: hidden;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;}
+.footer-inner{max-width:1240px;margin:0 auto;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:0.5rem;}
+.footer-logo span{color:var(--accent);}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:1rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -30%;
-            right: -20%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(99,102,241,0.3) 0%, rgba(15,23,42,0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.hero>*{animation:fadeUp 0.6s ease both;}
+.hero-tag{animation-delay:0.05s;}
+.hero h1{animation-delay:0.15s;}
+.hero-sub{animation-delay:0.25s;}
+.pip-block{animation-delay:0.35s;}
+.hero-btns{animation-delay:0.45s;}
 
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -20%;
-            left: -10%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(15,23,42,0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+/* COPY FEEDBACK */
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
 
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-content {
-            text-align: center;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: 4.5rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(to right, #ffffff, #c7d2fe, #a5f3fc);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 1rem;
-        }
-
-        .hero .tagline {
-            font-size: 1.3rem;
-            color: #cbd5e6;
-            margin-bottom: 2rem;
-            font-weight: 400;
-        }
-
-        .pip-badge {
-            background: #0f172a;
-            display: inline-block;
-            padding: 0.6rem 1.5rem;
-            border-radius: 60px;
-            font-family: 'Fira Code', monospace;
-            font-size: 1rem;
-            border: 1px solid #334155;
-            backdrop-filter: blur(4px);
-            margin-top: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-
-        .pip-badge i {
-            color: #38bdf8;
-            margin-right: 8px;
-        }
-
-        .btn-group {
-            margin-top: 2.5rem;
-            display: flex;
-            gap: 1.2rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0.8rem 1.8rem;
-            border-radius: 40px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-            text-decoration: none;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-3px);
-        }
-
-        .btn-outline {
-            border: 1.5px solid rgba(255,255,255,0.5);
-            background: rgba(255,255,255,0.05);
-            color: white;
-            backdrop-filter: blur(4px);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.15);
-            border-color: white;
-        }
-
-        section {
-            padding: 4rem 2rem;
-        }
-
-        .section-title {
-            font-size: 2.2rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title span {
-            background: linear-gradient(135deg, #1e293b, #3b82f6);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .card {
-            background: white;
-            border-radius: 28px;
-            padding: 1.8rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #eef2ff;
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
-            border-color: #cbdffc;
-        }
-
-        .card-icon {
-            font-size: 2.5rem;
-            color: #3b82f6;
-            margin-bottom: 1rem;
-        }
-
-        .card h3 {
-            font-size: 1.6rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        .card p {
-            color: #475569;
-            margin-bottom: 1.5rem;
-        }
-
-        .code-block {
-            background: #0f172a;
-            border-radius: 24px;
-            padding: 1.5rem;
-            overflow-x: auto;
-            margin: 2rem 0;
-            border: 1px solid #334155;
-        }
-
-        .code-block pre {
-            margin: 0;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-        }
-
-        footer {
-            background: #0f172a;
-            color: #94a3b8;
-            text-align: center;
-            padding: 2rem;
-            border-top: 1px solid #1e293b;
-        }
-
-        @media (max-width: 700px) {
-            .hero h1 { font-size: 2.8rem; }
-            .nav-container { flex-direction: column; }
-            .nav-links { justify-content: center; }
-        }
-    </style>
+@media(max-width:700px){
+  .nav-links{display:none;}
+  .stats-inner{gap:2rem;}
+}
+</style>
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="nav-container">
-        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
-        <div class="nav-links">
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="active"><i class="fas fa-home"></i> Inicio</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html"><i class="fas fa-chart-simple"></i> Descriptive</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html"><i class="fas fa-chart-scatter"></i> Inferential</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html"><i class="fas fa-brain"></i> Computacional</a>
-        </div>
+<div class="copied-toast" id="toast">¡Copiado al portapapeles!</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="active">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
     </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
 </nav>
 
-<header class="hero">
-    <div class="container hero-content">
-        <h1 style="font-size: 180px;">StatsLibX</h1>
-        <div class="tagline">
-            <i class="fas fa-chart-line"></i> Análisis estadístico potente, simple y moderno para Python
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-tag">✦ Python · Estadística · v2.4</div>
+  <h1>
+    <span class="line1">Stats</span>
+    <span class="line2">LibX</span>
+  </h1>
+  <p class="hero-sub">Análisis estadístico potente, moderno y accesible. Desde descriptiva hasta Monte Carlo, en una sola librería.</p>
+  <div class="pip-block" onclick="copyText('pip install statslibx')">
+    <span class="dollar">$</span>
+    <span>pip install statslibx</span>
+    <span class="pip-copy">⎘ copiar</span>
+  </div>
+  <div class="hero-btns">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb" class="btn-primary">Ver documentación →</a>
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank" class="btn-ghost">GitHub ↗</a>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">6<span>+</span></div><div class="stat-label">Módulos</div></div>
+    <div class="stat-item"><div class="stat-num">40<span>+</span></div><div class="stat-label">Métodos</div></div>
+    <div class="stat-item"><div class="stat-num">6<span></span></div><div class="stat-label">Datasets internos</div></div>
+    <div class="stat-item"><div class="stat-num">v<span>2.4</span></div><div class="stat-label">Versión actual</div></div>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="section-label">Módulos principales</div>
+    <h2 class="section-title">Todo lo que necesitas para<br/>análisis estadístico</h2>
+    <p class="section-sub">Cada módulo es independiente y enfocado en un área específica de la estadística.</p>
+
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="module-icon">📊</div>
+        <div class="module-title">DescriptiveStats</div>
+        <div class="module-desc">Media, mediana, moda, varianza, desviación estándar, asimetría, curtosis, percentiles, outliers, correlación, covarianza y regresión lineal simple o múltiple.</div>
+        <div class="module-tags">
+          <span class="tag">mean()</span><span class="tag">summary()</span><span class="tag">linear_regression()</span>
         </div>
-        <div class="pip-badge">
-            <i class="fab fa-python"></i> pip install statslibx
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html" class="module-link">Ver documentación →</a>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🔬</div>
+        <div class="module-title">InferentialStats</div>
+        <div class="module-desc">Intervalos de confianza, T-Test (1 y 2 muestras, pareado), Mann-Whitney, Chi-Square, ANOVA, Kruskal-Wallis, normalidad y test de varianzas.</div>
+        <div class="module-tags">
+          <span class="tag teal">t_test()</span><span class="tag teal">anova_oneway()</span><span class="tag teal">normality_test()</span>
         </div>
-        <div class="btn-group">
-            <a href="#funcionalidades" class="btn btn-primary"><i class="fas fa-book-open"></i> Funcionalidades</a>
-            <a href="#ejemplos" class="btn btn-outline"><i class="fas fa-code"></i> Ejemplos</a>
-            <a href="#recursos" class="btn btn-outline"><i class="fab fa-github"></i> Repositorio</a>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html" class="module-link">Ver documentación →</a>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🧠</div>
+        <div class="module-title">ComputationalStats</div>
+        <div class="module-desc">Métodos computacionales avanzados: simulaciones de Monte Carlo para cualquier función con estadísticas automáticas de resultados.</div>
+        <div class="module-tags">
+          <span class="tag amber">monte_carlo()</span>
         </div>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html" class="module-link">Ver documentación →</a>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🛠️</div>
+        <div class="module-title">UtilsStats</div>
+        <div class="module-desc">Normalidad, intervalos de confianza, outliers, tamaño del efecto, y visualizaciones con matplotlib, seaborn y plotly. Acepta DataFrames, arrays y rutas de archivo.</div>
+        <div class="module-tags">
+          <span class="tag">plot_distribution()</span><span class="tag">detect_outliers()</span>
+        </div>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html" class="module-link">Ver documentación →</a>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🧹</div>
+        <div class="module-title">Preprocessing</div>
+        <div class="module-desc">Detección y manejo de nulos, normalización, estandarización, filtrado de filas y columnas, outliers, calidad de datos y conversión de tipos.</div>
+        <div class="module-tags">
+          <span class="tag">detect_nulls()</span><span class="tag">normalize()</span><span class="tag">data_quality()</span>
+        </div>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html" class="module-link">Ver documentación →</a>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🗄️</div>
+        <div class="module-title">Datasets</div>
+        <div class="module-desc">Datasets internos listos para usar (iris, penguins, titanic, sp500, etc.) y generación sintética con distribuciones configurables por esquema.</div>
+        <div class="module-tags">
+          <span class="tag amber">load_iris()</span><span class="tag amber">generate_dataset()</span>
+        </div>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html" class="module-link">Ver documentación →</a>
+      </div>
     </div>
-</header>
+  </div>
+</section>
 
-<main>
-    <section id="funcionalidades">
-        <div class="container">
-            <div class="section-title">
-                <span>⚡ Módulos Principales</span>
-            </div>
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-chart-simple"></i></div>
-                    <h3>DescriptiveStats</h3>
-                    <p>Media, mediana, moda, varianza, desviación estándar, asimetría, curtosis, percentiles, outliers, correlación, covarianza y regresión lineal.</p>
-                    <a href="descriptive.html" class="btn-primary" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none; border-radius: 40px;">Ver documentación →</a>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-chart-scatter"></i></div>
-                    <h3>InferentialStats</h3>
-                    <p>Intervalos de confianza, T-Test, pruebas no paramétricas, Chi-Square-Test, ANOVA, test de normalidad, test de hipótesis, test de varianza.</p>
-                    <a href="inferential.html" class="btn-primary" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none; border-radius: 40px;">Ver documentación →</a>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-brain"></i></div>
-                    <h3>ComputationalStats</h3>
-                    <p>Bootstrapping, validación cruzada, simulación Monte Carlo, análisis de series temporales, optimización numérica y métodos computacionales avanzados.</p>
-                    <a href="computational.html" class="btn-primary" style="display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none; border-radius: 40px;">Ver documentación →</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="ejemplos" style="background: #f8fafc;">
-        <div class="container">
-            <div class="section-title">
-                <span>🧪 Ejemplo Rápido</span>
-            </div>
-            <div class="card" style="background: white; padding: 2rem; border-radius: 32px;">
-                <h3><i class="fas fa-cogs"></i> Primeros pasos</h3>
-                <div class="code-block">
-                    <pre><code class="language-python">from statslibx import DescriptiveStats, InferentialStats
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Ejemplo rápido</div>
+    <h2 class="section-title">Primeros pasos</h2>
+    <div class="code-section">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
+      </div>
+      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats, InferentialStats
 from statslibx.datasets import load_iris
 
+# Cargar dataset
 data = load_iris()
 
 # Estadística descriptiva
 ds = DescriptiveStats(data)
-summary = ds.summary()
+print(ds.summary())                              # Resumen completo
+print(ds.mean('sepal_length'))                  # Media de una columna
+print(ds.correlation(method='pearson'))         # Correlación
+print(ds.linear_regression(X='sepal_length', y='petal_length'))
 
 # Estadística inferencial
 inf = InferentialStats(data)
-ci = inf.confidence_interval(column="sepal_length", statistic="mean")</code></pre>
-                </div>
-            </div>
-        </div>
-    </section>
+ci = inf.confidence_interval(column='sepal_length', statistic='mean')
+print(f"IC 95%: [{ci[0]:.3f}, {ci[1]:.3f}]")
 
-    <section id="recursos" style="background: #f1f5f9;">
-        <div class="container">
-            <div class="section-title">
-                <span>📦 Recursos</span>
-            </div>
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-icon"><i class="fab fa-github"></i></div>
-                    <h3>GitHub</h3>
-                    <p>Código abierto, issues, contribuciones y roadmap.</p>
-                    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank" class="link-icon" style="text-decoration: none;"><i class="fab fa-github"></i> GhostAnalyst30/StatsLibX</a>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fab fa-python"></i></div>
-                    <h3>PyPI</h3>
-                    <p>Instalación directa: <strong>pip install statslibx</strong>. Versión v2.4</p>
-                    <a href="https://pypi.org/project/statslibx/" target="_blank" class="link-icon" style="text-decoration: none;"><i class="fab fa-python"></i> Ver en PyPi</a>
-                </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-envelope"></i></div>
-                    <h3>Contacto</h3>
-                    <p>¿Preguntas o sugerencias?</p>
-                    <a href="mailto:ascendraemmanuel@gmail.com" class="link-icon" style="text-decoration: none;"><i class="fas fa-envelope"></i> ascendraemmanuel@gmail.com</a>
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
+result = inf.normality_test(column='sepal_length', method='shapiro')
+print(result)</code></pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label">Datasets incluidos</div>
+    <h2 class="section-title">Listos para explorar</h2>
+    <div class="datasets-grid">
+      <div class="dataset-pill"><span class="icon">🌸</span><span class="name">iris.csv</span></div>
+      <div class="dataset-pill"><span class="icon">🐧</span><span class="name">penguins.csv</span></div>
+      <div class="dataset-pill"><span class="icon">🚢</span><span class="name">titanic.csv</span></div>
+      <div class="dataset-pill"><span class="icon">📈</span><span class="name">sp500_companies.csv</span></div>
+      <div class="dataset-pill"><span class="icon">📚</span><span class="name">course_completion.csv</span></div>
+      <div class="dataset-pill"><span class="icon">🍫</span><span class="name">Cocoa_Bubbles_...xlsx</span></div>
+    </div>
+  </div>
+</section>
 
 <footer>
-    <div class="container">
-        <p>📊 StatsLibX — Estadística al alcance de todos. Desarrollado con ❤️ para la comunidad científica.</p>
-        <p>-- Emmanuel Ascendra --</p>
-        <p style="margin-top: 1rem; font-size: 0.85rem;">
-            <i class="fab fa-python"></i> PyPI · <i class="fab fa-github"></i> GitHub · v2.4
-        </p>
+  <div class="footer-inner">
+    <div class="footer-logo">Stats<span>LibX</span></div>
+    <div class="footer-meta">Desarrollado con ❤️ por Emmanuel Ascendra · v2.4</div>
+    <div class="footer-links">
+      <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+      <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+      <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
     </div>
+  </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 <script>
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('href');
-            if(targetId === "#" || targetId === "") return;
-            const targetElement = document.querySelector(targetId);
-            if(targetElement) {
-                e.preventDefault();
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-    Prism.highlightAll();
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>showToast());
+}
+function copyCode(id){
+  const el=document.getElementById(id);
+  if(el){navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+}
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+Prism.highlightAll();
 </script>
 </body>
 </html>

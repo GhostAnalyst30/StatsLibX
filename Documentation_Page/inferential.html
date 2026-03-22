@@ -1,174 +1,436 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferential</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f9fafc; color: #1e293b; line-height: 1.5; }
-        .navbar { background: #0f172a; padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #334155; }
-        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(to right, #ffffff, #a5f3fc); background-clip: text; -webkit-background-clip: text; color: transparent; text-decoration: none; }
-        .nav-links { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .nav-links a { color: #cbd5e6; text-decoration: none; font-weight: 500; transition: color 0.3s; display: flex; align-items: center; gap: 8px; }
-        .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
-        .page-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 3rem 2rem; }
-        .container { max-width: 1300px; margin: 0 auto; }
-        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid #3b82f6; padding-left: 1rem; }
-        .method-card { background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #eef2ff; }
-        .method-name { font-family: 'Fira Code', monospace; font-size: 1.3rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem; }
-        .method-desc { color: #475569; margin-bottom: 1rem; }
-        .code-block { background: #0f172a; border-radius: 16px; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
-        .code-block pre { margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
-        .badge { display: inline-block; background: #eef2ff; color: #1e293b; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; margin-right: 0.5rem; }
-        footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 2rem; margin-top: 2rem; }
-        @media (max-width: 700px) { .nav-container { flex-direction: column; } .nav-links { justify-content: center; } }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>InferentialStats — StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<style>
+:root{--bg:#09090f;--surface:#111118;--border:rgba(255,255,255,0.07);--text:#e8e8f0;--muted:#7a7a90;--accent:#4fd1c5;--accent2:#7c6af7;--accent3:#f6ad55;--card:#14141e;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;}
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;}.logo span{color:#7c6af7;}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(79,209,197,0.05) 0%,transparent 100%);}
+.page-header .container{max-width:1240px;margin:0 auto;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb span{margin:0 0.4rem;}
+.page-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(79,209,197,0.1);color:var(--accent);border:1px solid rgba(79,209,197,0.2);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
+.page-title span{color:var(--accent);}
+.page-desc{font-size:1rem;color:var(--muted);max-width:660px;line-height:1.75;}
+.init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
+.init-block:hover{border-color:rgba(79,209,197,0.4);}
+.kw{color:#c792ea;}.cls{color:var(--accent);}.cm{color:var(--muted);}
+.layout{display:grid;grid-template-columns:240px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
+.sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
+.sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
+.sidebar-title:first-child{margin-top:0;}
+.sidebar a{display:block;font-size:0.83rem;color:var(--muted);text-decoration:none;padding:0.3rem 0.6rem;border-radius:6px;transition:all 0.15s;margin-bottom:0.1rem;font-family:'DM Mono',monospace;}
+.sidebar a:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.sidebar a.active{color:var(--accent);background:rgba(79,209,197,0.08);}
+.content{padding:2.5rem 0 4rem 2.5rem;}
+.method-section{margin-bottom:3.5rem;}
+.method-section-title{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
+.method-card:hover{border-color:rgba(79,209,197,0.2);}
+.method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
+.method-name .paren{color:var(--muted);}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
+.method-returns{font-size:0.72rem;background:rgba(79,209,197,0.1);color:var(--accent);border:1px solid rgba(79,209,197,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-body{padding:0 1.5rem 1.5rem;}
+.method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
+.params-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem;}
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
+.params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
+.params-table tr:last-child td{border-bottom:none;}
+.param-name{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);}
+.param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:#7c6af7;}
+.param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
+.param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+.code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.35rem;}.dot{width:10px;height:10px;border-radius:50%;}.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
+.code-label{font-size:0.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1.5rem;}
+.guide-card{background:rgba(79,209,197,0.04);border:1px solid rgba(79,209,197,0.15);border-radius:10px;padding:1.25rem;}
+.guide-card h4{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent);margin-bottom:0.75rem;}
+.guide-card p{font-size:0.83rem;color:var(--muted);line-height:1.6;}
+.guide-card .guide-row{display:flex;justify-content:space-between;align-items:flex-start;padding:0.35rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;}
+.guide-card .guide-row:last-child{border-bottom:none;}
+.guide-card .cond{color:var(--muted);}.guide-card .method{color:var(--accent);font-family:'DM Mono',monospace;}
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#7c6af7;color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
+</style>
 </head>
 <body>
-
-<nav class="navbar">
-    <div class="nav-container">
-        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="logo">StatsLibX</a>
-        <div class="nav-links">
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html"><i class="fas fa-home"></i> Inicio</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html"><i class="fas fa-chart-simple"></i> Descriptive</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html" class="active"><i class="fas fa-chart-scatter"></i> Inferential</a>
-            <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html"><i class="fas fa-brain"></i> Computacional</a>
-        </div>
+<div class="copied-toast" id="toast">¡Copiado!</div>
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html" class="active">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
     </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
 </nav>
 
 <div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-chart-scatter"></i> InferentialStats Module</h1>
-        <p style="font-size: 1.2rem; margin-top: 0.5rem;">Pruebas de hipótesis, intervalos de confianza y análisis inferencial</p>
+  <div class="container">
+    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>InferentialStats</div>
+    <div class="page-badge">🔬 Módulo</div>
+    <h1 class="page-title"><span>Inferential</span>Stats</h1>
+    <p class="page-desc">Pruebas de hipótesis paramétricas y no paramétricas, intervalos de confianza, normalidad, ANOVA, Chi-cuadrado y más. Acepta pandas DataFrames y arrays numpy.</p>
+    <div class="init-block" onclick="copyText('from statslibx import InferentialStats\ninf = InferentialStats(data)')">
+      <span class="kw">from</span> statslibx <span class="kw">import</span> <span class="cls">InferentialStats</span>
+      &nbsp;·&nbsp;
+      <span class="cls">InferentialStats</span><span style="color:var(--muted)">(data)</span>
     </div>
+  </div>
 </div>
 
-<main style="padding: 2rem;">
-    <div class="container">
-        <div class="section-title">
-            📈 Métodos de Inferencia Estadística
-        </div>
+<div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
+<div class="layout" style="padding:0;">
+<aside class="sidebar">
+  <div class="sidebar-title">Confianza</div>
+  <a href="#ci">.confidence_interval()</a>
+  <div class="sidebar-title">Una Muestra</div>
+  <a href="#t1">.t_test_1sample()</a>
+  <div class="sidebar-title">Dos Muestras</div>
+  <a href="#t2">.t_test_2sample()</a>
+  <a href="#tpaired">.t_test_paired()</a>
+  <a href="#mwu">.mann_whitney_test()</a>
+  <div class="sidebar-title">Múltiples Grupos</div>
+  <a href="#anova">.anova_oneway()</a>
+  <a href="#kw">.kruskal_wallis_test()</a>
+  <div class="sidebar-title">Categóricas</div>
+  <a href="#chi">.chi_square_test()</a>
+  <div class="sidebar-title">Normalidad y Varianza</div>
+  <a href="#normality">.normality_test()</a>
+  <a href="#variance">.variance_test()</a>
+  <a href="#hyp">.hypothesis_test()</a>
+</aside>
 
-        <div class="method-card">
-            <div class="method-name">.confidence_interval()</div>
-            <div class="method-desc">Calcula intervalo de confianza para una media, proporción o varianza con nivel de confianza personalizable.</div>
-            <div class="badge">column: str, statistic="mean"|"proportion"|"variance", confidence=0.95</div>
-            <div class="code-block">
-                <pre><code class="language-python">from statslibx import InferentialStats
-from statslibx.datasets import load_iris
+<main class="content">
 
-data = load_iris()
-inf = InferentialStats(data)
-
-ci = inf.confidence_interval(column="sepal_length", statistic="mean", confidence=0.95)
-print(f"IC 95%: ({ci.lower}, {ci.upper})")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.ttest_one_sample()</div>
-            <div class="method-desc">Prueba t de una muestra para comparar la media con un valor poblacional.</div>
-            <div class="badge">column: str, popmean: float, alternative="two-sided"</div>
-            <div class="code-block">
-                <pre><code class="language-python">result = inf.ttest_one_sample(column="sepal_length", popmean=5.5)
-print(f"t-statistic: {result.statistic}, p-value: {result.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.ttest_two_sample()</div>
-            <div class="method-desc">Prueba t para dos muestras independientes (puede ser con varianzas iguales o diferentes).</div>
-            <div class="badge">group_col: str, value_col: str, equal_var=True</div>
-            <div class="code-block">
-                <pre><code class="language-python">result = inf.ttest_two_sample(group_col="species", value_col="sepal_length", group1="setosa", group2="versicolor")
-print(f"p-value: {result.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.ttest_paired()</div>
-            <div class="method-desc">Prueba t para muestras pareadas (antes/después).</div>
-            <div class="code-block">
-                <pre><code class="language-python">result = inf.ttest_paired(before="pretest", after="posttest")
-print(result)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.anova_oneway()</div>
-            <div class="method-desc">ANOVA de un factor para comparar medias entre múltiples grupos.</div>
-            <div class="badge">group_col: str, value_col: str</div>
-            <div class="code-block">
-                <pre><code class="language-python">anova_result = inf.anova_oneway(group_col="species", value_col="petal_length")
-print(f"F: {anova_result.F}, p: {anova_result.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.chi_square_test()</div>
-            <div class="method-desc">Prueba de independencia chi-cuadrado para variables categóricas.</div>
-            <div class="badge">col1: str, col2: str</div>
-            <div class="code-block">
-                <pre><code class="language-python">chi2 = inf.chi_square_test(col1="species", col2="class")
-print(f"Chi2: {chi2.statistic}, p: {chi2.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.normality_test()</div>
-            <div class="method-desc">Prueba de normalidad (Shapiro-Wilk o Kolmogorov-Smirnov).</div>
-            <div class="badge">column: str, method="shapiro"|"ks"</div>
-            <div class="code-block">
-                <pre><code class="language-python">norm = inf.normality_test(column="sepal_length", method="shapiro")
-print(f"Es normal? p={norm.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.mann_whitney_u()</div>
-            <div class="method-desc">Prueba no paramétrica U de Mann-Whitney para dos muestras independientes.</div>
-            <div class="code-block">
-                <pre><code class="language-python">mw = inf.mann_whitney_u(group_col="species", value_col="sepal_length", group1="setosa", group2="versicolor")
-print(mw)</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.kruskal_wallis()</div>
-            <div class="method-desc">Prueba no paramétrica de Kruskal-Wallis para múltiples grupos.</div>
-            <div class="code-block">
-                <pre><code class="language-python">kw = inf.kruskal_wallis(group_col="species", value_col="petal_width")
-print(f"H: {kw.statistic}, p: {kw.pvalue}")</code></pre>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <div class="method-name">.levene_test()</div>
-            <div class="method-desc">Prueba de homogeneidad de varianzas (Levene).</div>
-            <div class="code-block">
-                <pre><code class="language-python">lev = inf.levene_test(group_col="species", value_col="sepal_length")
-print(lev)</code></pre>
-            </div>
-        </div>
+<!-- CI -->
+<div class="method-section">
+  <div class="method-section-title">Intervalos de Confianza</div>
+  <div class="method-card" id="ci">
+    <div class="method-header">
+      <div><div class="method-name">.confidence_interval<span class="paren">(column, confidence, statistic)</span></div>
+      <div class="method-signature">column: str · confidence: float = 0.95 · statistic: 'mean'|'median'|'proportion'</div></div>
+      <span class="method-returns">→ tuple(lower, upper, estimate)</span>
     </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula intervalos de confianza para la media (t-distribution), mediana (bootstrap) o proporción (z-test). Retorna una tupla <code>(lower_bound, upper_bound, point_estimate)</code>.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">column</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Columna a analizar</td></tr>
+        <tr><td class="param-name">confidence</td><td class="param-type">float</td><td class="param-default">0.95</td><td class="param-desc">Nivel de confianza (ej: 0.95, 0.99)</td></tr>
+        <tr><td class="param-name">statistic</td><td class="param-type">str</td><td class="param-default">'mean'</td><td class="param-desc">'mean', 'median' o 'proportion'</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('ci-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="ci-ex">inf = InferentialStats(data)
+
+# IC para la media (95%)
+lower, upper, mean = inf.confidence_interval('sepal_length', confidence=0.95)
+print(f"IC 95%: [{lower:.3f}, {upper:.3f}], media={mean:.3f}")
+
+# IC para mediana (bootstrap)
+lower, upper, med = inf.confidence_interval('petal_length', statistic='median')
+
+# IC para proporción (datos binarios 0/1)
+lower, upper, p = inf.confidence_interval('survived', statistic='proportion')</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- ONE SAMPLE -->
+<div class="method-section">
+  <div class="method-section-title">Pruebas de Una Muestra</div>
+  <div class="method-card" id="t1">
+    <div class="method-header">
+      <div><div class="method-name">.t_test_1sample<span class="paren">(column, popmean, popmedian, alternative, alpha)</span></div>
+      <div class="method-signature">column: str · popmean/popmedian: float · alternative: str · alpha: float = 0.05</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba t de una muestra (para media) o Wilcoxon signed-rank (para mediana). Especifica <code>popmean</code> o <code>popmedian</code>, no ambos.</p>
+      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">column</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Columna a analizar</td></tr>
+        <tr><td class="param-name">popmean</td><td class="param-type">float | None</td><td class="param-default">None</td><td class="param-desc">Media poblacional hipotética (H₀: μ = popmean)</td></tr>
+        <tr><td class="param-name">popmedian</td><td class="param-type">float | None</td><td class="param-default">None</td><td class="param-desc">Mediana poblacional hipotética → usa Wilcoxon</td></tr>
+        <tr><td class="param-name">alternative</td><td class="param-type">str</td><td class="param-default">'two-sided'</td><td class="param-desc">'two-sided', 'less' o 'greater'</td></tr>
+        <tr><td class="param-name">alpha</td><td class="param-type">float</td><td class="param-default">0.05</td><td class="param-desc">Nivel de significancia</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('t1-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="t1-ex"># H₀: media de sepal_length = 5.0
+result = inf.t_test_1sample('sepal_length', popmean=5.0)
+print(result)   # Estadístico, p-value, interpretación
+
+# Prueba unilateral: H₁: media > 5.0
+result = inf.t_test_1sample('sepal_length', popmean=5.0, alternative='greater')
+
+# Para mediana (Wilcoxon signed-rank)
+result = inf.t_test_1sample('petal_length', popmedian=3.5)</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- TWO SAMPLE -->
+<div class="method-section">
+  <div class="method-section-title">Pruebas de Dos Muestras</div>
+
+  <div class="method-card" id="t2">
+    <div class="method-header">
+      <div><div class="method-name">.t_test_2sample<span class="paren">(column1, column2, equal_var, alternative, alpha)</span></div>
+      <div class="method-signature">column1: str · column2: str · equal_var: bool = True</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba t de dos muestras independientes (Student si <code>equal_var=True</code>, Welch si <code>False</code>).</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('t2-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="t2-ex">result = inf.t_test_2sample('sepal_length_a', 'sepal_length_b', equal_var=True)
+print(result)
+
+# Welch (varianzas desiguales)
+result_w = inf.t_test_2sample('grupo1', 'grupo2', equal_var=False)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="tpaired">
+    <div class="method-header">
+      <div><div class="method-name">.t_test_paired<span class="paren">(column1, column2, alternative, alpha)</span></div>
+      <div class="method-signature">column1: str · column2: str · alternative: str = 'two-sided'</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba t pareada para muestras dependientes (mediciones antes/después sobre los mismos sujetos).</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('tpaired-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="tpaired-ex">result = inf.t_test_paired('peso_antes', 'peso_despues', alternative='two-sided')
+print(result)  # Incluye diferencia de medias, p-value</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="mwu">
+    <div class="method-header">
+      <div><div class="method-name">.mann_whitney_test<span class="paren">(column1, column2, alternative, alpha)</span></div>
+      <div class="method-signature">column1: str · column2: str · alternative: str = 'two-sided'</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Test de Mann-Whitney U. Alternativa no paramétrica al t-test de dos muestras. Usa medianas en lugar de medias.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('mwu-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="mwu-ex">result = inf.mann_whitney_test('grupo_a', 'grupo_b')
+print(result)  # Estadístico U, medianas, p-value</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- MULTI GROUP -->
+<div class="method-section">
+  <div class="method-section-title">Pruebas para Múltiples Grupos</div>
+
+  <div class="method-card" id="anova">
+    <div class="method-header">
+      <div><div class="method-name">.anova_oneway<span class="paren">(column, groups, alpha)</span></div>
+      <div class="method-signature">column: str · groups: str · alpha: float = 0.05</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">ANOVA de un factor (One-Way ANOVA). Compara medias entre múltiples grupos. <code>column</code> es la variable numérica y <code>groups</code> la variable categórica de agrupación.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('anova-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="anova-ex">result = inf.anova_oneway(column='sepal_length', groups='species')
+print(result)  # F-estadístico, p-value, número de grupos</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="kw">
+    <div class="method-header">
+      <div><div class="method-name">.kruskal_wallis_test<span class="paren">(column, groups, alpha)</span></div>
+      <div class="method-signature">column: str · groups: str · alpha: float = 0.05</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Test de Kruskal-Wallis. Alternativa no paramétrica a ANOVA para datos que no cumplen normalidad.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('kw-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="kw-ex">result = inf.kruskal_wallis_test(column='petal_length', groups='species')
+print(result)</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHI SQUARE -->
+<div class="method-section">
+  <div class="method-section-title">Variables Categóricas</div>
+  <div class="method-card" id="chi">
+    <div class="method-header">
+      <div><div class="method-name">.chi_square_test<span class="paren">(column1, column2, alpha)</span></div>
+      <div class="method-signature">column1: str · column2: str · alpha: float = 0.05</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba Chi-cuadrado de independencia entre dos variables categóricas. Incluye la tabla de contingencia en los parámetros del resultado.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('chi-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="chi-ex">result = inf.chi_square_test(column1='sex', column2='survived')
+print(result)  # Chi², grados de libertad, p-value, tabla de contingencia</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- NORMALITY -->
+<div class="method-section">
+  <div class="method-section-title">Normalidad, Varianza y Pruebas Generales</div>
+
+  <div class="method-card" id="normality">
+    <div class="method-header">
+      <div><div class="method-name">.normality_test<span class="paren">(column, method, test_statistic, alpha)</span></div>
+      <div class="method-signature">column: str · method: 'shapiro'|'ks'|'anderson'|'jarque_bera'|'all'</div></div>
+      <span class="method-returns">→ TestResult | dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba si los datos siguen una distribución normal. Con <code>method='all'</code> retorna un dict con los cuatro tests. Anderson-Darling retorna valores críticos en lugar de p-value.</p>
+      <table class="params-table"><thead><tr><th>Método</th><th>Descripción</th><th>n máximo</th></tr></thead>
+      <tbody>
+        <tr><td class="param-name">'shapiro'</td><td class="param-desc">Shapiro-Wilk. Recomendado para muestras pequeñas-medianas.</td><td class="param-type">≤ 5000</td></tr>
+        <tr><td class="param-name">'ks'</td><td class="param-desc">Kolmogorov-Smirnov contra distribución normal parametrizada.</td><td class="param-type">cualquier n</td></tr>
+        <tr><td class="param-name">'anderson'</td><td class="param-desc">Anderson-Darling. Más potente en las colas.</td><td class="param-type">cualquier n</td></tr>
+        <tr><td class="param-name">'jarque_bera'</td><td class="param-desc">Basado en asimetría y curtosis. Para muestras grandes.</td><td class="param-type">cualquier n</td></tr>
+        <tr><td class="param-name">'all'</td><td class="param-desc">Ejecuta los cuatro tests y retorna un dict.</td><td class="param-type">—</td></tr>
+      </tbody></table>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('norm-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="norm-ex"># Shapiro-Wilk
+result = inf.normality_test('sepal_length', method='shapiro')
+print(result)
+
+# Todos los tests
+results = inf.normality_test('petal_length', method='all', test_statistic='median')
+print(results['shapiro'])
+print(results['kolmogorov_smirnov'])
+print(results['anderson_darling'])
+print(results['jarque_bera'])</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="variance">
+    <div class="method-header">
+      <div><div class="method-name">.variance_test<span class="paren">(column1, column2, method, center, alpha)</span></div>
+      <div class="method-signature">method: 'levene'|'bartlett'|'var_test' = 'levene' · center: 'mean'|'median'|'trimmed'</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Prueba de igualdad de varianzas entre dos columnas. Levene es robusto a no-normalidad; Bartlett asume normalidad; var_test es el equivalente al <code>var.test</code> de R.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('var-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="var-ex">result = inf.variance_test('grupo_a', 'grupo_b', method='levene', center='median')
+print(result)</code></pre></div>
+    </div>
+  </div>
+
+  <div class="method-card" id="hyp">
+    <div class="method-header">
+      <div><div class="method-name">.hypothesis_test<span class="paren">(method, column1, column2, pop_mean, ...)</span></div>
+      <div class="method-signature">method: 'mean'|'difference_mean'|'proportion'|'variance'</div></div>
+      <span class="method-returns">→ TestResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Interface unificada para pruebas de hipótesis. Incluye test de homocedasticidad automático para comparación de medias.</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('hyp-ex')">Copiar</button></div>
+      <pre><code class="language-python" id="hyp-ex"># Test de media
+result = inf.hypothesis_test(method='mean', column1='sepal_length', pop_mean=5.0)
+
+# Diferencia de medias (incluye Levene automático)
+result = inf.hypothesis_test(method='difference_mean', column1='g1', column2='g2')
+
+# Proporción
+result = inf.hypothesis_test(method='proportion', column1='survived', pop_proportion=0.5)
+
+# Varianza (F-test)
+result = inf.hypothesis_test(method='variance', column1='g1', column2='g2')</code></pre></div>
+    </div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="method-section">
+  <div class="method-section-title">Guía de Selección de Pruebas</div>
+  <div class="guide-grid">
+    <div class="guide-card">
+      <h4>Una Muestra vs Referencia</h4>
+      <div class="guide-row"><span class="cond">Datos normales</span><span class="method">t_test_1sample(popmean)</span></div>
+      <div class="guide-row"><span class="cond">No normales</span><span class="method">t_test_1sample(popmedian)</span></div>
+    </div>
+    <div class="guide-card">
+      <h4>Dos Grupos Independientes</h4>
+      <div class="guide-row"><span class="cond">Normales</span><span class="method">t_test_2sample()</span></div>
+      <div class="guide-row"><span class="cond">No normales</span><span class="method">mann_whitney_test()</span></div>
+    </div>
+    <div class="guide-card">
+      <h4>Dos Grupos Pareados</h4>
+      <div class="guide-row"><span class="cond">Normales</span><span class="method">t_test_paired()</span></div>
+      <div class="guide-row"><span class="cond">No normales</span><span class="method">scipy.stats.wilcoxon()</span></div>
+    </div>
+    <div class="guide-card">
+      <h4>Múltiples Grupos</h4>
+      <div class="guide-row"><span class="cond">Normales</span><span class="method">anova_oneway()</span></div>
+      <div class="guide-row"><span class="cond">No normales</span><span class="method">kruskal_wallis_test()</span></div>
+    </div>
+    <div class="guide-card">
+      <h4>Variables Categóricas</h4>
+      <div class="guide-row"><span class="cond">Independencia</span><span class="method">chi_square_test()</span></div>
+    </div>
+    <div class="guide-card">
+      <h4>Verificar Normalidad</h4>
+      <div class="guide-row"><span class="cond">n ≤ 5000</span><span class="method">shapiro</span></div>
+      <div class="guide-row"><span class="cond">n grande</span><span class="method">jarque_bera / ks</span></div>
+    </div>
+  </div>
+</div>
+
 </main>
+</div>
+</div>
 
 <footer>
-    <div class="container">
-        <p>📊 StatsLibX — InferentialStats Module v2.4</p>
-        <p><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" style="color: #3b82f6;">Volver al inicio</a></p>
-    </div>
+  <div class="footer-meta">StatsLibX · v2.4 · Emmanuel Ascendra</div>
+  <div class="footer-links">
+    <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+    <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+  </div>
 </footer>
 
-<script>Prism.highlightAll();</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
+function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+Prism.highlightAll();
+</script>
 </body>
 </html>
