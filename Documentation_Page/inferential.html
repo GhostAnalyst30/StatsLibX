@@ -79,6 +79,8 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 .footer-links a:hover{color:#fff;}
 @media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
 </style>
+<link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.svg"/>
 </head>
 <body>
 <div class="copied-toast" id="toast">¡Copiado!</div>
@@ -115,6 +117,8 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 <div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
 <div class="layout" style="padding:0;">
 <aside class="sidebar">
+  <div class="sidebar-title">Constructor</div>
+  <a href="#init">__init__()</a>
   <div class="sidebar-title">Confianza</div>
   <a href="#ci">.confidence_interval()</a>
   <div class="sidebar-title">Una Muestra</div>
@@ -136,6 +140,36 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 
 <main class="content">
 
+<div class="method-section">
+  <div class="method-section-title">Constructor</div>
+  <div class="method-card" id="init">
+    <div class="method-header">
+      <div>
+        <div class="method-name"><span style="color:var(--accent)">InferentialStats</span><span class="paren">(data, lang)</span></div>
+        <div class="method-signature">data: pd.DataFrame | np.ndarray &nbsp;·&nbsp; lang: 'es-ES' | 'en-US' = 'es-ES'</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Inicializa con un DataFrame de pandas o array numpy. Detecta automáticamente columnas numéricas y categóricas</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">data</td><td class="param-type">pd.DataFrame | np.ndarray</td><td class="param-default">—</td><td class="param-desc">Dataset de entrada (requerido)</td></tr>
+          <tr><td class="param-name">lang</td><td class="param-type">str</td><td class="param-default">'es-ES'</td><td class="param-desc">Idioma de salidas: <code>'es-ES'</code> o <code>'en-US'</code></td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="init-ex">from statslibx import InferentialStats
+from statslibx.datasets import load_iris
+
+data = load_iris()
+inf = InferentialStats(data)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- CI -->
 <div class="method-section">
   <div class="method-section-title">Intervalos de Confianza</div>
@@ -154,9 +188,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
         <tr><td class="param-name">statistic</td><td class="param-type">str</td><td class="param-default">'mean'</td><td class="param-desc">'mean', 'median' o 'proportion'</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('ci-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="ci-ex">inf = InferentialStats(data)
-
-# IC para la media (95%)
+      <pre><code class="language-python" id="ci-ex"># IC para la media (95%)
 lower, upper, mean = inf.confidence_interval('sepal_length', confidence=0.95)
 print(f"IC 95%: [{lower:.3f}, {upper:.3f}], media={mean:.3f}")
 
@@ -416,7 +448,7 @@ result = inf.hypothesis_test(method='variance', column1='g1', column2='g2')</cod
 </div>
 
 <footer>
-  <div class="footer-meta">StatsLibX · v2.4 · Emmanuel Ascendra</div>
+  <div class="footer-meta">StatsLibX · v2.5 · Emmanuel Ascendra</div>
   <div class="footer-links">
     <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>

@@ -1,12 +1,15 @@
-# 📦 StatsLibX
+# 📦 StatsLibX v2.5
 
 StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
 
 Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y ligera que permita a desarrolladores y entusiastas integrar la **estadistica descriptiva, inferencial y computacional (En desarrollo)** sin complicaciones, con multiples funcionalidades y utilidades pensadas para el futuro.
 
-Pagina Web: [StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html)
 
-GitHub del Proyecto: [https://github.com/GhostAnalyst30/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
+| **Documentacion:** | **GitHub del Proyecto:** |
+|-------------------|--------------------------|
+[Documentacion StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html) |  [Github/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
+|**Version:** 0.2.5 | **Autor:** Emmanuel Ascendra |
+
 
 ## ✨ Características principales
 
@@ -22,12 +25,13 @@ GitHub del Proyecto: [https://github.com/GhostAnalyst30/StatsLibX](https://githu
 
 ## 🚀 Ejemplo rápido
 ```python
-from statslibx import DescriptiveStats, InferentialStats, UtilsStats
+from statslibx import DescriptiveStats, InferentialStats, ComputationalStats, UtilsStats
 from statslibx.datasets import load_iris()
 
 data = load_iris()
 
-stats = DescriptiveStats(data) # InferentialStats(data), UtilsStats()
+stats = DescriptiveStats(data) 
+# InferentialStats(data), ComputationalStats(data), UtilsStats()
 
 stats.summary()
 ```

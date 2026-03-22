@@ -16,18 +16,21 @@ nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filt
 .nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
 .nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
 .nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
-.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;}
-.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(246,173,85,0.05) 0%,transparent 100%);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:rgba(124,106,247,0.2);}
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(246,173,85,0.06) 0%,transparent 100%);}
 .page-header .container{max-width:1240px;margin:0 auto;}
-.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb span{margin:0 0.4rem;}
+.breadcrumb{font-size:0.8rem;color:var(--muted);margin-bottom:1rem;}
+.breadcrumb a{color:var(--muted);text-decoration:none;}.breadcrumb a:hover{color:#fff;}
+.breadcrumb span{margin:0 0.4rem;}
 .page-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;background:rgba(246,173,85,0.1);color:var(--accent);border:1px solid rgba(246,173,85,0.2);padding:0.25rem 0.75rem;border-radius:20px;margin-bottom:1rem;}
 .page-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:0.75rem;}
 .page-title span{color:var(--accent);}
-.page-desc{font-size:1rem;color:var(--muted);max-width:640px;line-height:1.75;}
+.page-desc{font-size:1rem;color:var(--muted);max-width:680px;line-height:1.75;}
 .init-block{margin-top:2rem;display:inline-flex;align-items:center;gap:0.75rem;font-family:'DM Mono',monospace;font-size:0.88rem;background:var(--surface);border:1px solid var(--border);padding:0.65rem 1.25rem;border-radius:10px;cursor:pointer;transition:border-color 0.2s;}
 .init-block:hover{border-color:rgba(246,173,85,0.4);}
-.kw{color:#c792ea;}.cls{color:var(--accent);}.cm{color:var(--muted);}
-.layout{display:grid;grid-template-columns:220px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
+.kw{color:#c792ea;}.cls{color:var(--accent);}
+.layout{display:grid;grid-template-columns:240px 1fr;max-width:1240px;margin:0 auto;padding:0 2rem;}
 .sidebar{padding:2.5rem 1.5rem 2.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;border-right:1px solid var(--border);}
 .sidebar-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem;margin-top:1.25rem;}
 .sidebar-title:first-child{margin-top:0;}
@@ -36,17 +39,18 @@ nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filt
 .sidebar a.active{color:var(--accent);background:rgba(246,173,85,0.08);}
 .content{padding:2.5rem 0 4rem 2.5rem;}
 .method-section{margin-bottom:3.5rem;}
-.method-section-title{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+.method-section-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
 .method-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;transition:border-color 0.2s;}
 .method-card:hover{border-color:rgba(246,173,85,0.2);}
 .method-header{padding:1.25rem 1.5rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
 .method-name{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;color:#fff;}
 .method-name .paren{color:var(--muted);}
-.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;}
-.method-returns{font-size:0.72rem;background:rgba(246,173,85,0.1);color:var(--accent);border:1px solid rgba(246,173,85,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.method-signature{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--muted);margin-top:0.3rem;line-height:1.6;}
+.method-returns{font-size:0.72rem;background:rgba(246,173,85,0.1);color:var(--accent);border:1px solid rgba(246,173,85,0.2);padding:0.2rem 0.6rem;border-radius:4px;white-space:nowrap;font-family:'DM Mono',monospace;flex-shrink:0;}
 .method-body{padding:0 1.5rem 1.5rem;}
 .method-desc{font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.7;}
-.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.result-badge{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-family:'DM Mono',monospace;background:rgba(79,209,197,0.08);color:var(--accent3);border:1px solid rgba(79,209,197,0.2);padding:0.2rem 0.65rem;border-radius:4px;margin-bottom:1rem;}
+.params-table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-top:1rem;}
 .params-table th{text-align:left;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);}
 .params-table td{padding:0.6rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;}
 .params-table tr:last-child td{border-bottom:none;}
@@ -54,6 +58,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filt
 .param-type{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent2);}
 .param-default{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent3);}
 .param-desc{color:var(--muted);font-size:0.83rem;line-height:1.6;}
+.attr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0.6rem;margin-top:1rem;}
+.attr-pill{background:rgba(246,173,85,0.05);border:1px solid rgba(246,173,85,0.12);border-radius:8px;padding:0.7rem 1rem;}
+.attr-pill .attr-name{font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--accent);margin-bottom:0.2rem;}
+.attr-pill .attr-type{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent2);margin-bottom:0.2rem;}
+.attr-pill .attr-desc{font-size:0.78rem;color:var(--muted);line-height:1.5;}
 .code-block{margin-top:1.25rem;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
 .code-header{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1rem;background:#0d0d16;border-bottom:1px solid var(--border);}
 .code-dots{display:flex;gap:0.35rem;}.dot{width:10px;height:10px;border-radius:50%;}.dot-r{background:#ff5f57;}.dot-y{background:#febc2e;}.dot-g{background:#28c840;}
@@ -61,17 +70,26 @@ nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.88);backdrop-filt
 .code-copy-btn{font-size:0.72rem;color:var(--muted);cursor:pointer;padding:0.2rem 0.6rem;border:1px solid var(--border);border-radius:5px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
 .code-copy-btn:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
 .code-block pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.25rem!important;font-size:0.84rem!important;}
+.result-methods{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:0.6rem;margin-top:1rem;}
+.result-method-pill{background:rgba(124,106,247,0.06);border:1px solid rgba(124,106,247,0.15);border-radius:8px;padding:0.65rem 0.9rem;}
+.result-method-pill .rm-name{font-family:'DM Mono',monospace;font-size:0.82rem;color:#a78bfa;margin-bottom:0.2rem;}
+.result-method-pill .rm-ret{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent3);}
+.result-method-pill .rm-desc{font-size:0.77rem;color:var(--muted);margin-top:0.2rem;line-height:1.5;}
+.note-box{background:rgba(246,173,85,0.05);border:1px solid rgba(246,173,85,0.15);border-radius:10px;padding:1rem 1.25rem;margin-top:1.25rem;font-size:0.85rem;color:var(--muted);line-height:1.7;}
+.note-box strong{color:var(--accent);}
+.note-box.teal{background:rgba(79,209,197,0.05);border-color:rgba(79,209,197,0.15);}
+.note-box.teal strong{color:var(--accent3);}
 .copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#7c6af7;color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
 .copied-toast.show{opacity:1;transform:translateY(0);}
-.note-box{background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.18);border-radius:10px;padding:1rem 1.25rem;margin-top:1rem;font-size:0.85rem;color:var(--muted);line-height:1.65;}
-.note-box strong{color:var(--accent);}
 footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 .footer-meta{font-size:0.82rem;color:var(--muted);}
 .footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:0.75rem;}
 .footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
 .footer-links a:hover{color:#fff;}
-@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}.attr-grid,.result-methods{grid-template-columns:1fr 1fr;}}
 </style>
+<link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.svg"/>
 </head>
 <body>
 <div class="copied-toast" id="toast">¡Copiado!</div>
@@ -93,14 +111,14 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 
 <div class="page-header">
   <div class="container">
-    <div class="breadcrumb"><a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a><span>/</span>ComputationalStats</div>
+    <div class="breadcrumb"><a href="index.html">StatsLibX</a><span>/</span>ComputationalStats</div>
     <div class="page-badge">🧠 Módulo</div>
     <h1 class="page-title"><span>Computational</span>Stats</h1>
-    <p class="page-desc">Métodos estadísticos computacionales avanzados. Actualmente incluye simulaciones de Monte Carlo flexibles para cualquier función definida por el usuario.</p>
-    <div class="init-block" onclick="copyText('from statslibx import ComputationalStats\ncs = ComputationalStats(seed=42)')">
+    <p class="page-desc">Regresión lineal y polinomial, interpolación (Lagrange, Newton, Spline), bootstrapping con 3 tipos de IC, K-Means con K-Means++, análisis de correlación y visualizaciones estáticas e interactivas con Plotly. Todos los métodos retornan objetos ricos con <code>.summary()</code>, <code>.predict()</code> y <code>.plot()</code>.</p>
+    <div class="init-block" onclick="copyText('from statslibx import ComputationalStats\ncs = ComputationalStats(data, seed=42)')">
       <span class="kw">from</span> statslibx <span class="kw">import</span> <span class="cls">ComputationalStats</span>
       &nbsp;·&nbsp;
-      <span class="cls">ComputationalStats</span><span style="color:var(--muted)">(seed=42)</span>
+      <span class="cls">ComputationalStats</span><span style="color:var(--muted)">(data, seed=42)</span>
     </div>
   </div>
 </div>
@@ -110,114 +128,584 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 <aside class="sidebar">
   <div class="sidebar-title">Constructor</div>
   <a href="#init">__init__()</a>
-  <div class="sidebar-title">Métodos</div>
-  <a href="#monte_carlo">.monte_carlo()</a>
+  <div class="sidebar-title">Regresión</div>
+  <a href="#regression">.regression()</a>
+  <a href="#linear_regression">.linear_regression()</a>
+  <a href="#polynomial_regression">.polynomial_regression()</a>
+  <a href="#find_best_degree">.find_best_degree()</a>
+  <div class="sidebar-title">Interpolación</div>
+  <a href="#interpolation">.interpolation()</a>
+  <div class="sidebar-title">Bootstrapping</div>
+  <a href="#bootstrapping">.bootstrapping()</a>
+  <div class="sidebar-title">Clustering</div>
+  <a href="#k_means">.k_means()</a>
+  <a href="#elbow_method">.elbow_method()</a>
+  <div class="sidebar-title">Correlación</div>
+  <a href="#correlation_analysis">.correlation_analysis()</a>
+  <a href="#plot_corr_heatmap">.plot_correlation_heatmap()</a>
+  <div class="sidebar-title">Utilidades</div>
+  <a href="#descriptive_stats">.descriptive_statistics()</a>
+  <a href="#plot_dist">.plot_distribution()</a>
+  <div class="sidebar-title">Result Objects</div>
+  <a href="#regression_result">RegressionResult</a>
+  <a href="#interpolation_result">InterpolationResult</a>
+  <a href="#bootstrapping_result">BootstrappingResult</a>
 </aside>
 
 <main class="content">
+
+<!-- INIT -->
 <div class="method-section">
   <div class="method-section-title">Constructor</div>
   <div class="method-card" id="init">
     <div class="method-header">
-      <div><div class="method-name"><span style="color:var(--accent)">ComputationalStats</span><span class="paren">(seed)</span></div>
-      <div class="method-signature">seed: int | None = None</div></div>
+      <div>
+        <div class="method-name"><span style="color:var(--accent)">ComputationalStats</span><span class="paren">(data, seed, lang)</span></div>
+        <div class="method-signature">data: pd.DataFrame | np.ndarray &nbsp;·&nbsp; seed: int | None = None &nbsp;·&nbsp; lang: 'es-ES' | 'en-US' = 'es-ES'</div>
+      </div>
     </div>
     <div class="method-body">
-      <p class="method-desc">Inicializa la clase de estadística computacional. El parámetro <code>seed</code> está disponible para garantizar reproducibilidad en futuras versiones.</p>
-      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('cinit-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="cinit-ex">from statslibx import ComputationalStats
-cs = ComputationalStats(seed=42)</code></pre></div>
-    </div>
-  </div>
-</div>
+      <p class="method-desc">Inicializa con un DataFrame de pandas o array numpy. Detecta automáticamente columnas numéricas y categóricas. Con <code>seed</code> garantiza reproducibilidad en K-Means y Bootstrapping.</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">data</td><td class="param-type">pd.DataFrame | np.ndarray</td><td class="param-default">—</td><td class="param-desc">Dataset de entrada (requerido)</td></tr>
+          <tr><td class="param-name">seed</td><td class="param-type">int | None</td><td class="param-default">None</td><td class="param-desc">Semilla para reproducibilidad de métodos aleatorios</td></tr>
+          <tr><td class="param-name">lang</td><td class="param-type">str</td><td class="param-default">'es-ES'</td><td class="param-desc">Idioma de salidas: <code>'es-ES'</code> o <code>'en-US'</code></td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="init-ex">from statslibx import ComputationalStats
+from statslibx.datasets import load_iris
 
-<div class="method-section">
-  <div class="method-section-title">Simulación Monte Carlo</div>
-  <div class="method-card" id="monte_carlo">
-    <div class="method-header">
-      <div><div class="method-name">.monte_carlo<span class="paren">(function, n, return_simulations, **kwargs)</span></div>
-      <div class="method-signature">function: callable · n: int = 100 · return_simulations: bool = False</div></div>
-      <span class="method-returns">→ dict</span>
-    </div>
-    <div class="method-body">
-      <p class="method-desc">Realiza <code>n</code> simulaciones de Monte Carlo llamando a <code>function(**kwargs)</code> en cada iteración. Calcula automáticamente media y desviación estándar de los resultados. Con <code>return_simulations=True</code> incluye todos los valores simulados.</p>
-      <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
-      <tbody>
-        <tr><td class="param-name">function</td><td class="param-type">callable</td><td class="param-default">—</td><td class="param-desc">Función a simular. Debe retornar un valor numérico escalar. Recibirá **kwargs en cada llamada.</td></tr>
-        <tr><td class="param-name">n</td><td class="param-type">int</td><td class="param-default">100</td><td class="param-desc">Número de simulaciones a ejecutar</td></tr>
-        <tr><td class="param-name">return_simulations</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Si True, incluye la lista completa de simulaciones en el resultado</td></tr>
-        <tr><td class="param-name">**kwargs</td><td class="param-type">any</td><td class="param-default">—</td><td class="param-desc">Argumentos adicionales que se pasan a <code>function</code> en cada simulación</td></tr>
-      </tbody></table>
-
-      <p class="method-desc" style="margin-top:1rem;margin-bottom:0.5rem;"><strong style="color:#fff;">Retorna:</strong></p>
-      <table class="params-table"><thead><tr><th>Clave</th><th>Tipo</th><th>Descripción</th></tr></thead>
-      <tbody>
-        <tr><td class="param-name">mean</td><td class="param-type">float</td><td class="param-desc">Media de los n resultados simulados</td></tr>
-        <tr><td class="param-name">std</td><td class="param-type">float</td><td class="param-desc">Desviación estándar de los resultados</td></tr>
-        <tr><td class="param-name">samples</td><td class="param-type">List[float]</td><td class="param-desc">Lista completa (solo si return_simulations=True)</td></tr>
-      </tbody></table>
-
-      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 1: Estimación de π</span><button class="code-copy-btn" onclick="copyCode('mc-ex1')">Copiar</button></div>
-      <pre><code class="language-python" id="mc-ex1">import numpy as np
-from statslibx import ComputationalStats
-
-cs = ComputationalStats()
-
-def estimar_pi(n_points=10000):
-    """Estima π usando el método de Monte Carlo."""
-    x = np.random.uniform(-1, 1, n_points)
-    y = np.random.uniform(-1, 1, n_points)
-    dentro = np.sum(x**2 + y**2 <= 1)
-    return 4 * dentro / n_points
-
-resultado = cs.monte_carlo(estimar_pi, n=500, n_points=5000)
-print(f"Estimación de π: {resultado['mean']:.4f}")
-print(f"Desviación estándar: {resultado['std']:.4f}")</code></pre></div>
-
-      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 2: Valoración de opciones financieras</span><button class="code-copy-btn" onclick="copyCode('mc-ex2')">Copiar</button></div>
-      <pre><code class="language-python" id="mc-ex2">import numpy as np
-
-cs = ComputationalStats(seed=42)
-
-def option_payoff(S0=100, K=105, T=1, r=0.05, sigma=0.2):
-    """Black-Scholes Monte Carlo para una call europea."""
-    ST = S0 * np.exp((r - 0.5*sigma**2)*T + sigma*np.sqrt(T)*np.random.normal())
-    return max(ST - K, 0) * np.exp(-r*T)
-
-resultado = cs.monte_carlo(option_payoff, n=100000, return_simulations=False)
-print(f"Precio estimado de la opción: ${resultado['mean']:.4f}")
-print(f"Error estándar: ${resultado['std']:.4f}")</code></pre></div>
-
-      <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Ejemplo 3: Con simulaciones completas</span><button class="code-copy-btn" onclick="copyCode('mc-ex3')">Copiar</button></div>
-      <pre><code class="language-python" id="mc-ex3">import numpy as np
-import matplotlib.pyplot as plt
-
-def lanzar_dado():
-    return np.random.randint(1, 7)
-
-# Retornar todas las simulaciones
-resultado = cs.monte_carlo(lanzar_dado, n=10000, return_simulations=True)
-
-print(f"Media: {resultado['mean']:.3f}")  # ~ 3.5
-print(f"Std: {resultado['std']:.3f}")
-
-# Graficar distribución de resultados
-plt.hist(resultado['samples'], bins=6, edgecolor='black')
-plt.title('Distribución de 10,000 lanzamientos')
-plt.show()</code></pre></div>
-
-      <div class="note-box">
-        <strong>Nota:</strong> La función pasada a <code>monte_carlo()</code> debe retornar un único valor numérico escalar. Los <code>**kwargs</code> se pasan directamente a la función en cada iteración, por lo que son parámetros fijos — no cambian entre simulaciones. Para variar parámetros entre runs, inclúye la aleatoriedad dentro de la función.
+data = load_iris()
+cs = ComputationalStats(data, seed=42)</code></pre>
       </div>
     </div>
   </div>
 </div>
+
+<!-- REGRESSION -->
+<div class="method-section">
+  <div class="method-section-title">Regresión</div>
+
+  <div class="method-card" id="regression">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.regression<span class="paren">(X, y, degree, interaction_terms)</span></div>
+        <div class="method-signature">X: str | List[str] &nbsp;·&nbsp; y: str &nbsp;·&nbsp; degree: int = 1 &nbsp;·&nbsp; interaction_terms: bool = False</div>
+      </div>
+      <span class="method-returns">→ RegressionResult</span>
+    </div>
+    <div class="method-body">
+      <div class="result-badge">↩ RegressionResult</div>
+      <p class="method-desc">Regresión polinomial simple o múltiple. Para una variable, <code>degree</code> controla el grado del polinomio. Para varias variables usa regresión lineal múltiple. Internamente resuelve con ecuaciones normales y fallback a pseudo-inversa. Genera expresión simbólica con SymPy.</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">X</td><td class="param-type">str | List[str]</td><td class="param-default">—</td><td class="param-desc">Columna(s) predictora(s)</td></tr>
+          <tr><td class="param-name">y</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Columna objetivo</td></tr>
+          <tr><td class="param-name">degree</td><td class="param-type">int</td><td class="param-default">1</td><td class="param-desc">Grado del polinomio (solo para una variable predictora)</td></tr>
+          <tr><td class="param-name">interaction_terms</td><td class="param-type">bool</td><td class="param-default">False</td><td class="param-desc">Incluir términos de interacción en regresión múltiple</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('reg-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="reg-ex"># Regresión lineal simple
+modelo = cs.regression(X='sepal_length', y='petal_length')
+print(modelo)
+# <RegressionResult degree=1, R²=0.7599, n=150>
+
+# Ver resumen completo
+s = modelo.summary()
+print(s['metrics'])      # R², RMSE, MAE, AIC, BIC...
+print(s['coefficients']) # tabla con t-stats y p-values
+print(s['formula']['latex'])  # expresión LaTeX
+
+# Predicciones
+preds = modelo.predict([5.0, 6.0, 7.0])
+
+# Regresión polinomial grado 3
+modelo3 = cs.regression('sepal_length', 'petal_length', degree=3)
+print(f"R² = {modelo3.r2:.4f}")
+
+# Regresión múltiple
+modelo_m = cs.regression(['sepal_length', 'sepal_width'], 'petal_length')
+print(modelo_m.get_formula())</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="linear_regression">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.linear_regression<span class="paren">(X, y)</span></div>
+        <div class="method-signature">Atajo de .regression(X, y, degree=1)</div>
+      </div>
+      <span class="method-returns">→ RegressionResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Atajo para regresión lineal simple o múltiple (<code>degree=1</code>).</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('linreg-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="linreg-ex">modelo = cs.linear_regression('sepal_length', 'petal_length')
+modelo.plot()                   # 4 paneles: fit, residuales, Q-Q, histograma
+modelo.plot(interactive=True)  # Plotly interactivo
+modelo.plot(plot_type='qq')    # Solo Q-Q plot</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="polynomial_regression">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.polynomial_regression<span class="paren">(X, y, degree)</span></div>
+        <div class="method-signature">X: str &nbsp;·&nbsp; y: str &nbsp;·&nbsp; degree: int = 2</div>
+      </div>
+      <span class="method-returns">→ RegressionResult</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Atajo para regresión polinomial. Solo admite una variable predictora.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('polyreg-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="polyreg-ex">modelo = cs.polynomial_regression('sepal_length', 'petal_length', degree=3)
+print(f"Fórmula: {modelo.get_formula()}")
+print(f"LaTeX:   {modelo.latex_expr}")
+
+import numpy as np
+preds = modelo.predict(np.linspace(4.5, 8.0, 20))</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="find_best_degree">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.find_best_degree<span class="paren">(X, y, max_degree, metric)</span></div>
+        <div class="method-signature">X: str &nbsp;·&nbsp; y: str &nbsp;·&nbsp; max_degree: int = 5 &nbsp;·&nbsp; metric: 'r2' | 'aic' | 'bic' = 'r2'</div>
+      </div>
+      <span class="method-returns">→ dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Evalúa grados 1 a <code>max_degree</code> y retorna el mejor según la métrica. <code>'r2'</code> se maximiza; <code>'aic'</code> y <code>'bic'</code> se minimizan. Incluye todos los resultados en <code>'all_results'</code>.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('bestdeg-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="bestdeg-ex">resultado = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')
+print(f"Mejor grado: {resultado['degree']}")
+print(f"R²:  {resultado['r2']:.4f}")
+print(f"BIC: {resultado['bic']:.4f}")
+
+# Tabla comparativa
+for r in resultado['all_results']:
+    print(f"Grado {r['degree']}: R²={r['r2']:.4f}  AIC={r['aic']:.2f}  BIC={r['bic']:.2f}")
+
+# Graficar el mejor modelo
+resultado['model'].plot()</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERPOLATION -->
+<div class="method-section">
+  <div class="method-section-title">Interpolación</div>
+
+  <div class="method-card" id="interpolation">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.interpolation<span class="paren">(points, method, spline_degree)</span></div>
+        <div class="method-signature">points: List[Tuple[float, float]] &nbsp;·&nbsp; method: 'lagrange'|'newton'|'spline' = 'lagrange' &nbsp;·&nbsp; spline_degree: int = 3</div>
+      </div>
+      <span class="method-returns">→ InterpolationResult</span>
+    </div>
+    <div class="method-body">
+      <div class="result-badge">↩ InterpolationResult</div>
+      <p class="method-desc">Calcula un polinomio de interpolación a partir de puntos <code>(x, y)</code>. Lagrange y Newton generan expresión simbólica SymPy y código LaTeX. Spline usa <code>scipy.interpolate.interp1d</code>.</p>
+      <table class="params-table">
+        <thead><tr><th>Método</th><th>Descripción</th><th>Expr. simbólica</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">'lagrange'</td><td class="param-desc">Polinomio de Lagrange clásico. Eficiente para pocos puntos.</td><td class="param-type">Sí (SymPy)</td></tr>
+          <tr><td class="param-name">'newton'</td><td class="param-desc">Diferencias divididas de Newton. Más estable numéricamente.</td><td class="param-type">Sí (SymPy)</td></tr>
+          <tr><td class="param-name">'spline'</td><td class="param-desc">Spline de grado <code>spline_degree</code> vía SciPy. Suaviza oscilaciones.</td><td class="param-type">No</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('interp-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="interp-ex">points = [(0, 1), (1, 3), (2, 2), (3, 5), (4, 4)]
+
+# Lagrange
+interp = cs.interpolation(points, method='lagrange')
+print(interp.summary())
+print(f"LaTeX: {interp.latex_expr}")
+interp.plot()
+interp.plot(interactive=True)
+
+# Newton
+interp_n = cs.interpolation(points, method='newton')
+print(f"En x=2.5: {interp_n.predict(2.5):.4f}")
+
+# Evaluar en múltiples puntos
+import numpy as np
+x_new = np.linspace(0, 4, 100)
+y_new = interp.predict(x_new)
+
+# Spline cúbico
+interp_s = cs.interpolation(points, method='spline', spline_degree=3)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOTSTRAPPING -->
+<div class="method-section">
+  <div class="method-section-title">Bootstrapping</div>
+
+  <div class="method-card" id="bootstrapping">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.bootstrapping<span class="paren">(column, n_samples, statistic, confidence_level, custom_func)</span></div>
+        <div class="method-signature">column: str &nbsp;·&nbsp; n_samples: int = 1000 &nbsp;·&nbsp; statistic: 'mean'|'median'|'std'|'custom' &nbsp;·&nbsp; confidence_level: float = 0.95</div>
+      </div>
+      <span class="method-returns">→ BootstrappingResult</span>
+    </div>
+    <div class="method-body">
+      <div class="result-badge">↩ BootstrappingResult</div>
+      <p class="method-desc">Remuestreo bootstrap sobre una columna. Calcula tres tipos de intervalos de confianza: percentil, básico y normal. Acepta funciones personalizadas con <code>statistic='custom'</code>.</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">column</td><td class="param-type">str</td><td class="param-default">—</td><td class="param-desc">Columna del DataFrame a remuestrear</td></tr>
+          <tr><td class="param-name">n_samples</td><td class="param-type">int</td><td class="param-default">1000</td><td class="param-desc">Número de muestras bootstrap</td></tr>
+          <tr><td class="param-name">statistic</td><td class="param-type">str</td><td class="param-default">'mean'</td><td class="param-desc"><code>'mean'</code>, <code>'median'</code>, <code>'std'</code> o <code>'custom'</code></td></tr>
+          <tr><td class="param-name">confidence_level</td><td class="param-type">float</td><td class="param-default">0.95</td><td class="param-desc">Nivel de confianza para los 3 tipos de IC</td></tr>
+          <tr><td class="param-name">custom_func</td><td class="param-type">callable | None</td><td class="param-default">None</td><td class="param-desc">Función personalizada si <code>statistic='custom'</code>. Recibe <code>np.ndarray</code>, retorna escalar.</td></tr>
+        </tbody>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('boot-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="boot-ex"># Bootstrap de la media — IC 95%
+boot = cs.bootstrapping('sepal_length', n_samples=2000, statistic='mean')
+s = boot.summary()
+print(f"Estadístico original: {s['original_statistic']:.4f}")
+print(f"Sesgo:               {s['bias']:.6f}")
+print(f"Error estándar:      {s['std_error']:.4f}")
+
+ic = s['confidence_interval_95%']
+print(f"IC Percentil: {ic['percentile']}")
+print(f"IC Básico:    {ic['basic']}")
+print(f"IC Normal:    {ic['normal']}")
+
+boot.plot()
+boot.plot(interactive=True)
+
+# Bootstrap de la mediana con IC 99%
+boot_med = cs.bootstrapping('petal_length', statistic='median', confidence_level=0.99)
+
+# Bootstrap con función personalizada (coeficiente de variación)
+boot_cv = cs.bootstrapping(
+    'sepal_width',
+    statistic='custom',
+    custom_func=lambda x: x.std() / x.mean()
+)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLUSTERING -->
+<div class="method-section">
+  <div class="method-section-title">Clustering (K-Means)</div>
+
+  <div class="method-card" id="k_means">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.k_means<span class="paren">(k, max_iters, init_method)</span></div>
+        <div class="method-signature">k: int &nbsp;·&nbsp; max_iters: int = 100 &nbsp;·&nbsp; init_method: 'random' | 'kmeans++' = 'kmeans++'</div>
+      </div>
+      <span class="method-returns">→ dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">K-Means implementado desde cero sobre todas las columnas numéricas. Usa K-Means++ por defecto para mejor inicialización y convergencia. Calcula inercia (WCSS) y silhouette score (requiere scikit-learn).</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">k</td><td class="param-type">int</td><td class="param-default">—</td><td class="param-desc">Número de clusters (requerido)</td></tr>
+          <tr><td class="param-name">max_iters</td><td class="param-type">int</td><td class="param-default">100</td><td class="param-desc">Iteraciones máximas hasta convergencia</td></tr>
+          <tr><td class="param-name">init_method</td><td class="param-type">str</td><td class="param-default">'kmeans++'</td><td class="param-desc"><code>'kmeans++'</code> (recomendado) o <code>'random'</code></td></tr>
+        </tbody>
+      </table>
+      <p class="method-desc" style="margin-top:1rem;margin-bottom:0.5rem;"><strong style="color:#fff;">Retorna dict con:</strong></p>
+      <div class="attr-grid">
+        <div class="attr-pill"><div class="attr-name">centroids</div><div class="attr-type">np.ndarray</div><div class="attr-desc">Coordenadas de los k centroides finales</div></div>
+        <div class="attr-pill"><div class="attr-name">labels</div><div class="attr-type">np.ndarray</div><div class="attr-desc">Cluster asignado a cada observación</div></div>
+        <div class="attr-pill"><div class="attr-name">inertia</div><div class="attr-type">float</div><div class="attr-desc">Suma de cuadrados dentro del cluster (WCSS)</div></div>
+        <div class="attr-pill"><div class="attr-name">silhouette_score</div><div class="attr-type">float</div><div class="attr-desc">Puntuación de silueta (-1 a 1)</div></div>
+        <div class="attr-pill"><div class="attr-name">n_iterations</div><div class="attr-type">int</div><div class="attr-desc">Iteraciones hasta convergencia</div></div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('kmeans-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="kmeans-ex">resultado = cs.k_means(k=3, init_method='kmeans++')
+print(f"Inercia:     {resultado['inertia']:.2f}")
+print(f"Silhouette:  {resultado['silhouette_score']:.4f}")
+print(f"Iteraciones: {resultado['n_iterations']}")
+
+# Añadir etiquetas al DataFrame
+data['cluster'] = resultado['labels']
+print(data.groupby('cluster').mean())</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="elbow_method">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.elbow_method<span class="paren">(max_k)</span></div>
+        <div class="method-signature">max_k: int = 10</div>
+      </div>
+      <span class="method-returns">→ dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Evalúa K-Means para k = 2 a <code>max_k</code>. Retorna inercias y silhouette scores para cada k. Útil para determinar visualmente el número óptimo de clusters.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('elbow-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="elbow-ex">elbow = cs.elbow_method(max_k=8)
+# {'k_values': [2,3,...,8], 'inertias': [...], 'silhouettes': [...]}
+
+import matplotlib.pyplot as plt
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+axes[0].plot(elbow['k_values'], elbow['inertias'], 'bo-')
+axes[0].set(xlabel='k', ylabel='Inercia', title='Método del Codo')
+axes[0].grid(alpha=0.3)
+
+axes[1].plot(elbow['k_values'], elbow['silhouettes'], 'rs-')
+axes[1].set(xlabel='k', ylabel='Silhouette Score')
+axes[1].grid(alpha=0.3)
+
+plt.tight_layout(); plt.show()</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CORRELATION -->
+<div class="method-section">
+  <div class="method-section-title">Análisis de Correlación</div>
+
+  <div class="method-card" id="correlation_analysis">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.correlation_analysis<span class="paren">(method)</span></div>
+        <div class="method-signature">method: 'pearson' | 'spearman' | 'kendall' = 'pearson'</div>
+      </div>
+      <span class="method-returns">→ dict</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Calcula la matriz de correlación de todas las columnas numéricas. Para Pearson, calcula también la matriz de p-values par a par.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('corr-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="corr-ex">resultado = cs.correlation_analysis(method='pearson')
+print(resultado['correlation_matrix'])
+print(resultado['p_values'])   # Solo para Pearson
+
+resultado_sp = cs.correlation_analysis(method='spearman')</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="plot_corr_heatmap">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.plot_correlation_heatmap<span class="paren">(method, annot, interactive)</span></div>
+        <div class="method-signature">method: str = 'pearson' &nbsp;·&nbsp; annot: bool = True &nbsp;·&nbsp; interactive: bool = False</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Heatmap de correlación con escala RdBu centrada en 0. Con <code>interactive=True</code> usa Plotly con hover tooltips; de lo contrario usa seaborn.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('heatmap-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="heatmap-ex">cs.plot_correlation_heatmap(method='pearson', annot=True)
+cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UTILS -->
+<div class="method-section">
+  <div class="method-section-title">Utilidades</div>
+
+  <div class="method-card" id="descriptive_stats">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.descriptive_statistics<span class="paren">(by)</span></div>
+        <div class="method-signature">by: str | None = None</div>
+      </div>
+      <span class="method-returns">→ pd.DataFrame</span>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Estadísticas descriptivas de columnas numéricas. Con <code>by</code> agrupa por una columna categórica.</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('desc-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="desc-ex">print(cs.descriptive_statistics())
+print(cs.descriptive_statistics(by='species'))  # Agrupado por categoría</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="plot_dist">
+    <div class="method-header">
+      <div>
+        <div class="method-name">.plot_distribution<span class="paren">(column, by, kind, interactive)</span></div>
+        <div class="method-signature">column: str &nbsp;·&nbsp; by: str | None &nbsp;·&nbsp; kind: 'hist'|'box'|'violin' = 'hist' &nbsp;·&nbsp; interactive: bool = False</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Distribución de una columna con soporte de agrupamiento por variable categórica. Backend estático (matplotlib/seaborn) o interactivo (Plotly).</p>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('plotdist-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="plotdist-ex">cs.plot_distribution('sepal_length', kind='hist')
+cs.plot_distribution('petal_length', by='species', kind='violin')
+cs.plot_distribution('sepal_width', kind='box', interactive=True)</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT OBJECTS -->
+<div class="method-section">
+  <div class="method-section-title">Objetos de Resultado</div>
+
+  <div class="method-card" id="regression_result">
+    <div class="method-header">
+      <div>
+        <div class="method-name">RegressionResult</div>
+        <div class="method-signature">Retornado por .regression() · .linear_regression() · .polynomial_regression() · .find_best_degree()</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Objeto completo con coeficientes, métricas, expresión simbólica SymPy, código LaTeX y visualizaciones.</p>
+      <p class="method-desc" style="margin-bottom:0.5rem;"><strong style="color:#fff;">Atributos principales:</strong></p>
+      <div class="attr-grid">
+        <div class="attr-pill"><div class="attr-name">r2</div><div class="attr-type">float</div><div class="attr-desc">Coeficiente R²</div></div>
+        <div class="attr-pill"><div class="attr-name">r2_adj</div><div class="attr-type">float</div><div class="attr-desc">R² ajustado</div></div>
+        <div class="attr-pill"><div class="attr-name">intercept</div><div class="attr-type">float</div><div class="attr-desc">Término independiente β₀</div></div>
+        <div class="attr-pill"><div class="attr-name">slopes</div><div class="attr-type">np.ndarray</div><div class="attr-desc">Coeficientes β₁, β₂, …</div></div>
+        <div class="attr-pill"><div class="attr-name">residuals</div><div class="attr-type">np.ndarray</div><div class="attr-desc">y − ŷ para cada observación</div></div>
+        <div class="attr-pill"><div class="attr-name">mse / rmse / mae / mape</div><div class="attr-type">float</div><div class="attr-desc">Métricas de error</div></div>
+        <div class="attr-pill"><div class="attr-name">aic / bic</div><div class="attr-type">float</div><div class="attr-desc">Criterios de información de Akaike y Bayesiano</div></div>
+        <div class="attr-pill"><div class="attr-name">p_values</div><div class="attr-type">np.ndarray</div><div class="attr-desc">P-value de cada coeficiente</div></div>
+        <div class="attr-pill"><div class="attr-name">t_stats</div><div class="attr-type">np.ndarray</div><div class="attr-desc">Estadístico t por coeficiente</div></div>
+        <div class="attr-pill"><div class="attr-name">symbolic_expr</div><div class="attr-type">sympy.Expr</div><div class="attr-desc">Expresión simbólica simplificada</div></div>
+        <div class="attr-pill"><div class="attr-name">latex_expr</div><div class="attr-type">str</div><div class="attr-desc">Fórmula en formato LaTeX</div></div>
+      </div>
+      <p class="method-desc" style="margin-top:1.25rem;margin-bottom:0.5rem;"><strong style="color:#fff;">Métodos:</strong></p>
+      <div class="result-methods">
+        <div class="result-method-pill"><div class="rm-name">.summary()</div><div class="rm-ret">→ dict</div><div class="rm-desc">Tabla de coeficientes + todas las métricas + fórmula</div></div>
+        <div class="result-method-pill"><div class="rm-name">.predict(X_new)</div><div class="rm-ret">→ np.ndarray</div><div class="rm-desc">Predicciones sobre nuevos datos</div></div>
+        <div class="result-method-pill"><div class="rm-name">.get_formula(decimals)</div><div class="rm-ret">→ str</div><div class="rm-desc">Ecuación legible como string</div></div>
+        <div class="result-method-pill"><div class="rm-name">.plot(plot_type, interactive)</div><div class="rm-ret">→ None</div><div class="rm-desc">'scatter', 'residuals', 'qq', 'all'. Plotly con interactive=True</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="interpolation_result">
+    <div class="method-header">
+      <div>
+        <div class="method-name">InterpolationResult</div>
+        <div class="method-signature">Retornado por .interpolation()</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Encapsula el interpolador vectorizado y la expresión simbólica (Lagrange/Newton).</p>
+      <div class="result-methods">
+        <div class="result-method-pill"><div class="rm-name">.predict(x)</div><div class="rm-ret">→ float | ndarray</div><div class="rm-desc">Evalúa el interpolador en uno o varios puntos</div></div>
+        <div class="result-method-pill"><div class="rm-name">.summary()</div><div class="rm-ret">→ dict</div><div class="rm-desc">Método, n_points, rangos x/y, expresión</div></div>
+        <div class="result-method-pill"><div class="rm-name">.plot(n_points, interactive)</div><div class="rm-ret">→ None</div><div class="rm-desc">Curva de interpolación + puntos originales</div></div>
+        <div class="result-method-pill"><div class="rm-name">.latex_expr</div><div class="rm-ret">str</div><div class="rm-desc">Polinomio en LaTeX (Lagrange / Newton)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="method-card" id="bootstrapping_result">
+    <div class="method-header">
+      <div>
+        <div class="method-name">BootstrappingResult</div>
+        <div class="method-signature">Retornado por .bootstrapping()</div>
+      </div>
+    </div>
+    <div class="method-body">
+      <p class="method-desc">Contiene la distribución bootstrap y tres tipos de intervalos de confianza.</p>
+      <div class="attr-grid">
+        <div class="attr-pill"><div class="attr-name">original_stat</div><div class="attr-type">float</div><div class="attr-desc">Estadístico de la muestra original</div></div>
+        <div class="attr-pill"><div class="attr-name">bootstrap_stats</div><div class="attr-type">np.ndarray</div><div class="attr-desc">Los n_samples estadísticos simulados</div></div>
+        <div class="attr-pill"><div class="attr-name">bias</div><div class="attr-type">float</div><div class="attr-desc">Media bootstrap − estadístico original</div></div>
+        <div class="attr-pill"><div class="attr-name">std_error</div><div class="attr-type">float</div><div class="attr-desc">Desviación estándar de las simulaciones</div></div>
+        <div class="attr-pill"><div class="attr-name">percentile_ci</div><div class="attr-type">tuple</div><div class="attr-desc">IC por percentiles (más común)</div></div>
+        <div class="attr-pill"><div class="attr-name">basic_ci</div><div class="attr-type">tuple</div><div class="attr-desc">IC básico por reflexión</div></div>
+        <div class="attr-pill"><div class="attr-name">normal_ci</div><div class="attr-type">tuple</div><div class="attr-desc">IC normal con z-score</div></div>
+      </div>
+      <div class="result-methods" style="margin-top:1rem;">
+        <div class="result-method-pill"><div class="rm-name">.summary()</div><div class="rm-ret">→ dict</div><div class="rm-desc">Resumen con los 3 ICs, bias y std_error</div></div>
+        <div class="result-method-pill"><div class="rm-name">.plot(interactive)</div><div class="rm-ret">→ None</div><div class="rm-desc">Histograma bootstrap + Q-Q plot</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline completo -->
+  <div class="method-card">
+    <div class="method-header">
+      <div><div class="method-name">Ejemplo integrador — Pipeline completo</div></div>
+    </div>
+    <div class="method-body">
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Flujo completo</span><button class="code-copy-btn" onclick="copyCode('full-ex')">Copiar</button></div>
+        <pre><code class="language-python" id="full-ex">from statslibx import ComputationalStats
+from statslibx.datasets import load_iris
+
+data = load_iris()
+cs = ComputationalStats(data, seed=42)
+
+# 1. Mejor grado de regresión por BIC
+best = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')
+print(f"Mejor grado: {best['degree']}, R²={best['r2']:.4f}")
+best['model'].plot()
+
+# 2. Bootstrap de la media con IC 99%
+boot = cs.bootstrapping('sepal_length', n_samples=5000, confidence_level=0.99)
+s = boot.summary()
+print(f"IC 99% percentil: {s['confidence_interval_99%']['percentile']}")
+boot.plot(interactive=True)
+
+# 3. Interpolación de Newton
+points = [(4.5, 1.3), (5.0, 1.8), (5.5, 2.5), (6.0, 3.8), (7.0, 5.1)]
+interp = cs.interpolation(points, method='newton')
+print(f"LaTeX: {interp.latex_expr}")
+interp.plot()
+
+# 4. Método del codo + clustering óptimo
+elbow = cs.elbow_method(max_k=6)
+clusters = cs.k_means(k=3)
+data['cluster'] = clusters['labels']
+print(f"Silhouette: {clusters['silhouette_score']:.4f}")
+
+# 5. Heatmap de correlación interactivo
+cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
+      </div>
+      <div class="note-box teal">
+        <strong>Tip:</strong> Los objetos <code>RegressionResult</code>, <code>InterpolationResult</code> y <code>BootstrappingResult</code> son independientes una vez creados. Puedes guardarlos, pasarlos a otras funciones o acceder a sus atributos directamente sin necesidad del objeto <code>ComputationalStats</code> padre.
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 </div>
 </div>
 
 <footer>
-  <div class="footer-meta">StatsLibX · v2.4 · Emmanuel Ascendra</div>
+  <div class="footer-meta">StatsLibX · v2.5 · Desarrollado por Emmanuel Ascendra</div>
   <div class="footer-links">
     <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>

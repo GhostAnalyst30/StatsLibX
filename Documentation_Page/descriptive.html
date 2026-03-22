@@ -88,6 +88,8 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 
 @media(max-width:768px){.layout{grid-template-columns:1fr;}.sidebar{display:none;}.content{padding:2rem 0;}}
 </style>
+<link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.svg"/>
 </head>
 <body>
 <div class="copied-toast" id="toast">¡Copiado!</div>
@@ -125,6 +127,8 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 <div style="max-width:1240px;margin:0 auto;padding:0 2rem;">
 <div class="layout" style="padding:0;">
 <aside class="sidebar">
+  <div class="sidebar-title">Constructor</div>
+  <a href="#init">__init__()</a>
   <div class="sidebar-title">Tendencia Central</div>
   <a href="#mean">.mean()</a>
   <a href="#median">.median()</a>
@@ -148,32 +152,31 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 
 <main class="content">
 
-<!-- INIT -->
 <div class="method-section">
-  <div class="method-section-title">Inicialización</div>
-  <div class="method-card">
+  <div class="method-section-title">Constructor</div>
+  <div class="method-card" id="init">
     <div class="method-header">
       <div>
-        <div class="method-name"><span class="cls">DescriptiveStats</span><span class="paren">(data, lang)</span></div>
-        <div class="method-signature">data: pd.DataFrame | np.ndarray &nbsp;·&nbsp; lang: 'es-ES' | 'en-US'</div>
+        <div class="method-name"><span style="color:var(--accent)">DescriptiveStats</span><span class="paren">(data, lang)</span></div>
+        <div class="method-signature">data: pd.DataFrame | np.ndarray &nbsp;·&nbsp; lang: 'es-ES' | 'en-US' = 'es-ES'</div>
       </div>
     </div>
     <div class="method-body">
-      <p class="method-desc">Inicializa la clase con un DataFrame de pandas o un array de numpy. Detecta automáticamente columnas numéricas y categóricas.</p>
+      <p class="method-desc">Inicializa con un DataFrame de pandas o array numpy. Detecta automáticamente columnas numéricas y categóricas</p>
+      <table class="params-table">
+        <thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="param-name">data</td><td class="param-type">pd.DataFrame | np.ndarray</td><td class="param-default">—</td><td class="param-desc">Dataset de entrada (requerido)</td></tr>
+          <tr><td class="param-name">lang</td><td class="param-type">str</td><td class="param-default">'es-ES'</td><td class="param-desc">Idioma de salidas: <code>'es-ES'</code> o <code>'en-US'</code></td></tr>
+        </tbody>
+      </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="init-ex">import pandas as pd
-from statslibx import DescriptiveStats
+        <pre><code class="language-python" id="init-ex">from statslibx import DescriptiveStats
 from statslibx.datasets import load_iris
 
-# Con DataFrame
 data = load_iris()
-ds = DescriptiveStats(data)
-
-# Con numpy array
-import numpy as np
-arr = np.random.normal(0, 1, 1000)
-ds2 = DescriptiveStats(arr)</code></pre>
+ds = DescriptiveStats(data)</code></pre>
       </div>
     </div>
   </div>
@@ -471,7 +474,7 @@ ds.help()   # Imprime guía completa en inglés</code></pre></div>
 </div>
 
 <footer>
-  <div class="footer-meta">StatsLibX · v2.4 · Desarrollado por Emmanuel Ascendra</div>
+  <div class="footer-meta">StatsLibX · v2.5 · Desarrollado por Emmanuel Ascendra</div>
   <div class="footer-links">
     <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
     <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
