@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────
  * Pega esto justo antes de </body> en cada HTML:
  *
- *   <script src="https://cdn.jsdelivr.net/gh/GhostAnalyst30/StatsLibX@main/Documentation_Page/mobile.js"></script>
+ *   <script src="https://cdn.jsdelivr.net/gh/GhostAnalyst30/StatsLibX@latest/Documentation_Page/mobile.js"></script>
  *
  * Se encarga de:
  *  1. Inyectar CSS responsive completo
