@@ -1,10 +1,10 @@
 """
 StatsLibx - Librería de Estadística para Python
 Autor: Emmanuel Ascendra
-Versión: 0.2.5
+Versión: 0.2.6
 """
 
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
@@ -37,7 +37,7 @@ def welcome():
     print(f"\nClases disponibles:")
     print(f"  - DescriptiveStats: Estadística descriptiva")
     print(f"  - InferentialStats: Estadística inferencial")
-    print(f"  - ComputacionalStats: En desarrollo")
+    print(f"  - ComputacionalStats: Estadística computacional")
     print(f"  - UtilsStats: Utilidades Extras")
     print(f"\nMódulos disponibles:")
     print(f"  - Datasets: Carga de Datasets")

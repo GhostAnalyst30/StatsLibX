@@ -417,13 +417,14 @@ pre[class*="language-"] {
     if (document.getElementById("slx-mob-nav")) return;
 
     const pages = [
-      { href: "index.html",         label: "Inicio" },
-      { href: "descriptive.html",   label: "Descriptive" },
-      { href: "inferential.html",   label: "Inferential" },
-      { href: "computational.html", label: "Computational" },
-      { href: "utils.html",         label: "Utils" },
-      { href: "preprocessing.html", label: "Preprocessing" },
-      { href: "datasets.html",      label: "Datasets" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html",         label: "Inicio" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html",   label: "Descriptive" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html",   label: "Inferential" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html", label: "Computational" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html",         label: "Utils" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html", label: "Preprocessing" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html",      label: "Datasets" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html",      label: "Coder" },
     ];
 
     const current = window.location.pathname.split("/").pop() || "index.html";

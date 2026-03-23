@@ -1,14 +1,13 @@
 from typing import Optional, Union, List, Dict, Any
 import pandas as pd
-import polars as pl
 import numpy as np
 
 
 class Preprocessing:
 
-    def __init__(self, data: Union[pd.DataFrame, pl.DataFrame]):
-        if not isinstance(data, (pd.DataFrame, pl.DataFrame)):
-            raise TypeError("data must be a pandas or polars DataFrame")
+    def __init__(self, data: pd.DataFrame):
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError("data must be a pandas DataFrame")
         self.data = data
         self.columns = list(self.data.columns)
 
@@ -18,9 +17,6 @@ class Preprocessing:
 
     def _is_pandas(self) -> bool:
         return isinstance(self.data, pd.DataFrame)
-
-    def _is_polars(self) -> bool:
-        return isinstance(self.data, pl.DataFrame)
 
     def _count_nulls(self, column: str) -> int:
         if self._is_pandas():
@@ -66,12 +62,6 @@ class Preprocessing:
                 "unique_values": unique.values
             })
 
-        unique = self.data.select(pl.all().n_unique())
-        return unique.to_pandas().melt(
-            var_name="column",
-            value_name="unique_values"
-        )
-
     def preview_data(self, n: int = 5):
         return self.data.head(n)
 
@@ -83,13 +73,9 @@ class Preprocessing:
         if self._is_pandas():
             return self.data.select_dtypes(include=np.number).describe()
 
-        return self.data.select(pl.all().filter(pl.col(pl.NUMERIC))).describe()
-
     def describe_categorical(self):
         if self._is_pandas():
             return self.data.select_dtypes(include="object").describe()
-
-        return self.data.select(pl.all().filter(pl.col(pl.Utf8))).describe()
 
     # ------------------------------------------------------------------
     # Transformations
@@ -105,35 +91,18 @@ class Preprocessing:
         if self._is_pandas():
             self.data[columns] = self.data[columns].fillna(fill_with)
 
-        else:
-            self.data = self.data.with_columns([
-                pl.col(col).fill_null(fill_with) for col in columns
-            ])
-
         return self
 
     def normalize(self, column: str):
         if self._is_pandas():
             col = self.data[column]
             self.data[column] = (col - col.min()) / (col.max() - col.min())
-        else:
-            self.data = self.data.with_columns(
-                ((pl.col(column) - pl.col(column).min()) /
-                 (pl.col(column).max() - pl.col(column).min()))
-                .alias(column)
-            )
         return self
 
     def standardize(self, column: str):
         if self._is_pandas():
             col = self.data[column]
             self.data[column] = (col - col.mean()) / col.std()
-        else:
-            self.data = self.data.with_columns(
-                ((pl.col(column) - pl.col(column).mean()) /
-                 pl.col(column).std())
-                .alias(column)
-            )
         return self
 
     # ------------------------------------------------------------------
