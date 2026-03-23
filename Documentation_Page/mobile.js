@@ -1,9 +1,8 @@
 /**
- * StatsLibX — mobile.js
+ * StatsLibX — mobile.js -- v2.6
  * ─────────────────────────────────────────────────────────────
- * Pega esto justo antes de </body> en cada HTML:
  *
- *   <script src="https://cdn.jsdelivr.net/gh/GhostAnalyst30/StatsLibX@latest/Documentation_Page/mobile.js"></script>
+ *   <script src="https://cdn.jsdelivr.net/gh/GhostAnalyst30/StatsLibX@main/Documentation_Page/mobile.js"></script>
  *
  * Se encarga de:
  *  1. Inyectar CSS responsive completo
@@ -427,7 +426,7 @@ pre[class*="language-"] {
       { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html",      label: "Coder" },
     ];
 
-    const current = window.location.pathname.split("/").pop() || "index.html";
+    const current = window.location.href;
 
     const menu = document.createElement("div");
     menu.id = "slx-mob-nav";
@@ -437,7 +436,7 @@ pre[class*="language-"] {
       const a = document.createElement("a");
       a.href = page.href;
       a.textContent = page.label;
-      if (page.href === current) a.classList.add("active");
+      if (current.includes(page.href.split("/").pop())) a.classList.add("active");
       a.addEventListener("click", closeMenu);
       menu.appendChild(a);
     });
