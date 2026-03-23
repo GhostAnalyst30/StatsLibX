@@ -1,4 +1,4 @@
-# 📦 StatsLibX v2.5
+# 📦 StatsLibX v2.6
 
 StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
 
