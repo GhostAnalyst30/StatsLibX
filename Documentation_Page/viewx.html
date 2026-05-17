@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ViewX · StatsLibX</title>
+<title>ViewX — StatsLibX</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
 <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
@@ -226,7 +226,7 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
 
 <nav>
   <div class="nav-inner">
-    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span> · <span class="vx">ViewX</span></a>
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">SL<span>X</span>/<span class="vx">ViewX</span></a>
     <div class="nav-links">
         <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
         <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
@@ -546,16 +546,16 @@ Prism.highlightAll();
   }
   function buildMobileMenu(){
     if(document.getElementById("slx-mob-nav"))return;
-    const pages=[
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html",label:"Inicio"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html",label:"Descriptive"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html",label:"Inferential"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html",label:"Computational"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html",label:"Utils"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html",label:"Preprocessing"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html",label:"Datasets"},
-      {href:"#",label:"ViewX",active:"viewx"},
-      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html",label:"Coder"},
+    const pages = [
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html",         label: "Inicio" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html",   label: "Descriptive" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html",   label: "Inferential" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html", label: "Computational" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html",         label: "Utils" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html", label: "Preprocessing" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html",      label: "Datasets" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html",      label: "ViewX" },
+      { href: "https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html",      label: "Coder" },
     ];
     const menu=document.createElement("div");
     menu.id="slx-mob-nav";
