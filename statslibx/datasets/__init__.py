@@ -110,6 +110,8 @@ def load_dataset(
     resource_name = path.name
     ext = path.suffix.lower()
 
+    if ext == "":
+        ext = ".csv"
 
     if ext not in _SUPPORTED_EXTENSIONS:
         raise ValueError(

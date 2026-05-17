@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ViewX · StatsLibX</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
+<link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
+<link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.svg"/>
+<style>
+:root {
+  --bg: #09090f;
+  --surface: #111118;
+  --border: rgba(255,255,255,0.07);
+  --text: #e8e8f0;
+  --muted: #7a7a90;
+  --accent: #7c6af7;
+  --accent2: #4fd1c5;
+  --accent3: #f6ad55;
+  --card: #14141e;
+  --glow: rgba(124,106,247,0.15);
+  --viewx: #4fd1c5;
+  --viewx-glow: rgba(79,209,197,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:1.5rem;}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:#fff;text-decoration:none;letter-spacing:-0.01em;}
+.logo span{color:var(--accent);}
+.logo .vx{color:var(--viewx);}
+.nav-links{display:flex;gap:0.25rem;flex-wrap:wrap;}
+.nav-links a{font-size:0.82rem;font-weight:500;color:var(--muted);text-decoration:none;padding:0.3rem 0.7rem;border-radius:6px;transition:color 0.2s,background 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-links a.active-viewx{color:var(--viewx);background:rgba(79,209,197,0.08);}
+.nav-pip{font-family:'DM Mono',monospace;font-size:0.78rem;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.3);color:var(--accent);padding:0.3rem 0.9rem;border-radius:20px;cursor:pointer;transition:all 0.2s;}
+.nav-pip:hover{background:rgba(124,106,247,0.2);}
+
+/* HERO */
+.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(79,209,197,0.14) 0%,rgba(124,106,247,0.07) 50%,transparent 70%);pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+
+/* Scan line decoration */
+.hero-scan{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.hero-scan::after{content:'';position:absolute;top:-100%;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(79,209,197,0.4),transparent);animation:scan 6s ease-in-out infinite;}
+@keyframes scan{0%{top:-5%;}100%{top:105%;}}
+
+.hero-tag{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:500;color:var(--viewx);background:rgba(79,209,197,0.1);border:1px solid rgba(79,209,197,0.25);padding:0.3rem 0.9rem;border-radius:20px;margin-bottom:2rem;letter-spacing:0.05em;text-transform:uppercase;}
+
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(3.5rem,10vw,8rem);font-weight:800;letter-spacing:-0.03em;line-height:0.95;margin-bottom:1.5rem;}
+.hero h1 .line1{display:block;color:#fff;}
+.hero h1 .line2{display:block;background:linear-gradient(135deg,var(--viewx),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:580px;margin:0 auto 2.5rem;font-weight:400;}
+
+/* Badge de integración */
+.hero-badge{display:inline-flex;align-items:center;gap:0.6rem;font-family:'DM Mono',monospace;font-size:0.85rem;background:var(--surface);border:1px solid rgba(79,209,197,0.25);padding:0.6rem 1.25rem;border-radius:10px;margin-bottom:2.5rem;color:var(--text);}
+.hero-badge .dot-live{width:7px;height:7px;border-radius:50%;background:var(--viewx);box-shadow:0 0 6px var(--viewx);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.hero-badge .badge-label{color:var(--viewx);}
+
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+.btn-primary{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.75rem;background:var(--viewx);color:#0a1a18;border-radius:10px;text-decoration:none;font-weight:700;font-size:0.95rem;transition:all 0.2s;border:none;cursor:pointer;}
+.btn-primary:hover{background:#38b2ac;transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,209,197,0.25);}
+.btn-ghost{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.75rem;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;text-decoration:none;font-weight:500;font-size:0.95rem;transition:all 0.2s;cursor:pointer;}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
+.btn-back{display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.75rem;background:rgba(124,106,247,0.1);color:var(--accent);border:1px solid rgba(124,106,247,0.25);border-radius:10px;text-decoration:none;font-weight:600;font-size:0.95rem;transition:all 0.2s;cursor:pointer;}
+.btn-back:hover{background:rgba(124,106,247,0.18);transform:translateY(-2px);}
+
+/* STATS BAR */
+.stats-bar{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);padding:1.5rem 2rem;}
+.stats-inner{max-width:1240px;margin:0 auto;display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;}
+.stat-item{text-align:center;}
+.stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;}
+.stat-num span{color:var(--viewx);}
+.stat-label{font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-top:0.15rem;}
+
+/* SECTION */
+section{padding:5rem 2rem;}
+.container{max-width:1240px;margin:0 auto;}
+.section-label{font-size:0.75rem;font-weight:600;color:var(--viewx);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-0.02em;color:#fff;margin-bottom:1rem;}
+.section-sub{font-size:1rem;color:var(--muted);max-width:520px;}
+
+/* FEATURE CARDS */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5px;margin-top:3rem;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;background:var(--border);}
+.feature-card{background:var(--card);padding:2rem;transition:background 0.2s;display:flex;flex-direction:column;gap:0.75rem;position:relative;overflow:hidden;}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--viewx),transparent);opacity:0;transition:opacity 0.3s;}
+.feature-card:hover{background:#141420;}
+.feature-card:hover::before{opacity:1;}
+.feature-icon{font-size:1.8rem;margin-bottom:0.25rem;}
+.feature-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;}
+.feature-desc{font-size:0.88rem;color:var(--muted);line-height:1.7;flex:1;}
+.feature-tags{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
+.tag{font-size:0.72rem;font-family:'DM Mono',monospace;background:rgba(79,209,197,0.08);color:var(--viewx);padding:0.2rem 0.6rem;border-radius:4px;border:1px solid rgba(79,209,197,0.2);}
+.tag.purple{background:rgba(124,106,247,0.1);color:var(--accent);border-color:rgba(124,106,247,0.2);}
+.tag.amber{background:rgba(246,173,85,0.08);color:var(--accent3);border-color:rgba(246,173,85,0.2);}
+
+/* VISUAL PREVIEW (fake chart UI) */
+.preview-wrapper{margin-top:3rem;background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;}
+.preview-bar{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.25rem;border-bottom:1px solid var(--border);background:var(--surface);}
+.preview-dots{display:flex;gap:0.4rem;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot-r{background:#ff5f57;}
+.dot-y{background:#febc2e;}
+.dot-g{background:#28c840;}
+.preview-title{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);}
+.preview-badge{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--viewx);background:rgba(79,209,197,0.1);border:1px solid rgba(79,209,197,0.2);padding:0.2rem 0.6rem;border-radius:4px;}
+
+.preview-body{padding:1.75rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+@media(max-width:700px){.preview-body{grid-template-columns:1fr;}}
+
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+.chart-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;font-family:'DM Mono',monospace;}
+
+/* Bar chart SVG */
+.bars{display:flex;align-items:flex-end;gap:8px;height:80px;}
+.bar{border-radius:4px 4px 0 0;flex:1;animation:growUp 0.8s ease both;}
+@keyframes growUp{from{transform:scaleY(0);transform-origin:bottom;}to{transform:scaleY(1);transform-origin:bottom;}}
+.bar:nth-child(1){background:var(--viewx);height:65%;animation-delay:0.1s;}
+.bar:nth-child(2){background:var(--accent);height:85%;animation-delay:0.18s;}
+.bar:nth-child(3){background:var(--accent3);height:50%;animation-delay:0.26s;}
+.bar:nth-child(4){background:var(--viewx);height:95%;animation-delay:0.34s;}
+.bar:nth-child(5){background:var(--accent);height:70%;animation-delay:0.42s;}
+.bar:nth-child(6){background:var(--accent3);height:40%;animation-delay:0.5s;}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:1.25rem;}
+.donut{flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:0.5rem;}
+.legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* Scatter dots */
+.scatter{position:relative;height:80px;margin-top:0.25rem;}
+.scatter-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--viewx);opacity:0.7;animation:popIn 0.5s ease both;}
+@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
+
+/* Heatmap grid */
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:0.25rem;}
+.hm-cell{height:16px;border-radius:3px;background:var(--border);}
+.hm-cell.l1{background:rgba(79,209,197,0.15);}
+.hm-cell.l2{background:rgba(79,209,197,0.35);}
+.hm-cell.l3{background:rgba(79,209,197,0.6);}
+.hm-cell.l4{background:rgba(79,209,197,0.85);}
+
+/* CODE SECTION */
+.code-section{background:var(--surface);border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-top:3rem;}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);}
+.code-dots{display:flex;gap:0.4rem;}
+.code-copy{font-size:0.78rem;color:var(--muted);cursor:pointer;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:6px;background:transparent;font-family:'DM Mono',monospace;transition:all 0.2s;}
+.code-copy:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.code-section pre{margin:0!important;border-radius:0!important;background:#0d0d16!important;padding:1.75rem!important;font-size:0.875rem!important;}
+
+/* INTEGRATION CALLOUT */
+.integration-box{margin-top:3rem;background:rgba(79,209,197,0.05);border:1px solid rgba(79,209,197,0.2);border-radius:16px;padding:2.5rem;display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;}
+.integration-icon{font-size:2.5rem;flex-shrink:0;}
+.integration-content h3{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:0.5rem;}
+.integration-content p{font-size:0.9rem;color:var(--muted);line-height:1.7;max-width:500px;}
+.integration-content a{color:var(--viewx);text-decoration:none;font-weight:600;}
+.integration-content a:hover{text-decoration:underline;}
+
+/* CHARTS TYPE GRID */
+.chart-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-top:2.5rem;}
+.chart-type-pill{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:border-color 0.2s,background 0.2s;text-align:center;}
+.chart-type-pill:hover{border-color:rgba(79,209,197,0.3);background:#16161f;}
+.chart-type-pill .icon{font-size:1.4rem;}
+.chart-type-pill .name{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;}
+.footer-inner{max-width:1240px;margin:0 auto;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:0.5rem;}
+.footer-logo span{color:var(--accent);}
+.footer-logo .vx{color:var(--viewx);}
+.footer-meta{font-size:0.82rem;color:var(--muted);}
+.footer-links{display:flex;gap:1.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;transition:color 0.2s;}
+.footer-links a:hover{color:#fff;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.hero>*{animation:fadeUp 0.6s ease both;}
+.hero-tag{animation-delay:0.05s;}
+.hero h1{animation-delay:0.15s;}
+.hero-sub{animation-delay:0.25s;}
+.hero-badge{animation-delay:0.32s;}
+.hero-btns{animation-delay:0.42s;}
+
+/* COPY TOAST */
+.copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--viewx);color:#0a1a18;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:700;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
+.copied-toast.show{opacity:1;transform:translateY(0);}
+
+/* MOBILE */
+@media(max-width:700px){
+  .nav-links{display:none;}
+  .stats-inner{gap:2rem;}
+}
+
+/* ── mobile.js stubs (mismo que StatsLibX) ── */
+#slx-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:none;background:transparent;z-index:200;margin-left:auto;flex-shrink:0;}
+#slx-hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s ease;}
+#slx-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+#slx-hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+#slx-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+#slx-mob-nav{display:none;position:fixed;top:60px;left:0;right:0;bottom:0;background:rgba(9,9,15,0.98);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);z-index:99;padding:1.75rem 1.5rem 2rem;flex-direction:column;gap:0.35rem;border-top:1px solid rgba(255,255,255,0.07);overflow-y:auto;animation:slxSlideDown 0.22s ease;}
+#slx-mob-nav.open{display:flex;}
+@keyframes slxSlideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+#slx-mob-nav a{font-size:1rem;font-weight:600;color:#c8c8dc;text-decoration:none;padding:0.75rem 1rem;border-radius:10px;transition:background 0.18s,color 0.18s;}
+#slx-mob-nav a:hover,#slx-mob-nav a.active{color:#fff;background:rgba(255,255,255,0.07);}
+#slx-mob-nav a.active-viewx{color:var(--viewx);background:rgba(79,209,197,0.08);}
+.slx-mob-divider{height:1px;background:rgba(255,255,255,0.07);margin:0.5rem 0;}
+#slx-mob-pip{font-family:'DM Mono',monospace;font-size:0.88rem;color:var(--accent);background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.25);padding:0.75rem 1rem;border-radius:10px;cursor:pointer;margin-top:0.5rem;transition:background 0.2s;}
+#slx-mob-pip:hover{background:rgba(124,106,247,0.2);}
+@media(max-width:768px){#slx-hamburger{display:flex;}}
+</style>
+</head>
+<body>
+
+<div class="copied-toast" id="toast">¡Copiado al portapapeles!</div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span> · <span class="vx">ViewX</span></a>
+    <div class="nav-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html">Computational</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html">Utils</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html">Preprocessing</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html" class="active-viewx active">ViewX</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+    </div>
+    <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-scan"></div>
+  <div class="hero-tag">✦ Visualización · Integrado en StatsLibX · v2.6</div>
+  <h1>
+    <span class="line1">View</span>
+    <span class="line2">X</span>
+  </h1>
+  <p class="hero-sub">Motor de visualización integrado en StatsLibX. Gráficos estadísticos expresivos, interactivos y listos para producción con una sola línea de código.</p>
+  <div class="hero-badge">
+    <span class="dot-live"></span>
+    <span>Integrado en</span>
+    <span class="badge-label">StatsLibX v2.6</span>
+    <span>·</span>
+    <span style="color:var(--muted);">sin dependencias extra</span>
+  </div>
+  <div class="hero-btns">
+    <a href="https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html" class="btn-primary">Empezar →</a>
+    <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="btn-back">← Volver a StatsLibX</a>
+    <a href="https://github.com/GhostAnalyst30/ViewX" target="_blank" class="btn-ghost">GitHub ↗</a>
+  </div>
+</section>
+
+<!-- ─── STATS BAR ─── -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">12<span>+</span></div><div class="stat-label">Tipos de gráfico</div></div>
+    <div class="stat-item"><div class="stat-num"><span>3</span></div><div class="stat-label">Backends</div></div>
+    <div class="stat-item"><div class="stat-num">1<span></span></div><div class="stat-label">Línea de código</div></div>
+    <div class="stat-item"><div class="stat-num"><span>Auto</span></div><div class="stat-label">Detección de tipo</div></div>
+  </div>
+</div>
+
+<!-- ─── PREVIEW ─── -->
+<section>
+  <div class="container">
+    <div class="section-label">Interfaz visual</div>
+    <h2 class="section-title">Gráficos estadísticos<br/>al instante</h2>
+    <p class="section-sub">ViewX detecta automáticamente el tipo de dato y elige la visualización óptima. También puedes especificarla manualmente.</p>
+
+    <div class="preview-wrapper">
+      <div class="preview-bar">
+        <div class="preview-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="preview-title">ViewX · Live Preview</span>
+        <span class="preview-badge">● activo</span>
+      </div>
+      <div class="preview-body">
+
+        <!-- Bar chart -->
+        <div class="chart-box">
+          <div class="chart-label">Bar · sepal_length por especie</div>
+          <div class="bars">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+
+        <!-- Donut -->
+        <div class="chart-box">
+          <div class="chart-label">Donut · distribución de clases</div>
+          <div class="donut-wrap">
+            <svg class="donut" width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="26" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+              <circle cx="36" cy="36" r="26" fill="none" stroke="var(--viewx)" stroke-width="12"
+                stroke-dasharray="55 108" stroke-dashoffset="0" stroke-linecap="round"/>
+              <circle cx="36" cy="36" r="26" fill="none" stroke="var(--accent)" stroke-width="12"
+                stroke-dasharray="35 108" stroke-dashoffset="-55" stroke-linecap="round"/>
+              <circle cx="36" cy="36" r="26" fill="none" stroke="var(--accent3)" stroke-width="12"
+                stroke-dasharray="18 108" stroke-dashoffset="-90" stroke-linecap="round"/>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--viewx)"></div>Setosa 51%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Versicolor 32%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Virginica 17%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scatter -->
+        <div class="chart-box">
+          <div class="chart-label">Scatter · petal_length vs petal_width</div>
+          <div class="scatter" id="scatter"></div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="chart-box">
+          <div class="chart-label">Heatmap · actividad semanal</div>
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─── -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Capacidades</div>
+    <h2 class="section-title">Todo lo que ViewX<br/>hace por ti</h2>
+    <p class="section-sub">Diseñado para el flujo estadístico de StatsLibX, no como una librería de visualización genérica.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Auto-detección de gráfico</div>
+        <div class="feature-desc">ViewX analiza el tipo de dato, la cardinalidad y la distribución para seleccionar automáticamente el gráfico más apropiado. Cero configuración inicial.</div>
+        <div class="feature-tags"><span class="tag">auto_plot()</span><span class="tag">smart_detect</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📐</div>
+        <div class="feature-title">Gráficos estadísticos especializados</div>
+        <div class="feature-desc">Histogramas con KDE, boxplots con outliers marcados, violin plots, Q-Q plots, heatmaps de correlación, y residual plots para regresión.</div>
+        <div class="feature-tags"><span class="tag">histogram()</span><span class="tag">boxplot()</span><span class="tag">qq_plot()</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-title">3 backends intercambiables</div>
+        <div class="feature-desc">Elige entre Matplotlib para exportación estática, Seaborn para estética estadística avanzada, o Plotly para dashboards interactivos. Cambia con un parámetro.</div>
+        <div class="feature-tags"><span class="tag purple">matplotlib</span><span class="tag purple">seaborn</span><span class="tag purple">plotly</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-title">Integración nativa con StatsLibX</div>
+        <div class="feature-desc">Acepta directamente la salida de DescriptiveStats, InferentialStats, y Preprocessing. No necesitas transformar datos entre módulos.</div>
+        <div class="feature-tags"><span class="tag">DescriptiveStats</span><span class="tag">InferentialStats</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗂️</div>
+        <div class="feature-title">Soporte multi-formato</div>
+        <div class="feature-desc">DataFrames de pandas, arrays de NumPy, listas de Python, y rutas de archivo CSV/Excel. ViewX normaliza el input automáticamente.</div>
+        <div class="feature-tags"><span class="tag amber">DataFrame</span><span class="tag amber">ndarray</span><span class="tag amber">CSV</span></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">Temas y exportación</div>
+        <div class="feature-desc">Temas oscuros y claros, paletas de colores accesibles (daltonismo), y exportación a PNG, SVG, PDF o HTML interactivo en alta resolución.</div>
+        <div class="feature-tags"><span class="tag">theme='dark'</span><span class="tag">export()</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── QUICKSTART ─── -->
+<section id="quickstart">
+  <div class="container">
+    <div class="section-label">Inicio rápido</div>
+    <h2 class="section-title">De datos a gráfico<br/>en segundos</h2>
+    <div class="code-section">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
+      </div>
+      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats
+from statslibx.datasets import load_iris
+from statslibx.viewx import ViewX          # ← importar ViewX
+
+# Cargar datos y calcular estadísticas
+data = load_iris()
+ds   = DescriptiveStats(data)
+
+# ── Uso básico: auto-detección ──────────────────────────────
+vx = ViewX(data)
+vx.auto_plot()                             # ViewX elige el mejor gráfico
+
+# ── Gráficos específicos ────────────────────────────────────
+vx.histogram(column='sepal_length', kde=True)
+vx.boxplot(column='petal_width', group_by='species')
+vx.scatter(x='sepal_length', y='petal_length', hue='species')
+vx.heatmap_corr()                          # Heatmap de correlación completo
+
+# ── Integración directa con DescriptiveStats ────────────────
+vx.from_stats(ds).plot_summary()           # Gráfico del resumen descriptivo
+vx.qq_plot(column='sepal_width')           # Q-Q plot de normalidad
+
+# ── Cambiar backend y exportar ──────────────────────────────
+vx.set_backend('plotly')                   # Cambiar a Plotly (interactivo)
+vx.scatter(x='sepal_length', y='petal_length', hue='species')
+vx.export('mi_grafico.html')               # Guardar como HTML interactivo</code></pre>
+    </div>
+
+    <!-- Integration callout -->
+    <div class="integration-box">
+      <div class="integration-icon">🔗</div>
+      <div class="integration-content">
+        <h3>¿Quieres explorar los módulos estadísticos?</h3>
+        <p>ViewX es parte del ecosistema StatsLibX. Vuelve a la página principal para ver todos los módulos disponibles: DescriptiveStats, InferentialStats, Preprocessing, Datasets y más.</p>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">← Ir a StatsLibX →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CHART TYPES ─── -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="section-label">Tipos de gráfico</div>
+    <h2 class="section-title">Visualizaciones disponibles</h2>
+    <div class="chart-types">
+      <div class="chart-type-pill"><span class="icon">📊</span><span class="name">histogram()</span></div>
+      <div class="chart-type-pill"><span class="icon">📦</span><span class="name">boxplot()</span></div>
+      <div class="chart-type-pill"><span class="icon">🎻</span><span class="name">violin()</span></div>
+      <div class="chart-type-pill"><span class="icon">🔵</span><span class="name">scatter()</span></div>
+      <div class="chart-type-pill"><span class="icon">📈</span><span class="name">line()</span></div>
+      <div class="chart-type-pill"><span class="icon">🌡️</span><span class="name">heatmap_corr()</span></div>
+      <div class="chart-type-pill"><span class="icon">🍩</span><span class="name">donut()</span></div>
+      <div class="chart-type-pill"><span class="icon">📉</span><span class="name">qq_plot()</span></div>
+      <div class="chart-type-pill"><span class="icon">🔲</span><span class="name">pairplot()</span></div>
+      <div class="chart-type-pill"><span class="icon">📋</span><span class="name">residual_plot()</span></div>
+      <div class="chart-type-pill"><span class="icon">🌊</span><span class="name">kde()</span></div>
+      <div class="chart-type-pill"><span class="icon">✨</span><span class="name">auto_plot()</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Stats<span>LibX</span> · <span class="vx">ViewX</span></div>
+    <div class="footer-meta">Parte de StatsLibX · Desarrollado por Emmanuel Ascendra · v2.6</div>
+    <div class="footer-links">
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">StatsLibX</a>
+      <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
+      <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
+      <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+// ── Toast ──
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>showToast());
+}
+function copyCode(id){
+  const el=document.getElementById(id);
+  if(el){navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
+}
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+Prism.highlightAll();
+
+// ── Scatter dots ──
+(function(){
+  const wrap=document.getElementById('scatter');
+  if(!wrap)return;
+  const pts=[
+    [15,20],[30,60],[55,35],[70,80],[45,55],[25,40],
+    [60,70],[80,85],[40,30],[65,50],[50,65],[35,75],
+    [20,45],[75,60],[55,90],[10,30],[85,40],[45,85]
+  ];
+  pts.forEach(function(p,i){
+    const d=document.createElement('div');
+    d.className='scatter-dot';
+    d.style.left=p[0]+'%';
+    d.style.top=(100-p[1])+'%';
+    d.style.animationDelay=(i*0.04)+'s';
+    // alternate colors
+    const colors=['var(--viewx)','var(--accent)','var(--accent3)'];
+    d.style.background=colors[i%3];
+    wrap.appendChild(d);
+  });
+})();
+
+// ── Heatmap ──
+(function(){
+  const wrap=document.getElementById('heatmap');
+  if(!wrap)return;
+  const levels=['','l1','l2','l3','l4','l2','l1','l3','l4','','l1','l2','l4','l3','','l2','l1','l4','l2','l3','l1','','l3','l4','l2','l1','l3','l4'];
+  levels.forEach(function(l){
+    const c=document.createElement('div');
+    c.className='hm-cell'+(l?' '+l:'');
+    wrap.appendChild(c);
+  });
+})();
+
+// ── Mobile hamburger (igual que StatsLibX) ──
+(function(){
+  "use strict";
+  function buildHamburger(){
+    if(document.getElementById("slx-hamburger"))return;
+    const btn=document.createElement("button");
+    btn.id="slx-hamburger";
+    btn.setAttribute("aria-label","Menú");
+    btn.setAttribute("aria-expanded","false");
+    btn.innerHTML="<span></span><span></span><span></span>";
+    btn.addEventListener("click",toggleMenu);
+    const ni=document.querySelector(".nav-inner");
+    if(ni)ni.appendChild(btn);
+  }
+  function buildMobileMenu(){
+    if(document.getElementById("slx-mob-nav"))return;
+    const pages=[
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html",label:"Inicio"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html",label:"Descriptive"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html",label:"Inferential"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/computational.html",label:"Computational"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/utils.html",label:"Utils"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/preprocessing.html",label:"Preprocessing"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html",label:"Datasets"},
+      {href:"#",label:"ViewX",active:"viewx"},
+      {href:"https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html",label:"Coder"},
+    ];
+    const menu=document.createElement("div");
+    menu.id="slx-mob-nav";
+    menu.setAttribute("role","navigation");
+    pages.forEach(function(p){
+      const a=document.createElement("a");
+      a.href=p.href;
+      a.textContent=p.label;
+      if(p.active==="viewx"){a.classList.add("active-viewx","active");}
+      a.addEventListener("click",closeMenu);
+      menu.appendChild(a);
+    });
+    const div=document.createElement("div");
+    div.className="slx-mob-divider";
+    menu.appendChild(div);
+    const pip=document.createElement("div");
+    pip.id="slx-mob-pip";
+    pip.textContent="$ pip install statslibx  ⎘";
+    pip.addEventListener("click",function(){navigator.clipboard.writeText("pip install statslibx").then(showToast);});
+    menu.appendChild(pip);
+    const nav=document.querySelector("nav");
+    if(nav)nav.insertAdjacentElement("afterend",menu);
+  }
+  function toggleMenu(){
+    const btn=document.getElementById("slx-hamburger");
+    const menu=document.getElementById("slx-mob-nav");
+    if(!btn||!menu)return;
+    const isOpen=menu.classList.toggle("open");
+    btn.classList.toggle("open",isOpen);
+    btn.setAttribute("aria-expanded",String(isOpen));
+    document.body.style.overflow=isOpen?"hidden":"";
+  }
+  function closeMenu(){
+    const btn=document.getElementById("slx-hamburger");
+    const menu=document.getElementById("slx-mob-nav");
+    if(!btn||!menu)return;
+    menu.classList.remove("open");
+    btn.classList.remove("open");
+    btn.setAttribute("aria-expanded","false");
+    document.body.style.overflow="";
+  }
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMenu();});
+  document.addEventListener("click",function(e){
+    const menu=document.getElementById("slx-mob-nav");
+    const btn=document.getElementById("slx-hamburger");
+    if(!menu||!menu.classList.contains("open"))return;
+    if(!menu.contains(e.target)&&btn&&!btn.contains(e.target))closeMenu();
+  });
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",function(){buildHamburger();buildMobileMenu();});
+  }else{buildHamburger();buildMobileMenu();}
+})();
+</script>
+</body>
+</html>

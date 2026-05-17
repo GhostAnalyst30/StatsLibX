@@ -1,6 +1,6 @@
-# 📦 StatsLibX v2.5
+# StatsLibX v2.5
 
-![](https://github.com/GhostAnalyst30/StatsLibX/blob/main/StatsLibX.png)
+![](https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/main/StatsLibX.png)
 
 StatsLibX es un paquete de Python diseñado para proporcionar una solución sencilla, eficiente y flexible para manejar volumenes de datos.
 
