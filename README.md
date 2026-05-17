@@ -1,4 +1,4 @@
-# StatsLibX v2.6
+# StatsLibX v2.7
 
 ![](https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/main/StatsLibX.png)
 
@@ -10,7 +10,7 @@ Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y 
 | **Documentacion:** | **GitHub del Proyecto:** |
 |-------------------|--------------------------|
 [Documentacion StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html) |  [Github/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
-|**Version:** 0.2.6 | **Autor:** Emmanuel Ascendra |
+|**Version:** 0.2.7 | **Autor:** Emmanuel Ascendra |
 
 
 ## Características principales
@@ -53,7 +53,7 @@ from statslibx.viewx import HTML, Slides, Report, DataMatrix
 
 Para saber mas: [ViewX](https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html)
 
-## 👩‍💻 ¡Usalo en la terminal!
+## ¡Usalo en la terminal!
 ```bash
 # Data
 statslibx data iris.csv
@@ -83,7 +83,7 @@ statslibx preview iris.csv -n 10
 statslibx preview iris.csv -n 5 --sample
 ```
 
-🤝 Contribuciones
+## Contribuciones
 
 ¡Todas las mejoras e ideas son bienvenidas! 
 

@@ -1,10 +1,10 @@
 """
 StatsLibx - Librería de Estadística para Python
 Autor: Emmanuel Ascendra
-Versión: 0.2.5
+Versión: 0.2.7
 """
 
-__version__ = "0.2.5"
+__version__ = "0.2.7"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales
@@ -21,7 +21,6 @@ __all__ = [
     # Clases principales
     'DescriptiveStats',
     'InferentialStats',
-    'ProbabilityStats',
     'ComputationalStats',
     'UtilsStats',
     'Preprocessing',
@@ -50,3 +49,4 @@ def welcome():
     print(f"  - Datasets: Carga de Datasets")
     print(f"  - Preprocessing: Preprocesamiento de datos")
     print(f"\nPara más información: help(statslibx)")
+    print(f"\nO lee la información en: https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html")

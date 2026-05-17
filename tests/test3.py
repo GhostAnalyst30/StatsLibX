@@ -1,1 +1,3 @@
-from statslibx.viewx import HTML
+import statslibx as slx
+
+print(slx.welcome())
