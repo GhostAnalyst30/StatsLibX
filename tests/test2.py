@@ -1,4 +1,4 @@
-from statslibx.from_viewx import HTML
+from statslibx.viewx import HTML
 from statslibx.datasets import load_iris
 import plotly.express as px
 

@@ -1,4 +1,4 @@
-# StatsLibX v2.5
+# StatsLibX v2.6
 
 ![](https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/main/StatsLibX.png)
 
@@ -10,22 +10,22 @@ Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y 
 | **Documentacion:** | **GitHub del Proyecto:** |
 |-------------------|--------------------------|
 [Documentacion StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html) |  [Github/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
-|**Version:** 0.2.5 | **Autor:** Emmanuel Ascendra |
+|**Version:** 0.2.6 | **Autor:** Emmanuel Ascendra |
 
 
-## ✨ Características principales
+## Características principales
 
-- ⚡ Rápido y eficiente: optimizado para ofrecer un rendimiento suave incluso en tareas exigentes.
+- Rápido y eficiente: optimizado para ofrecer un rendimiento suave incluso en tareas exigentes.
 
-- 🧩 Fácil de usar: una API limpia para que empieces en segundos.
+- Fácil de usar: una API limpia para que empieces en segundos.
 
-- 🔧 Altamente extensible: personalízalo según tus necesidades.
+- Altamente extensible: personalízalo según tus necesidades.
 
-- 📚 Documentación clara: ejemplos simples y prácticos.
+- Documentación clara: ejemplos simples y prácticos.
 
-- 🔮 Diseñado con visión a futuro: construido para escalar y adaptarse.
+- Diseñado con visión a futuro: construido para escalar y adaptarse.
 
-## 🚀 Ejemplo rápido
+## Ejemplo rápido
 ```python
 from statslibx import DescriptiveStats, InferentialStats, ComputationalStats, UtilsStats
 from statslibx.datasets import load_iris()
@@ -37,19 +37,50 @@ stats = DescriptiveStats(data)
 
 stats.summary()
 ```
-Para ver mas funciones: [https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb)
+Para ver mas funciones: [StatslibX](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb)
 
-##  📦 Instalación
+## Instalación
 ```bash
 pip install statslibx
 ```
 
-## 👩‍💻 ¡Usalo en la terminal! (De forma preliminar)
+## Implementacion con ViewX
+
+```python
+from statslibx.viewx import HTML, Slides, Report, DataMatrix
+```
+![ViewX](https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png)
+
+Para saber mas: [ViewX](https://ghostanalyst30.github.io/ViewX/Documentation_Page/index.html)
+
+## 👩‍💻 ¡Usalo en la terminal!
 ```bash
-statslibx                        # Informacion general de la libreria
-statslibx describe .\archive.csv # Devuelve una descripcion de la data
-statslibx quality .\archive.csv # Devuelve la calidad de los datos
-statslibx preview .\archive.csv # Devuelve una visualizacion de los datos
+# Data
+statslibx data iris.csv
+
+statslibx data mi_archivo.csv --summary --types --missing
+
+# Info
+statslibx info iris.csv
+
+statslibx info iris.csv --detailed
+
+# Describe
+statslibx describe iris.csv --numeric
+
+statslibx describe iris.csv --categorical
+
+statslibx describe iris.csv
+
+# Quality
+statslibx quality iris.csv
+
+statslibx quality iris.csv --verbose
+
+# Preview
+statslibx preview iris.csv -n 10
+
+statslibx preview iris.csv -n 5 --sample
 ```
 
 🤝 Contribuciones

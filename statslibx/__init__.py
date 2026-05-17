@@ -14,7 +14,7 @@ from .computational import ComputationalStats
 from .utils import UtilsStats
 from .preprocessing import Preprocessing
 from .datasets import load_dataset, generate_dataset
-from .from_viewx import HTML, Slides, Report, DataMatrix
+from .viewx import HTML, Slides, Report, DataMatrix
 
 # Definir qué se expone cuando se hace: from statslib import *
 __all__ = [
