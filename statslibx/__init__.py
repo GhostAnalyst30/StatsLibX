@@ -1,10 +1,10 @@
 """
 StatsLibx - Librería de Estadística para Python
 Autor: Emmanuel Ascendra
-Versión: 0.2.7
+Versión: 0.2.8
 """
 
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __author__ = "Emmanuel Ascendra"
 
 # Importar las clases principales

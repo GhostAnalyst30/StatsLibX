@@ -1,4 +1,4 @@
-# StatsLibX v2.7
+# StatsLibX v2.8
 
 ![](https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/main/StatsLibX.png)
 
@@ -10,7 +10,7 @@ Este proyecto surge con la idea de ofrecer una alternativa moderna, intuitiva y 
 | **Documentacion:** | **GitHub del Proyecto:** |
 |-------------------|--------------------------|
 [Documentacion StatsLibX](https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html) |  [Github/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX)
-|**Version:** 0.2.7 | **Autor:** Emmanuel Ascendra |
+|**Version:** 0.2.8 | **Autor:** Emmanuel Ascendra |
 
 
 ## Características principales
