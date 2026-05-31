@@ -56,8 +56,8 @@ from statslibx.datasets import load_iris, generate_dataset
 
 # Load sample data
 iris = load_iris()
-print("Iris dataset loaded!")
-print(f"Shape: {len(iris)} samples")
+n = len(iris['target'])
+print(f"Iris dataset loaded! {n} samples")
 print(f"Features: {', '.join(iris['feature_names'])}")
 
 # Descriptive statistics
@@ -70,11 +70,13 @@ print(f"Skewness: {stats.skewness():.3f}")
 print(f"Kurtosis: {stats.kurtosis():.3f}")
 
 # Group stats by species
-for species in set(iris['target_names']):
-    mask = [s == species for s in iris['target_names']]
-    values = [iris['data']['sepal_length'][i] for i, m in enumerate(mask) if m]
-    gs = DescriptiveStats(values)
-    print(f"\\n{species}: mean={gs.mean():.2f}, std={gs.std():.2f}")
+target_names = iris['target_names']
+target = iris['target']
+sl = iris['data']['sepal_length']
+for idx, name in enumerate(target_names):
+    vals = [sl[i] for i, t in enumerate(target) if t == idx]
+    gs = DescriptiveStats(vals)
+    print(f"\\n{name}: mean={gs.mean():.2f}, std={gs.std():.2f}")
 
 # Inferential statistics
 infer = InferentialStats()
@@ -408,14 +410,7 @@ export default function PlaygroundPage() {
         pyodideRef.current = pyodide;
         setPyodideProgress("Installing packages (numpy, pandas, scipy, matplotlib)...");
 
-        await pyodide.loadPackage(["numpy", "pytz"]);
-        await pyodide.runPythonAsync(`
-import micropip
-await micropip.install('numpy')
-await micropip.install('pandas')
-await micropip.install('scipy')
-await micropip.install('matplotlib')
-`);
+        await pyodide.loadPackage(["numpy", "pandas", "scipy", "matplotlib", "pytz"]);
 
         if (cancelled) return;
         setPyodideProgress("Injecting statslibx stubs...");
@@ -609,10 +604,36 @@ await micropip.install('matplotlib')
 
   const handleTerminalSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    if (!terminalInput.trim()) return;
-    setTerminalHistory(prev => [...prev, `$ ${terminalInput}`, `  (terminal simulation — use the editor to run Python)`]);
+    const input = terminalInputRef.current;
+    if (!input) return;
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    input.value = "";
     setTerminalInput("");
-  }, [terminalInput]);
+
+    if (!pyodideRef.current) {
+      setTerminalHistory(prev => [...prev, `$ ${cmd}`, "  Pyodide not ready yet."]);
+      return;
+    }
+
+    setTerminalHistory(prev => [...prev, `$ ${cmd}`]);
+
+    const py = pyodideRef.current;
+    py.setStdout?.({ batched: (msg: string) => {
+      setTerminalHistory(prev => [...prev, `  ${msg}`]);
+    }});
+    py.setStderr?.({ batched: (msg: string) => {
+      setTerminalHistory(prev => [...prev, `  ${msg}`]);
+    }});
+
+    py.runPythonAsync(cmd).then((result: any) => {
+      if (result !== undefined && result !== null) {
+        setTerminalHistory(prev => [...prev, `  ${String(result)}`]);
+      }
+    }).catch((err: any) => {
+      setTerminalHistory(prev => [...prev, `  Error: ${err.message || err}`]);
+    });
+  }, []);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();

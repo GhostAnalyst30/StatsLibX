@@ -1,1 +1,113 @@
-{"version":3,"caseSensitive":false,"basePath":"","rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"redirects":[{"source":"/:path+/","destination":"/:path+","permanent":true,"internal":true,"regex":"^(?:\\/((?:[^\\/]+?)(?:\\/(?:[^\\/]+?))*))\\/$"}],"headers":[]}
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/docs/cli",
+      "regex": "^/docs/cli(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/cli(?:/)?$"
+    },
+    {
+      "page": "/docs/computational",
+      "regex": "^/docs/computational(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/computational(?:/)?$"
+    },
+    {
+      "page": "/docs/datasets",
+      "regex": "^/docs/datasets(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/datasets(?:/)?$"
+    },
+    {
+      "page": "/docs/descriptive",
+      "regex": "^/docs/descriptive(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/descriptive(?:/)?$"
+    },
+    {
+      "page": "/docs/inferential",
+      "regex": "^/docs/inferential(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/inferential(?:/)?$"
+    },
+    {
+      "page": "/docs/preprocessing",
+      "regex": "^/docs/preprocessing(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/preprocessing(?:/)?$"
+    },
+    {
+      "page": "/docs/utils",
+      "regex": "^/docs/utils(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/utils(?:/)?$"
+    },
+    {
+      "page": "/docs/viewx",
+      "regex": "^/docs/viewx(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/viewx(?:/)?$"
+    },
+    {
+      "page": "/installation",
+      "regex": "^/installation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/installation(?:/)?$"
+    },
+    {
+      "page": "/playground",
+      "regex": "^/playground(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/playground(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

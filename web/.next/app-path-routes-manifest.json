@@ -1,14 +1,14 @@
 {
   "/_not-found/page": "/_not-found",
-  "/page": "/",
   "/installation/page": "/installation",
-  "/docs/computational/page": "/docs/computational",
+  "/page": "/",
   "/docs/cli/page": "/docs/cli",
+  "/docs/computational/page": "/docs/computational",
+  "/docs/descriptive/page": "/docs/descriptive",
+  "/docs/datasets/page": "/docs/datasets",
   "/docs/inferential/page": "/docs/inferential",
   "/docs/preprocessing/page": "/docs/preprocessing",
   "/docs/utils/page": "/docs/utils",
   "/docs/viewx/page": "/docs/viewx",
-  "/docs/datasets/page": "/docs/datasets",
-  "/docs/descriptive/page": "/docs/descriptive",
   "/playground/page": "/playground"
 }
