@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -147,7 +147,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html" class="active">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -309,23 +309,23 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
           <span class="code-label">Python</span>
           <button class="code-copy-btn" onclick="copyCode('iris-ex')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="iris-ex">from statslibx.datasets import load_iris
-
-# Como DataFrame
-df = load_iris()
-print(df.shape)          # (150, 5)
-print(df.columns.tolist())
-# ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
-
-# Como arrays numpy (X, y) para ML
-X, y = load_iris(
-    return_X_y=(
-        ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],
-        'species'
-    )
-)
-print(X.shape)   # (150, 4)
-print(y.shape)   # (150,)
+        <pre><code class="language-python" id="iris-ex">from statslibx.datasets import load_iris<br>
+<br>
+# Como DataFrame<br>
+df = load_iris()<br>
+print(df.shape)          # (150, 5)<br>
+print(df.columns.tolist())<br>
+# ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']<br>
+<br>
+# Como arrays numpy (X, y) para ML<br>
+X, y = load_iris(<br>
+    return_X_y=(<br>
+        ['sepal_length', 'sepal_width', 'petal_length', 'petal_width'],<br>
+        'species'<br>
+    )<br>
+)<br>
+print(X.shape)   # (150, 4)<br>
+print(y.shape)   # (150,)<br>
 print(y[:5])     # ['setosa' 'setosa' 'setosa' ...]</code></pre>
       </div>
     </div>
@@ -348,18 +348,18 @@ print(y[:5])     # ['setosa' 'setosa' 'setosa' ...]</code></pre>
           <span class="code-label">Python</span>
           <button class="code-copy-btn" onclick="copyCode('penguins-ex')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="penguins-ex">from statslibx.datasets import load_penguins
-
-df = load_penguins()
-print(df.head())
-print(df.dtypes)
-
-# Con return_X_y
-X, y = load_penguins(
-    return_X_y=(
-        ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm'],
-        'species'
-    )
+        <pre><code class="language-python" id="penguins-ex">from statslibx.datasets import load_penguins<br>
+<br>
+df = load_penguins()<br>
+print(df.head())<br>
+print(df.dtypes)<br>
+<br>
+# Con return_X_y<br>
+X, y = load_penguins(<br>
+    return_X_y=(<br>
+        ['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm'],<br>
+        'species'<br>
+    )<br>
 )</code></pre>
       </div>
     </div>
@@ -408,23 +408,23 @@ X, y = load_penguins(
           <span class="code-label">Python</span>
           <button class="code-copy-btn" onclick="copyCode('loaddataset-ex')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="loaddataset-ex">from statslibx.datasets import load_dataset
-
-# Datasets internos del paquete
-df_titanic  = load_dataset("titanic.csv")
-df_penguins = load_dataset("penguins.csv")
-df_sp500    = load_dataset("sp500_companies.csv")
-df_cocoa    = load_dataset("Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")
-
-# Archivo local externo (CSV con separador punto y coma)
-df_local = load_dataset("mis_datos/ventas_2024.csv", sep=";")
-
-# Retornar (X, y) como arrays numpy
-X, y = load_dataset(
-    "titanic.csv",
-    return_X_y=(['pclass', 'age', 'fare'], 'survived')
-)
-print(X.shape)   # (891, 3)
+        <pre><code class="language-python" id="loaddataset-ex">from statslibx.datasets import load_dataset<br>
+<br>
+# Datasets internos del paquete<br>
+df_titanic  = load_dataset("titanic.csv")<br>
+df_penguins = load_dataset("penguins.csv")<br>
+df_sp500    = load_dataset("sp500_companies.csv")<br>
+df_cocoa    = load_dataset("Cocoa_Bubbles_Investment_Nigeria_Ghana_1980_2023.xlsx")<br>
+<br>
+# Archivo local externo (CSV con separador punto y coma)<br>
+df_local = load_dataset("mis_datos/ventas_2024.csv", sep=";")<br>
+<br>
+# Retornar (X, y) como arrays numpy<br>
+X, y = load_dataset(<br>
+    "titanic.csv",<br>
+    return_X_y=(['pclass', 'age', 'fare'], 'survived')<br>
+)<br>
+print(X.shape)   # (891, 3)<br>
 print(y.shape)   # (891,)</code></pre>
       </div>
 
@@ -467,16 +467,16 @@ print(y.shape)   # (891,)</code></pre>
           <span class="code-label">Python — Uso básico</span>
           <button class="code-copy-btn" onclick="copyCode('gen-basic')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="gen-basic">from statslibx.datasets import generate_dataset
-
-schema = {
-    'edad':        {'dist': 'normal',      'mean': 35, 'std': 10, 'type': 'int'},
-    'salario':     {'dist': 'lognormal',   'mean': 10.5, 'std': 0.5, 'type': 'float', 'round': 2},
-    'experiencia': {'dist': 'exponential', 'scale': 5, 'type': 'float', 'round': 1},
-}
-
-df = generate_dataset(n_rows=200, schema=schema, seed=42)
-print(df.head())
+        <pre><code class="language-python" id="gen-basic">from statslibx.datasets import generate_dataset<br>
+<br>
+schema = {<br>
+    'edad':        {'dist': 'normal',      'mean': 35, 'std': 10, 'type': 'int'},<br>
+    'salario':     {'dist': 'lognormal',   'mean': 10.5, 'std': 0.5, 'type': 'float', 'round': 2},<br>
+    'experiencia': {'dist': 'exponential', 'scale': 5, 'type': 'float', 'round': 1},<br>
+}<br>
+<br>
+df = generate_dataset(n_rows=200, schema=schema, seed=42)<br>
+print(df.head())<br>
 print(df.describe())</code></pre>
       </div>
     </div>
@@ -597,77 +597,77 @@ print(df.describe())</code></pre>
           <span class="code-label">Python — Ejemplo completo con todas las distribuciones</span>
           <button class="code-copy-btn" onclick="copyCode('gen-full')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="gen-full">from statslibx.datasets import generate_dataset
-from statslibx import DescriptiveStats, Preprocessing
-
-schema = {
-    # Distribución normal → edad de empleados
-    'edad': {
-        'dist': 'normal',
-        'mean': 35, 'std': 10,
-        'type': 'int', 'round': 0
-    },
-    # Distribución log-normal → salarios (siempre positivos, sesgo derecho)
-    'salario': {
-        'dist': 'lognormal',
-        'mean': 10.5, 'std': 0.5,
-        'type': 'float', 'round': 2
-    },
-    # Distribución exponencial → años de experiencia
-    'experiencia_anos': {
-        'dist': 'exponential',
-        'scale': 6,
-        'type': 'float', 'round': 1
-    },
-    # Distribución uniforme → calificación de desempeño (1.0 a 5.0)
-    'calificacion': {
-        'dist': 'uniform',
-        'low': 1.0, 'high': 5.0,
-        'type': 'float', 'round': 1
-    },
-    # Distribución Poisson → número de proyectos completados
-    'proyectos_completados': {
-        'dist': 'poisson',
-        'lam': 8,
-        'type': 'int'
-    },
-    # Distribución binomial (n=1) → variable binaria activo/inactivo
-    'activo': {
-        'dist': 'binomial',
-        'n': 1, 'p': 0.88,
-        'type': 'int'
-    },
-    # Distribución categórica → departamento
-    'departamento': {
-        'dist': 'categorical',
-        'choices': ['Marketing', 'Ventas', 'IT', 'RRHH', 'Finanzas', 'Operaciones']
-    },
-    # Distribución categórica → nivel de educación
-    'educacion': {
-        'dist': 'categorical',
-        'choices': ['Bachiller', 'Tecnico', 'Universitario', 'Magister', 'Doctorado']
-    }
-}
-
-# Generar dataset reproducible de 1000 empleados
-df = generate_dataset(
-    n_rows=1000,
-    schema=schema,
-    seed=42,
-    save=True,
-    filename="empleados_rrhh"
-)
-
-print(f"Shape: {df.shape}")
-print(df.dtypes)
-print(df.head())
-
-# Análisis inmediato con DescriptiveStats
-ds = DescriptiveStats(df)
-print(ds.summary())
-
-# Revisar calidad con Preprocessing
-pp = Preprocessing(df)
+        <pre><code class="language-python" id="gen-full">from statslibx.datasets import generate_dataset<br>
+from statslibx import DescriptiveStats, Preprocessing<br>
+<br>
+schema = {<br>
+    # Distribución normal → edad de empleados<br>
+    'edad': {<br>
+        'dist': 'normal',<br>
+        'mean': 35, 'std': 10,<br>
+        'type': 'int', 'round': 0<br>
+    },<br>
+    # Distribución log-normal → salarios (siempre positivos, sesgo derecho)<br>
+    'salario': {<br>
+        'dist': 'lognormal',<br>
+        'mean': 10.5, 'std': 0.5,<br>
+        'type': 'float', 'round': 2<br>
+    },<br>
+    # Distribución exponencial → años de experiencia<br>
+    'experiencia_anos': {<br>
+        'dist': 'exponential',<br>
+        'scale': 6,<br>
+        'type': 'float', 'round': 1<br>
+    },<br>
+    # Distribución uniforme → calificación de desempeño (1.0 a 5.0)<br>
+    'calificacion': {<br>
+        'dist': 'uniform',<br>
+        'low': 1.0, 'high': 5.0,<br>
+        'type': 'float', 'round': 1<br>
+    },<br>
+    # Distribución Poisson → número de proyectos completados<br>
+    'proyectos_completados': {<br>
+        'dist': 'poisson',<br>
+        'lam': 8,<br>
+        'type': 'int'<br>
+    },<br>
+    # Distribución binomial (n=1) → variable binaria activo/inactivo<br>
+    'activo': {<br>
+        'dist': 'binomial',<br>
+        'n': 1, 'p': 0.88,<br>
+        'type': 'int'<br>
+    },<br>
+    # Distribución categórica → departamento<br>
+    'departamento': {<br>
+        'dist': 'categorical',<br>
+        'choices': ['Marketing', 'Ventas', 'IT', 'RRHH', 'Finanzas', 'Operaciones']<br>
+    },<br>
+    # Distribución categórica → nivel de educación<br>
+    'educacion': {<br>
+        'dist': 'categorical',<br>
+        'choices': ['Bachiller', 'Tecnico', 'Universitario', 'Magister', 'Doctorado']<br>
+    }<br>
+}<br>
+<br>
+# Generar dataset reproducible de 1000 empleados<br>
+df = generate_dataset(<br>
+    n_rows=1000,<br>
+    schema=schema,<br>
+    seed=42,<br>
+    save=True,<br>
+    filename="empleados_rrhh"<br>
+)<br>
+<br>
+print(f"Shape: {df.shape}")<br>
+print(df.dtypes)<br>
+print(df.head())<br>
+<br>
+# Análisis inmediato con DescriptiveStats<br>
+ds = DescriptiveStats(df)<br>
+print(ds.summary())<br>
+<br>
+# Revisar calidad con Preprocessing<br>
+pp = Preprocessing(df)<br>
 print(pp.data_quality())</code></pre>
       </div>
 
@@ -677,24 +677,24 @@ print(pp.data_quality())</code></pre>
           <span class="code-label">Python — Generar con X, y para machine learning</span>
           <button class="code-copy-btn" onclick="copyCode('gen-ml')">Copiar</button>
         </div>
-        <pre><code class="language-python" id="gen-ml">from statslibx.datasets import generate_dataset, load_dataset
-
-# 1. Generar y guardar
-schema_ml = {
-    'feature_1': {'dist': 'normal',   'mean': 0, 'std': 1,   'type': 'float', 'round': 4},
-    'feature_2': {'dist': 'uniform',  'low': -2, 'high': 2,  'type': 'float', 'round': 4},
-    'feature_3': {'dist': 'exponential', 'scale': 1,         'type': 'float', 'round': 4},
-    'target':    {'dist': 'binomial', 'n': 1, 'p': 0.5,      'type': 'int'},
-}
-
-generate_dataset(n_rows=500, schema=schema_ml, seed=7, save=True, filename="ml_dataset")
-
-# 2. Recargar como (X, y)
-X, y = load_dataset(
-    "ml_dataset.csv",
-    return_X_y=(['feature_1', 'feature_2', 'feature_3'], 'target')
-)
-print(f"X shape: {X.shape}")   # (500, 3)
+        <pre><code class="language-python" id="gen-ml">from statslibx.datasets import generate_dataset, load_dataset<br>
+<br>
+# 1. Generar y guardar<br>
+schema_ml = {<br>
+    'feature_1': {'dist': 'normal',   'mean': 0, 'std': 1,   'type': 'float', 'round': 4},<br>
+    'feature_2': {'dist': 'uniform',  'low': -2, 'high': 2,  'type': 'float', 'round': 4},<br>
+    'feature_3': {'dist': 'exponential', 'scale': 1,         'type': 'float', 'round': 4},<br>
+    'target':    {'dist': 'binomial', 'n': 1, 'p': 0.5,      'type': 'int'},<br>
+}<br>
+<br>
+generate_dataset(n_rows=500, schema=schema_ml, seed=7, save=True, filename="ml_dataset")<br>
+<br>
+# 2. Recargar como (X, y)<br>
+X, y = load_dataset(<br>
+    "ml_dataset.csv",<br>
+    return_X_y=(['feature_1', 'feature_2', 'feature_3'], 'target')<br>
+)<br>
+print(f"X shape: {X.shape}")   # (500, 3)<br>
 print(f"y shape: {y.shape}")   # (500,)</code></pre>
       </div>
 
@@ -736,8 +736,7 @@ function showToast() {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
 }
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.6
@@ -1274,7 +1273,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

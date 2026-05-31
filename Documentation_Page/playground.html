@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -170,14 +170,37 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
   .status-version,.kbd-hint{display:none;}
   .CodeMirror{height:300px!important;}
 }
+
+/* Hamburger */
+.nav-toggle{display:none;background:none;border:none;color:var(--muted);cursor:pointer;padding:0.3rem;border-radius:6px;transition:color 0.2s;font-size:1.3rem;}
+.nav-toggle:hover{color:#fff;}
+@media(max-width:768px){
+  nav{position:fixed;width:100%;z-index:1000;}
+  .nav-toggle{display:flex;align-items:center;justify-content:center;}
+  .nav-links{display:none;position:absolute;top:60px;left:0;right:0;flex-direction:column;background:rgba(9,9,15,0.98);backdrop-filter:blur(24px);padding:0.75rem;border-bottom:1px solid var(--border);gap:2px;max-height:calc(100vh - 60px);overflow-y:auto;}
+  .nav-links.open{display:flex;}
+  .nav-links a{padding:0.55rem 0.75rem;font-size:0.85rem;width:100%;border-radius:6px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,0.07);}
+  .nav-pip{margin-top:4px;width:100%;text-align:center;padding:0.55rem 0.75rem;border-radius:6px;}
+  .main-layout{padding:1rem;grid-template-columns:1fr;}
+  .right-column{display:none;}
+  .page-header{padding:2rem 1rem 1.5rem;}
+  .CodeMirror{height:260px!important;}
+  .kbd-hint{display:none;}
+  .status-version{display:none;}
+}
+@media(max-width:480px){
+  .page-header{padding:1.5rem 0.75rem 1rem;}
+  .hero-btns{gap:0.75rem;flex-direction:column;align-items:center;}
+}
 </style>
 </head>
 <body>
 
 <nav>
   <div class="nav-inner">
-    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
-    <div class="nav-links">
+    <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a><button class="nav-toggle" id="navToggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+    <div class="nav-links" id="navLinks">
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Inicio</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
@@ -188,6 +211,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html" class="active">Coder</a>
+      <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -302,15 +326,186 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
 <div class="toast" id="toast"></div>
 
 <!-- CodeMirror 5 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
+</script>
 
 <script>
 /* ── STATE ── */
@@ -715,6 +910,25 @@ document.getElementById('pkg-input').addEventListener('keydown', e => { if (e.ke
 renderCloud();
 initEditor();
 initPyodide();
+
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
 </script>
 <script>
 
@@ -1253,6 +1467,25 @@ pre[class*="language-"] {
   }
 
 })();
+
+  // Hamburger
+  (function(){
+    var t=document.getElementById("navToggle"),l=document.getElementById("navLinks");
+    if(t&&l){
+      t.addEventListener("click",function(){
+        l.classList.toggle("open");
+        t.innerHTML=l.classList.contains("open")?'<i class="fas fa-times"></i>':'<i class="fas fa-bars"></i>';
+      });
+      l.querySelectorAll("a").forEach(function(a){
+        a.addEventListener("click",function(){
+          if(window.innerWidth<=768){
+            l.classList.remove("open");
+            t.innerHTML='<i class="fas fa-bars"></i>';
+          }
+        });
+      });
+    }
+  })();
 </script>
 </body>
 </html>

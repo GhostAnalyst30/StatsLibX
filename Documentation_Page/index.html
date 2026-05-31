@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -35,7 +35,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.85);backdrop-filt
 .nav-pip:hover{background:rgba(124,106,247,0.2);}
 
 /* HERO */
-.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
+.hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 1.5rem 2.5rem;position:relative;overflow:hidden;}
 .hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(124,106,247,0.18) 0%,transparent 70%);pointer-events:none;}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
 .hero-tag{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:500;color:var(--accent);background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.25);padding:0.3rem 0.9rem;border-radius:20px;margin-bottom:2rem;letter-spacing:0.05em;text-transform:uppercase;}
@@ -125,9 +125,34 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
 .copied-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--accent);color:#fff;padding:0.6rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;z-index:9999;}
 .copied-toast.show{opacity:1;transform:translateY(0);}
 
+/* Hamburger */
+.nav-toggle{display:none;background:none;border:none;color:var(--muted);cursor:pointer;padding:0.3rem;border-radius:6px;transition:color 0.2s;}
+.nav-toggle:hover{color:#fff;}
+@media(max-width:768px){
+  nav{position:fixed;width:100%;}
+  .nav-toggle{display:flex;align-items:center;justify-content:center;}
+  .nav-links{display:none;position:absolute;top:60px;left:0;right:0;flex-direction:column;background:rgba(9,9,15,0.98);backdrop-filter:blur(24px);padding:0.75rem;border-bottom:1px solid var(--border);gap:2px;max-height:calc(100vh - 60px);overflow-y:auto;}
+  .nav-links.open{display:flex;}
+  .nav-links a{padding:0.55rem 0.75rem;font-size:0.85rem;width:100%;border-radius:6px;}
+  .nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,0.07);}
+  .nav-pip{margin-top:4px;width:100%;text-align:center;padding:0.55rem 0.75rem;border-radius:6px;}
+}
 @media(max-width:700px){
-  .nav-links{display:none;}
-  .stats-inner{gap:2rem;}
+  .hero{min-height:auto;padding:3.5rem 1rem 2rem;}
+  .hero h1{font-size:clamp(2.5rem,12vw,4rem);}
+  .hero-sub{font-size:0.95rem;margin-bottom:1.5rem;}
+  .pip-block{font-size:0.8rem;padding:0.6rem 1rem;margin-bottom:1.5rem;}
+  .stats-bar{padding:1rem;}.stats-inner{gap:2rem;}
+  section{padding:3rem 1rem;}
+  .modules-grid{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+  .hero{padding:2.5rem 0.75rem 1.5rem;}
+  .hero-tag{font-size:0.65rem;margin-bottom:1rem;}
+  .hero h1{font-size:clamp(2rem,14vw,3rem);}
+  .hero-btns{gap:0.75rem;flex-direction:column;align-items:center;}
+  .btn-primary,.btn-ghost{width:100%;justify-content:center;}
+  .stat-num{font-size:1.3rem;}
 }
 </style>
 <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/GhostAnalyst30/StatsLibX/refs/heads/main/Documentation_Page/favicon.ico"/>
@@ -140,7 +165,7 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
 <nav>
   <div class="nav-inner">
     <a class="logo" href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html">Stats<span>LibX</span></a>
-    <div class="nav-links">
+    <div class="nav-links" id="navLinks">
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html" class="active">Inicio</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/descriptive.html">Descriptive</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/inferential.html">Inferential</a>
@@ -260,25 +285,25 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
         <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
         <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
       </div>
-      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats, InferentialStats
-from statslibx.datasets import load_iris
-
-# Cargar dataset
-data = load_iris()
-
-# Estadística descriptiva
-ds = DescriptiveStats(data)
-print(ds.summary())                              # Resumen completo
-print(ds.mean('sepal_length'))                  # Media de una columna
-print(ds.correlation(method='pearson'))         # Correlación
-print(ds.linear_regression(X='sepal_length', y='petal_length'))
-
-# Estadística inferencial
-inf = InferentialStats(data)
-ci = inf.confidence_interval(column='sepal_length', statistic='mean')
-print(f"IC 95%: [{ci[0]:.3f}, {ci[1]:.3f}]")
-
-result = inf.normality_test(column='sepal_length', method='shapiro')
+      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats, InferentialStats<br>
+from statslibx.datasets import load_iris<br>
+<br>
+# Cargar dataset<br>
+data = load_iris()<br>
+<br>
+# Estadística descriptiva<br>
+ds = DescriptiveStats(data)<br>
+print(ds.summary())                              # Resumen completo<br>
+print(ds.mean('sepal_length'))                  # Media de una columna<br>
+print(ds.correlation(method='pearson'))         # Correlación<br>
+print(ds.linear_regression(X='sepal_length', y='petal_length'))<br>
+<br>
+# Estadística inferencial<br>
+inf = InferentialStats(data)<br>
+ci = inf.confidence_interval(column='sepal_length', statistic='mean')<br>
+print(f"IC 95%: [{ci[0]:.3f}, {ci[1]:.3f}]")<br>
+<br>
+result = inf.normality_test(column='sepal_length', method='shapiro')<br>
 print(result)</code></pre>
     </div>
   </div>
@@ -305,7 +330,6 @@ print(result)</code></pre>
     <div class="footer-meta">Desarrollado por Emmanuel Ascendra · v2.8</div>
     <div class="footer-links">
       <a href="https://github.com/GhostAnalyst30/StatsLibX" target="_blank">GitHub</a>
-      <a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
       <a href="mailto:ascendraemmanuel@gmail.com">Contacto</a>
     </div>
   </div>
@@ -326,8 +350,7 @@ function showToast(){
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
 }
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -864,7 +887,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -106,7 +106,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -179,10 +179,10 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="init-ex">from statslibx import ComputationalStats
-from statslibx.datasets import load_iris
-
-data = load_iris()
+        <pre><code class="language-python" id="init-ex">from statslibx import ComputationalStats<br>
+from statslibx.datasets import load_iris<br>
+<br>
+data = load_iris()<br>
 cs = ComputationalStats(data, seed=42)</code></pre>
       </div>
     </div>
@@ -215,26 +215,26 @@ cs = ComputationalStats(data, seed=42)</code></pre>
       </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('reg-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="reg-ex"># Regresión lineal simple
-modelo = cs.regression(X='sepal_length', y='petal_length')
-print(modelo)
-# <RegressionResult degree=1, R²=0.7599, n=150>
-
-# Ver resumen completo
-s = modelo.summary()
-print(s['metrics'])      # R², RMSE, MAE, AIC, BIC...
-print(s['coefficients']) # tabla con t-stats y p-values
-print(s['formula']['latex'])  # expresión LaTeX
-
-# Predicciones
-preds = modelo.predict([5.0, 6.0, 7.0])
-
-# Regresión polinomial grado 3
-modelo3 = cs.regression('sepal_length', 'petal_length', degree=3)
-print(f"R² = {modelo3.r2:.4f}")
-
-# Regresión múltiple
-modelo_m = cs.regression(['sepal_length', 'sepal_width'], 'petal_length')
+        <pre><code class="language-python" id="reg-ex"># Regresión lineal simple<br>
+modelo = cs.regression(X='sepal_length', y='petal_length')<br>
+print(modelo)<br>
+# <RegressionResult degree=1, R²=0.7599, n=150><br>
+<br>
+# Ver resumen completo<br>
+s = modelo.summary()<br>
+print(s['metrics'])      # R², RMSE, MAE, AIC, BIC...<br>
+print(s['coefficients']) # tabla con t-stats y p-values<br>
+print(s['formula']['latex'])  # expresión LaTeX<br>
+<br>
+# Predicciones<br>
+preds = modelo.predict([5.0, 6.0, 7.0])<br>
+<br>
+# Regresión polinomial grado 3<br>
+modelo3 = cs.regression('sepal_length', 'petal_length', degree=3)<br>
+print(f"R² = {modelo3.r2:.4f}")<br>
+<br>
+# Regresión múltiple<br>
+modelo_m = cs.regression(['sepal_length', 'sepal_width'], 'petal_length')<br>
 print(modelo_m.get_formula())</code></pre>
       </div>
     </div>
@@ -252,9 +252,9 @@ print(modelo_m.get_formula())</code></pre>
       <p class="method-desc">Atajo para regresión lineal simple o múltiple (<code>degree=1</code>).</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('linreg-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="linreg-ex">modelo = cs.linear_regression('sepal_length', 'petal_length')
-modelo.plot()                   # 4 paneles: fit, residuales, Q-Q, histograma
-modelo.plot(interactive=True)  # Plotly interactivo
+        <pre><code class="language-python" id="linreg-ex">modelo = cs.linear_regression('sepal_length', 'petal_length')<br>
+modelo.plot()                   # 4 paneles: fit, residuales, Q-Q, histograma<br>
+modelo.plot(interactive=True)  # Plotly interactivo<br>
 modelo.plot(plot_type='qq')    # Solo Q-Q plot</code></pre>
       </div>
     </div>
@@ -272,11 +272,11 @@ modelo.plot(plot_type='qq')    # Solo Q-Q plot</code></pre>
       <p class="method-desc">Atajo para regresión polinomial. Solo admite una variable predictora.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('polyreg-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="polyreg-ex">modelo = cs.polynomial_regression('sepal_length', 'petal_length', degree=3)
-print(f"Fórmula: {modelo.get_formula()}")
-print(f"LaTeX:   {modelo.latex_expr}")
-
-import numpy as np
+        <pre><code class="language-python" id="polyreg-ex">modelo = cs.polynomial_regression('sepal_length', 'petal_length', degree=3)<br>
+print(f"Fórmula: {modelo.get_formula()}")<br>
+print(f"LaTeX:   {modelo.latex_expr}")<br>
+<br>
+import numpy as np<br>
 preds = modelo.predict(np.linspace(4.5, 8.0, 20))</code></pre>
       </div>
     </div>
@@ -294,16 +294,16 @@ preds = modelo.predict(np.linspace(4.5, 8.0, 20))</code></pre>
       <p class="method-desc">Evalúa grados 1 a <code>max_degree</code> y retorna el mejor según la métrica. <code>'r2'</code> se maximiza; <code>'aic'</code> y <code>'bic'</code> se minimizan. Incluye todos los resultados en <code>'all_results'</code>.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('bestdeg-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="bestdeg-ex">resultado = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')
-print(f"Mejor grado: {resultado['degree']}")
-print(f"R²:  {resultado['r2']:.4f}")
-print(f"BIC: {resultado['bic']:.4f}")
-
-# Tabla comparativa
-for r in resultado['all_results']:
-    print(f"Grado {r['degree']}: R²={r['r2']:.4f}  AIC={r['aic']:.2f}  BIC={r['bic']:.2f}")
-
-# Graficar el mejor modelo
+        <pre><code class="language-python" id="bestdeg-ex">resultado = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')<br>
+print(f"Mejor grado: {resultado['degree']}")<br>
+print(f"R²:  {resultado['r2']:.4f}")<br>
+print(f"BIC: {resultado['bic']:.4f}")<br>
+<br>
+# Tabla comparativa<br>
+for r in resultado['all_results']:<br>
+    print(f"Grado {r['degree']}: R²={r['r2']:.4f}  AIC={r['aic']:.2f}  BIC={r['bic']:.2f}")<br>
+<br>
+# Graficar el mejor modelo<br>
 resultado['model'].plot()</code></pre>
       </div>
     </div>
@@ -335,25 +335,25 @@ resultado['model'].plot()</code></pre>
       </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('interp-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="interp-ex">points = [(0, 1), (1, 3), (2, 2), (3, 5), (4, 4)]
-
-# Lagrange
-interp = cs.interpolation(points, method='lagrange')
-print(interp.summary())
-print(f"LaTeX: {interp.latex_expr}")
-interp.plot()
-interp.plot(interactive=True)
-
-# Newton
-interp_n = cs.interpolation(points, method='newton')
-print(f"En x=2.5: {interp_n.predict(2.5):.4f}")
-
-# Evaluar en múltiples puntos
-import numpy as np
-x_new = np.linspace(0, 4, 100)
-y_new = interp.predict(x_new)
-
-# Spline cúbico
+        <pre><code class="language-python" id="interp-ex">points = [(0, 1), (1, 3), (2, 2), (3, 5), (4, 4)]<br>
+<br>
+# Lagrange<br>
+interp = cs.interpolation(points, method='lagrange')<br>
+print(interp.summary())<br>
+print(f"LaTeX: {interp.latex_expr}")<br>
+interp.plot()<br>
+interp.plot(interactive=True)<br>
+<br>
+# Newton<br>
+interp_n = cs.interpolation(points, method='newton')<br>
+print(f"En x=2.5: {interp_n.predict(2.5):.4f}")<br>
+<br>
+# Evaluar en múltiples puntos<br>
+import numpy as np<br>
+x_new = np.linspace(0, 4, 100)<br>
+y_new = interp.predict(x_new)<br>
+<br>
+# Spline cúbico<br>
 interp_s = cs.interpolation(points, method='spline', spline_degree=3)</code></pre>
       </div>
     </div>
@@ -387,29 +387,29 @@ interp_s = cs.interpolation(points, method='spline', spline_degree=3)</code></pr
       </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('boot-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="boot-ex"># Bootstrap de la media — IC 95%
-boot = cs.bootstrapping('sepal_length', n_samples=2000, statistic='mean')
-s = boot.summary()
-print(f"Estadístico original: {s['original_statistic']:.4f}")
-print(f"Sesgo:               {s['bias']:.6f}")
-print(f"Error estándar:      {s['std_error']:.4f}")
-
-ic = s['confidence_interval_95%']
-print(f"IC Percentil: {ic['percentile']}")
-print(f"IC Básico:    {ic['basic']}")
-print(f"IC Normal:    {ic['normal']}")
-
-boot.plot()
-boot.plot(interactive=True)
-
-# Bootstrap de la mediana con IC 99%
-boot_med = cs.bootstrapping('petal_length', statistic='median', confidence_level=0.99)
-
-# Bootstrap con función personalizada (coeficiente de variación)
-boot_cv = cs.bootstrapping(
-    'sepal_width',
-    statistic='custom',
-    custom_func=lambda x: x.std() / x.mean()
+        <pre><code class="language-python" id="boot-ex"># Bootstrap de la media — IC 95%<br>
+boot = cs.bootstrapping('sepal_length', n_samples=2000, statistic='mean')<br>
+s = boot.summary()<br>
+print(f"Estadístico original: {s['original_statistic']:.4f}")<br>
+print(f"Sesgo:               {s['bias']:.6f}")<br>
+print(f"Error estándar:      {s['std_error']:.4f}")<br>
+<br>
+ic = s['confidence_interval_95%']<br>
+print(f"IC Percentil: {ic['percentile']}")<br>
+print(f"IC Básico:    {ic['basic']}")<br>
+print(f"IC Normal:    {ic['normal']}")<br>
+<br>
+boot.plot()<br>
+boot.plot(interactive=True)<br>
+<br>
+# Bootstrap de la mediana con IC 99%<br>
+boot_med = cs.bootstrapping('petal_length', statistic='median', confidence_level=0.99)<br>
+<br>
+# Bootstrap con función personalizada (coeficiente de variación)<br>
+boot_cv = cs.bootstrapping(<br>
+    'sepal_width',<br>
+    statistic='custom',<br>
+    custom_func=lambda x: x.std() / x.mean()<br>
 )</code></pre>
       </div>
     </div>
@@ -448,13 +448,13 @@ boot_cv = cs.bootstrapping(
       </div>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('kmeans-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="kmeans-ex">resultado = cs.k_means(k=3, init_method='kmeans++')
-print(f"Inercia:     {resultado['inertia']:.2f}")
-print(f"Silhouette:  {resultado['silhouette_score']:.4f}")
-print(f"Iteraciones: {resultado['n_iterations']}")
-
-# Añadir etiquetas al DataFrame
-data['cluster'] = resultado['labels']
+        <pre><code class="language-python" id="kmeans-ex">resultado = cs.k_means(k=3, init_method='kmeans++')<br>
+print(f"Inercia:     {resultado['inertia']:.2f}")<br>
+print(f"Silhouette:  {resultado['silhouette_score']:.4f}")<br>
+print(f"Iteraciones: {resultado['n_iterations']}")<br>
+<br>
+# Añadir etiquetas al DataFrame<br>
+data['cluster'] = resultado['labels']<br>
 print(data.groupby('cluster').mean())</code></pre>
       </div>
     </div>
@@ -472,20 +472,20 @@ print(data.groupby('cluster').mean())</code></pre>
       <p class="method-desc">Evalúa K-Means para k = 2 a <code>max_k</code>. Retorna inercias y silhouette scores para cada k. Útil para determinar visualmente el número óptimo de clusters.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('elbow-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="elbow-ex">elbow = cs.elbow_method(max_k=8)
-# {'k_values': [2,3,...,8], 'inertias': [...], 'silhouettes': [...]}
-
-import matplotlib.pyplot as plt
-fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-axes[0].plot(elbow['k_values'], elbow['inertias'], 'bo-')
-axes[0].set(xlabel='k', ylabel='Inercia', title='Método del Codo')
-axes[0].grid(alpha=0.3)
-
-axes[1].plot(elbow['k_values'], elbow['silhouettes'], 'rs-')
-axes[1].set(xlabel='k', ylabel='Silhouette Score')
-axes[1].grid(alpha=0.3)
-
+        <pre><code class="language-python" id="elbow-ex">elbow = cs.elbow_method(max_k=8)<br>
+# {'k_values': [2,3,...,8], 'inertias': [...], 'silhouettes': [...]}<br>
+<br>
+import matplotlib.pyplot as plt<br>
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))<br>
+<br>
+axes[0].plot(elbow['k_values'], elbow['inertias'], 'bo-')<br>
+axes[0].set(xlabel='k', ylabel='Inercia', title='Método del Codo')<br>
+axes[0].grid(alpha=0.3)<br>
+<br>
+axes[1].plot(elbow['k_values'], elbow['silhouettes'], 'rs-')<br>
+axes[1].set(xlabel='k', ylabel='Silhouette Score')<br>
+axes[1].grid(alpha=0.3)<br>
+<br>
 plt.tight_layout(); plt.show()</code></pre>
       </div>
     </div>
@@ -508,10 +508,10 @@ plt.tight_layout(); plt.show()</code></pre>
       <p class="method-desc">Calcula la matriz de correlación de todas las columnas numéricas. Para Pearson, calcula también la matriz de p-values par a par.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('corr-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="corr-ex">resultado = cs.correlation_analysis(method='pearson')
-print(resultado['correlation_matrix'])
-print(resultado['p_values'])   # Solo para Pearson
-
+        <pre><code class="language-python" id="corr-ex">resultado = cs.correlation_analysis(method='pearson')<br>
+print(resultado['correlation_matrix'])<br>
+print(resultado['p_values'])   # Solo para Pearson<br>
+<br>
 resultado_sp = cs.correlation_analysis(method='spearman')</code></pre>
       </div>
     </div>
@@ -528,7 +528,7 @@ resultado_sp = cs.correlation_analysis(method='spearman')</code></pre>
       <p class="method-desc">Heatmap de correlación con escala RdBu centrada en 0. Con <code>interactive=True</code> usa Plotly con hover tooltips; de lo contrario usa seaborn.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('heatmap-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="heatmap-ex">cs.plot_correlation_heatmap(method='pearson', annot=True)
+        <pre><code class="language-python" id="heatmap-ex">cs.plot_correlation_heatmap(method='pearson', annot=True)<br>
 cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
       </div>
     </div>
@@ -551,7 +551,7 @@ cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
       <p class="method-desc">Estadísticas descriptivas de columnas numéricas. Con <code>by</code> agrupa por una columna categórica.</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('desc-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="desc-ex">print(cs.descriptive_statistics())
+        <pre><code class="language-python" id="desc-ex">print(cs.descriptive_statistics())<br>
 print(cs.descriptive_statistics(by='species'))  # Agrupado por categoría</code></pre>
       </div>
     </div>
@@ -568,8 +568,8 @@ print(cs.descriptive_statistics(by='species'))  # Agrupado por categoría</code>
       <p class="method-desc">Distribución de una columna con soporte de agrupamiento por variable categórica. Backend estático (matplotlib/seaborn) o interactivo (Plotly).</p>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('plotdist-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="plotdist-ex">cs.plot_distribution('sepal_length', kind='hist')
-cs.plot_distribution('petal_length', by='species', kind='violin')
+        <pre><code class="language-python" id="plotdist-ex">cs.plot_distribution('sepal_length', kind='hist')<br>
+cs.plot_distribution('petal_length', by='species', kind='violin')<br>
 cs.plot_distribution('sepal_width', kind='box', interactive=True)</code></pre>
       </div>
     </div>
@@ -664,36 +664,36 @@ cs.plot_distribution('sepal_width', kind='box', interactive=True)</code></pre>
     <div class="method-body">
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python — Flujo completo</span><button class="code-copy-btn" onclick="copyCode('full-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="full-ex">from statslibx import ComputationalStats
-from statslibx.datasets import load_iris
-
-data = load_iris()
-cs = ComputationalStats(data, seed=42)
-
-# 1. Mejor grado de regresión por BIC
-best = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')
-print(f"Mejor grado: {best['degree']}, R²={best['r2']:.4f}")
-best['model'].plot()
-
-# 2. Bootstrap de la media con IC 99%
-boot = cs.bootstrapping('sepal_length', n_samples=5000, confidence_level=0.99)
-s = boot.summary()
-print(f"IC 99% percentil: {s['confidence_interval_99%']['percentile']}")
-boot.plot(interactive=True)
-
-# 3. Interpolación de Newton
-points = [(4.5, 1.3), (5.0, 1.8), (5.5, 2.5), (6.0, 3.8), (7.0, 5.1)]
-interp = cs.interpolation(points, method='newton')
-print(f"LaTeX: {interp.latex_expr}")
-interp.plot()
-
-# 4. Método del codo + clustering óptimo
-elbow = cs.elbow_method(max_k=6)
-clusters = cs.k_means(k=3)
-data['cluster'] = clusters['labels']
-print(f"Silhouette: {clusters['silhouette_score']:.4f}")
-
-# 5. Heatmap de correlación interactivo
+        <pre><code class="language-python" id="full-ex">from statslibx import ComputationalStats<br>
+from statslibx.datasets import load_iris<br>
+<br>
+data = load_iris()<br>
+cs = ComputationalStats(data, seed=42)<br>
+<br>
+# 1. Mejor grado de regresión por BIC<br>
+best = cs.find_best_degree('sepal_length', 'petal_length', max_degree=5, metric='bic')<br>
+print(f"Mejor grado: {best['degree']}, R²={best['r2']:.4f}")<br>
+best['model'].plot()<br>
+<br>
+# 2. Bootstrap de la media con IC 99%<br>
+boot = cs.bootstrapping('sepal_length', n_samples=5000, confidence_level=0.99)<br>
+s = boot.summary()<br>
+print(f"IC 99% percentil: {s['confidence_interval_99%']['percentile']}")<br>
+boot.plot(interactive=True)<br>
+<br>
+# 3. Interpolación de Newton<br>
+points = [(4.5, 1.3), (5.0, 1.8), (5.5, 2.5), (6.0, 3.8), (7.0, 5.1)]<br>
+interp = cs.interpolation(points, method='newton')<br>
+print(f"LaTeX: {interp.latex_expr}")<br>
+interp.plot()<br>
+<br>
+# 4. Método del codo + clustering óptimo<br>
+elbow = cs.elbow_method(max_k=6)<br>
+clusters = cs.k_means(k=3)<br>
+data['cluster'] = clusters['labels']<br>
+print(f"Silhouette: {clusters['silhouette_score']:.4f}")<br>
+<br>
+# 5. Heatmap de correlación interactivo<br>
 cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
       </div>
       <div class="note-box teal">
@@ -722,8 +722,7 @@ cs.plot_correlation_heatmap(method='spearman', interactive=True)</code></pre>
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
 function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
 function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -1260,7 +1259,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

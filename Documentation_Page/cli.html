@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -125,7 +125,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html" class="active">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -205,9 +205,9 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
           <p class="method-desc">Al instalar <code style="font-family:'DM Mono',monospace;color:var(--accent3)">statslibx</code>, el comando <code style="font-family:'DM Mono',monospace;color:var(--accent)">statslibx</code> queda disponible globalmente en tu terminal. Soporta archivos CSV, Parquet, Excel y JSON, además de los datasets internos del paquete.</p>
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('install-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="install-ex">pip install statslibx
-
-# Verificar instalación
+            <pre><code class="language-bash" id="install-ex">pip install statslibx<br>
+<br>
+# Verificar instalación<br>
 statslibx --help</code></pre>
           </div>
           <div class="info-box"><strong>Formatos soportados:</strong> <code>.csv</code> · <code>.parquet</code> · <code>.xlsx</code> / <code>.xls</code> · <code>.json</code><br/>También acepta datasets internos por nombre: <code>iris</code>, <code>titanic</code>, <code>penguins</code>, <code>sp500_companies</code>, <code>course_completion</code></div>
@@ -246,22 +246,22 @@ statslibx --help</code></pre>
 
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('data-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="data-ex"># Básico — dimensiones y columnas
-statslibx data iris.csv
-
-# Con resumen estadístico
-statslibx data iris.csv --summary
-
-# Con tipos de datos
-statslibx data iris.csv --types
-
-# Con valores faltantes
-statslibx data titanic.csv --missing
-
-# Combinado — todo junto
-statslibx data mi_archivo.csv --summary --types --missing
-
-# Usando dataset interno
+            <pre><code class="language-bash" id="data-ex"># Básico — dimensiones y columnas<br>
+statslibx data iris.csv<br>
+<br>
+# Con resumen estadístico<br>
+statslibx data iris.csv --summary<br>
+<br>
+# Con tipos de datos<br>
+statslibx data iris.csv --types<br>
+<br>
+# Con valores faltantes<br>
+statslibx data titanic.csv --missing<br>
+<br>
+# Combinado — todo junto<br>
+statslibx data mi_archivo.csv --summary --types --missing<br>
+<br>
+# Usando dataset interno<br>
 statslibx data titanic</code></pre>
           </div>
         </div>
@@ -297,13 +297,13 @@ statslibx data titanic</code></pre>
 
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('describe-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="describe-ex"># Numéricas y categóricas (por defecto)
-statslibx describe iris.csv
-
-# Solo columnas numéricas
-statslibx describe iris.csv --numeric
-
-# Solo columnas categóricas
+            <pre><code class="language-bash" id="describe-ex"># Numéricas y categóricas (por defecto)<br>
+statslibx describe iris.csv<br>
+<br>
+# Solo columnas numéricas<br>
+statslibx describe iris.csv --numeric<br>
+<br>
+# Solo columnas categóricas<br>
 statslibx describe titanic --categorical</code></pre>
           </div>
         </div>
@@ -337,10 +337,10 @@ statslibx describe titanic --categorical</code></pre>
 
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('quality-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="quality-ex"># Reporte básico de calidad
-statslibx quality iris.csv
-
-# Con detalles de valores faltantes
+            <pre><code class="language-bash" id="quality-ex"># Reporte básico de calidad<br>
+statslibx quality iris.csv<br>
+<br>
+# Con detalles de valores faltantes<br>
 statslibx quality titanic --verbose</code></pre>
           </div>
 
@@ -378,16 +378,16 @@ statslibx quality titanic --verbose</code></pre>
 
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('preview-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="preview-ex"># Primeras 5 filas (por defecto)
-statslibx preview iris.csv
-
-# Primeras 10 filas
-statslibx preview iris.csv -n 10
-
-# Muestra aleatoria de 5 filas
-statslibx preview iris.csv --sample
-
-# Muestra aleatoria de 20 filas
+            <pre><code class="language-bash" id="preview-ex"># Primeras 5 filas (por defecto)<br>
+statslibx preview iris.csv<br>
+<br>
+# Primeras 10 filas<br>
+statslibx preview iris.csv -n 10<br>
+<br>
+# Muestra aleatoria de 5 filas<br>
+statslibx preview iris.csv --sample<br>
+<br>
+# Muestra aleatoria de 20 filas<br>
 statslibx preview titanic -n 20 --sample</code></pre>
           </div>
         </div>
@@ -421,13 +421,13 @@ statslibx preview titanic -n 20 --sample</code></pre>
 
           <div class="terminal-block">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('info-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="info-ex"># Información básica (dimensiones, columnas, memoria)
-statslibx info iris.csv
-
-# Información detallada (tipos, nulos, únicos)
-statslibx info titanic --detailed
-
-# Con dataset interno
+            <pre><code class="language-bash" id="info-ex"># Información básica (dimensiones, columnas, memoria)<br>
+statslibx info iris.csv<br>
+<br>
+# Información detallada (tipos, nulos, únicos)<br>
+statslibx info titanic --detailed<br>
+<br>
+# Con dataset interno<br>
 statslibx info penguins --detailed</code></pre>
           </div>
         </div>
@@ -482,13 +482,13 @@ statslibx info penguins --detailed</code></pre>
           </table>
           <div class="terminal-block" style="margin-top:1.25rem">
             <div class="terminal-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="terminal-label">Terminal</span><button class="code-copy-btn" onclick="copyCode('datasets-ex')">Copiar</button></div>
-            <pre><code class="language-bash" id="datasets-ex"># Por nombre interno (sin extensión)
-statslibx data penguins
-
-# Por ruta local completa
-statslibx data ./mis_datos/ventas_2024.csv --summary
-
-# Excel también funciona
+            <pre><code class="language-bash" id="datasets-ex"># Por nombre interno (sin extensión)<br>
+statslibx data penguins<br>
+<br>
+# Por ruta local completa<br>
+statslibx data ./mis_datos/ventas_2024.csv --summary<br>
+<br>
+# Excel también funciona<br>
 statslibx info reporte.xlsx --detailed</code></pre>
           </div>
         </div>
@@ -526,8 +526,7 @@ window.addEventListener('scroll', () => {
     a.classList.remove('active');
     if (a.getAttribute('href') === '#' + current) a.classList.add('active');
   });
-});
-</script>
+});</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -1064,7 +1063,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

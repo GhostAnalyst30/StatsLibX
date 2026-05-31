@@ -7,3 +7,4 @@ __pycache__/
 statslibx.egg-info/
 figures/
 *.in
+node_modules

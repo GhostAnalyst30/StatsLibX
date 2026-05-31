@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -237,7 +237,7 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
         <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
         <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
         <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html" class="active-viewx active">ViewX</a>
-        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+        <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -402,31 +402,31 @@ footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;
         <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
         <button class="code-copy" onclick="copyCode('quick-code')">Copiar</button>
       </div>
-      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats
-from statslibx.datasets import load_iris
-from statslibx.viewx import ViewX          # ← importar ViewX
-
-# Cargar datos y calcular estadísticas
-data = load_iris()
-ds   = DescriptiveStats(data)
-
-# ── Uso básico: auto-detección ──────────────────────────────
-vx = ViewX(data)
-vx.auto_plot()                             # ViewX elige el mejor gráfico
-
-# ── Gráficos específicos ────────────────────────────────────
-vx.histogram(column='sepal_length', kde=True)
-vx.boxplot(column='petal_width', group_by='species')
-vx.scatter(x='sepal_length', y='petal_length', hue='species')
-vx.heatmap_corr()                          # Heatmap de correlación completo
-
-# ── Integración directa con DescriptiveStats ────────────────
-vx.from_stats(ds).plot_summary()           # Gráfico del resumen descriptivo
-vx.qq_plot(column='sepal_width')           # Q-Q plot de normalidad
-
-# ── Cambiar backend y exportar ──────────────────────────────
-vx.set_backend('plotly')                   # Cambiar a Plotly (interactivo)
-vx.scatter(x='sepal_length', y='petal_length', hue='species')
+      <pre><code class="language-python" id="quick-code">from statslibx import DescriptiveStats<br>
+from statslibx.datasets import load_iris<br>
+from statslibx.viewx import ViewX          # ← importar ViewX<br>
+<br>
+# Cargar datos y calcular estadísticas<br>
+data = load_iris()<br>
+ds   = DescriptiveStats(data)<br>
+<br>
+# ── Uso básico: auto-detección ──────────────────────────────<br>
+vx = ViewX(data)<br>
+vx.auto_plot()                             # ViewX elige el mejor gráfico<br>
+<br>
+# ── Gráficos específicos ────────────────────────────────────<br>
+vx.histogram(column='sepal_length', kde=True)<br>
+vx.boxplot(column='petal_width', group_by='species')<br>
+vx.scatter(x='sepal_length', y='petal_length', hue='species')<br>
+vx.heatmap_corr()                          # Heatmap de correlación completo<br>
+<br>
+# ── Integración directa con DescriptiveStats ────────────────<br>
+vx.from_stats(ds).plot_summary()           # Gráfico del resumen descriptivo<br>
+vx.qq_plot(column='sepal_width')           # Q-Q plot de normalidad<br>
+<br>
+# ── Cambiar backend y exportar ──────────────────────────────<br>
+vx.set_backend('plotly')                   # Cambiar a Plotly (interactivo)<br>
+vx.scatter(x='sepal_length', y='petal_length', hue='species')<br>
 vx.export('mi_grafico.html')               # Guardar como HTML interactivo</code></pre>
     </div>
 
@@ -607,7 +607,6 @@ Prism.highlightAll();
   if(document.readyState==="loading"){
     document.addEventListener("DOMContentLoaded",function(){buildHamburger();buildMobileMenu();});
   }else{buildHamburger();buildMobileMenu();}
-})();
-</script>
+})();</script>
 </body>
 </html>

@@ -270,11 +270,10 @@ def generate_dataset(n_rows, schema, seed=None, save: Optional[bool] = False, fi
 
         data[col] = values
 
-    if save and filename:
-        df = pd.DataFrame(data)
-        df.to_csv(f"{filename}.csv", index=False)
-    else:
-        df = pd.DataFrame(data)
-        df.to_csv("dataset.csv", index=False)
+    df = pd.DataFrame(data)
 
-    return pd.DataFrame(data)
+    if save:
+        output_name = f"{filename}.csv" if filename else "dataset.csv"
+        df.to_csv(output_name, index=False)
+
+    return df

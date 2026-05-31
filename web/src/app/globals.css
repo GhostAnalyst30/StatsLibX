@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #09090f;
+  --color-surface: #111118;
+  --color-card: #14141e;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-text: #e8e8f0;
+  --color-muted: #7a7a90;
+  --color-accent: #7c6af7;
+  --color-accent2: #4fd1c5;
+  --color-accent3: #f6ad55;
+  --font-syne: "Syne", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.65;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(124, 106, 247, 0.3);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(124, 106, 247, 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(124, 106, 247, 0.5);
+  }
+}
+
+@utility container-main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+@utility text-gradient {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility glass {
+  background: rgba(17, 17, 24, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+}
+
+.code-block {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: #0d0d16;
+  margin: 1.5rem 0;
+}
+
+.code-block .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.code-block pre {
+  margin: 0 !important;
+  padding: 1.25rem !important;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+
+.code-block code {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+.param-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.param-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-syne);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.param-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  vertical-align: top;
+}
+
+.param-table tr:last-child td {
+  border-bottom: none;
+}
+
+.param-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.param-table .param-name {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--color-accent2);
+  white-space: nowrap;
+}
+
+.param-table .param-type {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-accent3);
+  white-space: nowrap;
+}
+
+.method-card {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-card);
+  transition: border-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.method-card:hover {
+  border-color: rgba(124, 106, 247, 0.25);
+}
+
+.method-card .method-header {
+  padding: 1rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.method-card .method-header:hover {
+  background: rgba(124, 106, 247, 0.05);
+}
+
+.method-card .method-body {
+  padding: 1.5rem;
+}
+
+.doc-section {
+  margin-bottom: 3rem;
+}
+
+.doc-section-title {
+  font-family: var(--font-syne);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.doc-section-sub {
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  margin-bottom: 1.5rem;
+}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -92,7 +92,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -143,16 +143,16 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
     <div class="method-body">
       <p class="method-desc">Configuran el comportamiento global de la instancia para visualizaciones.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('cfg-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="cfg-ex">from statslibx import UtilsStats
-utils = UtilsStats()
-
-utils.set_plot_backend('seaborn')          # 'matplotlib', 'seaborn', 'plotly'
-utils.set_default_figsize((14, 6))         # (ancho, alto) en pulgadas
-utils.set_save_fig_options(
-    save_fig=True,
-    fig_format='png',    # 'png', 'svg', 'pdf'
-    fig_dpi=300,
-    figures_dir='mis_graficos'
+      <pre><code class="language-python" id="cfg-ex">from statslibx import UtilsStats<br>
+utils = UtilsStats()<br>
+<br>
+utils.set_plot_backend('seaborn')          # 'matplotlib', 'seaborn', 'plotly'<br>
+utils.set_default_figsize((14, 6))         # (ancho, alto) en pulgadas<br>
+utils.set_save_fig_options(<br>
+    save_fig=True,<br>
+    fig_format='png',    # 'png', 'svg', 'pdf'<br>
+    fig_dpi=300,<br>
+    figures_dir='mis_graficos'<br>
 )</code></pre></div>
     </div>
   </div>
@@ -178,8 +178,8 @@ utils.set_save_fig_options(
         <tr><td class="param-name">Feather</td><td class="param-desc">.feather</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('load-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="load-ex">df = utils.load_data("ventas.csv")
-df = utils.load_data("reporte.xlsx", sheet_name="Hoja1")
+      <pre><code class="language-python" id="load-ex">df = utils.load_data("ventas.csv")<br>
+df = utils.load_data("reporte.xlsx", sheet_name="Hoja1")<br>
 df = utils.load_data("datos.json")</code></pre></div>
     </div>
   </div>
@@ -197,11 +197,11 @@ df = utils.load_data("datos.json")</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Verifica normalidad con el test de Shapiro-Wilk. Acepta datos en memoria o rutas de archivo.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('norm-ex2')">Copiar</button></div>
-      <pre><code class="language-python" id="norm-ex2">result = utils.check_normality(df, column='edad')
-# {'is_normal': True, 'shapiro_statistic': 0.98, 'shapiro_pvalue': 0.12,
-#  'alpha': 0.05, 'interpretation': 'Normal'}
-
-# Desde archivo directo
+      <pre><code class="language-python" id="norm-ex2">result = utils.check_normality(df, column='edad')<br>
+# {'is_normal': True, 'shapiro_statistic': 0.98, 'shapiro_pvalue': 0.12,<br>
+#  'alpha': 0.05, 'interpretation': 'Normal'}<br>
+<br>
+# Desde archivo directo<br>
 result = utils.check_normality("datos.csv", column="salario")</code></pre></div>
     </div>
   </div>
@@ -215,10 +215,10 @@ result = utils.check_normality("datos.csv", column="salario")</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Calcula intervalos de confianza para la media. El método 'bootstrap' es preferible para datos no normales (1000 resamplings).</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('ci2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="ci2-ex">ci = utils.calculate_confidence_intervals(df, column='salario', confidence_level=0.95)
-# {'mean': 52000, 'std': 8200, 'n': 300, 'confidence_level': 0.95,
-#  'ci_lower': 51070, 'ci_upper': 52930, 'margin_error': 930, 'method': 'parametric'}
-
+      <pre><code class="language-python" id="ci2-ex">ci = utils.calculate_confidence_intervals(df, column='salario', confidence_level=0.95)<br>
+# {'mean': 52000, 'std': 8200, 'n': 300, 'confidence_level': 0.95,<br>
+#  'ci_lower': 51070, 'ci_upper': 52930, 'margin_error': 930, 'method': 'parametric'}<br>
+<br>
 ci_boot = utils.calculate_confidence_intervals(data, method='bootstrap')</code></pre></div>
     </div>
   </div>
@@ -232,11 +232,11 @@ ci_boot = utils.calculate_confidence_intervals(data, method='bootstrap')</code><
     <div class="method-body">
       <p class="method-desc">Detecta outliers con tres métodos. Retorna array booleano. <code>isolation_forest</code> requiere scikit-learn.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('out2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="out2-ex">mask_iqr = utils.detect_outliers(df, column='precio', method='iqr')
-mask_z   = utils.detect_outliers(df, column='precio', method='zscore', threshold=3)
-mask_if  = utils.detect_outliers(df, column='precio', method='isolation_forest', contamination=0.05)
-
-# Filtrar outliers
+      <pre><code class="language-python" id="out2-ex">mask_iqr = utils.detect_outliers(df, column='precio', method='iqr')<br>
+mask_z   = utils.detect_outliers(df, column='precio', method='zscore', threshold=3)<br>
+mask_if  = utils.detect_outliers(df, column='precio', method='isolation_forest', contamination=0.05)<br>
+<br>
+# Filtrar outliers<br>
 df_limpio = df[~mask_iqr]</code></pre></div>
     </div>
   </div>
@@ -250,15 +250,15 @@ df_limpio = df[~mask_iqr]</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Calcula el tamaño del efecto entre dos grupos usando Cohen's d o Hedges' g (corrección para muestras pequeñas).</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('eff-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="eff-ex"># Desde DataFrame con nombres de columna
-efecto = utils.calculate_effect_size(df, group1='salario_h', group2='salario_m')
-# {'effect_size': 0.45, 'method': 'cohen', 'interpretation': 'Pequeño',
-#  'mean_diff': 3200, 'pooled_std': 7100}
-
-# Desde arrays numpy
-import numpy as np
-g1 = np.random.normal(100, 15, 100)
-g2 = np.random.normal(110, 15, 100)
+      <pre><code class="language-python" id="eff-ex"># Desde DataFrame con nombres de columna<br>
+efecto = utils.calculate_effect_size(df, group1='salario_h', group2='salario_m')<br>
+# {'effect_size': 0.45, 'method': 'cohen', 'interpretation': 'Pequeño',<br>
+#  'mean_diff': 3200, 'pooled_std': 7100}<br>
+<br>
+# Desde arrays numpy<br>
+import numpy as np<br>
+g1 = np.random.normal(100, 15, 100)<br>
+g2 = np.random.normal(110, 15, 100)<br>
 efecto = utils.calculate_effect_size(g1, group2=g2, method='hedges')</code></pre></div>
     </div>
   </div>
@@ -271,7 +271,7 @@ efecto = utils.calculate_effect_size(g1, group2=g2, method='hedges')</code></pre
     <div class="method-body">
       <p class="method-desc">Retorna un diccionario completo de estadísticas descriptivas: count, mean, median, mode, std, variance, min, max, q1, q3, iqr, skewness, kurtosis, range.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('desc-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="desc-ex">stats = utils.get_descriptive_stats(df, column='edad')
+      <pre><code class="language-python" id="desc-ex">stats = utils.get_descriptive_stats(df, column='edad')<br>
 print(f"Media: {stats['mean']:.2f}, IQR: {stats['iqr']:.2f}")</code></pre></div>
     </div>
   </div>
@@ -293,9 +293,9 @@ print(f"Media: {stats['mean']:.2f}, IQR: {stats['iqr']:.2f}")</code></pre></div>
         <div class="backend-card"><h4>plotly</h4><p>Interactivo con zoom y tooltips.</p></div>
       </div>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('plot-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="plot-ex">utils.plot_distribution(df, column='salario', plot_type='hist', backend='seaborn')
-utils.plot_distribution(df, column='edad', plot_type='all')          # 4 paneles
-utils.plot_distribution("datos.csv", column="precio", plot_type='violin')  # Desde archivo
+      <pre><code class="language-python" id="plot-ex">utils.plot_distribution(df, column='salario', plot_type='hist', backend='seaborn')<br>
+utils.plot_distribution(df, column='edad', plot_type='all')          # 4 paneles<br>
+utils.plot_distribution("datos.csv", column="precio", plot_type='violin')  # Desde archivo<br>
 fig = utils.plot_distribution(df, column='edad', backend='plotly')  # Interactivo</code></pre></div>
     </div>
   </div>
@@ -309,11 +309,11 @@ fig = utils.plot_distribution(df, column='edad', backend='plotly')  # Interactiv
     <div class="method-body">
       <p class="method-desc">Genera dos paneles: histograma+KDE y KDE con intervalo de confianza sombreado. Incluye estadísticas en recuadro informativo.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('distci-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="distci-ex">utils.plot_distribution_with_ci(
-    df, column='salario',
-    confidence_level=0.95,
-    ci_method='parametric',
-    save_fig=True, filename='salario_ic'
+      <pre><code class="language-python" id="distci-ex">utils.plot_distribution_with_ci(<br>
+    df, column='salario',<br>
+    confidence_level=0.95,<br>
+    ci_method='parametric',<br>
+    save_fig=True, filename='salario_ic'<br>
 )</code></pre></div>
     </div>
   </div>
@@ -326,7 +326,7 @@ fig = utils.plot_distribution(df, column='edad', backend='plotly')  # Interactiv
     <div class="method-body">
       <p class="method-desc">Heatmap de la matriz de correlación. Con <code>triangular=True</code> oculta la diagonal superior para mayor claridad.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('corrplot-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="corrplot-ex">utils.plot_correlation_matrix(df, method='pearson', triangular=True)
+      <pre><code class="language-python" id="corrplot-ex">utils.plot_correlation_matrix(df, method='pearson', triangular=True)<br>
 fig = utils.plot_correlation_matrix(df, backend='plotly')  # Interactivo</code></pre></div>
     </div>
   </div>
@@ -339,7 +339,7 @@ fig = utils.plot_correlation_matrix(df, backend='plotly')  # Interactivo</code><
     <div class="method-body">
       <p class="method-desc">Pairplot / scatter matrix. Muestra relaciones entre todas las variables numéricas de forma simultánea.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('scatter-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="scatter-ex">utils.plot_scatter_matrix(df, columns=['edad', 'salario', 'experiencia'])
+      <pre><code class="language-python" id="scatter-ex">utils.plot_scatter_matrix(df, columns=['edad', 'salario', 'experiencia'])<br>
 fig = utils.plot_scatter_matrix(df, backend='plotly')</code></pre></div>
     </div>
   </div>
@@ -364,8 +364,7 @@ fig = utils.plot_scatter_matrix(df, backend='plotly')</code></pre></div>
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
 function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
 function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -902,7 +901,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

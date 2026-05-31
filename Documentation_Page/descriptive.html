@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -107,7 +107,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -175,10 +175,10 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       </table>
       <div class="code-block">
         <div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('init-ex')">Copiar</button></div>
-        <pre><code class="language-python" id="init-ex">from statslibx import DescriptiveStats
-from statslibx.datasets import load_iris
-
-data = load_iris()
+        <pre><code class="language-python" id="init-ex">from statslibx import DescriptiveStats<br>
+from statslibx.datasets import load_iris<br>
+<br>
+data = load_iris()<br>
 ds = DescriptiveStats(data)</code></pre>
       </div>
     </div>
@@ -202,7 +202,7 @@ ds = DescriptiveStats(data)</code></pre>
       <table class="params-table"><thead><tr><th>Parámetro</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
       <tbody><tr><td class="param-name">column</td><td class="param-type">str | None</td><td class="param-default">None</td><td class="param-desc">Nombre de la columna. Si es None, calcula para todas las columnas numéricas.</td></tr></tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('mean-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="mean-ex">ds.mean('sepal_length')   # → float
+      <pre><code class="language-python" id="mean-ex">ds.mean('sepal_length')   # → float<br>
 ds.mean()                 # → pd.Series con todas las columnas</code></pre></div>
     </div>
   </div>
@@ -215,7 +215,7 @@ ds.mean()                 # → pd.Series con todas las columnas</code></pre></d
     <div class="method-body">
       <p class="method-desc">Calcula la mediana (valor central) de una columna o de todas las numéricas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('median-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="median-ex">ds.median('petal_width')   # → float
+      <pre><code class="language-python" id="median-ex">ds.median('petal_width')   # → float<br>
 ds.median()                # → pd.Series</code></pre></div>
     </div>
   </div>
@@ -228,7 +228,7 @@ ds.median()                # → pd.Series</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Calcula la moda (valor más frecuente) de una columna o de todas las numéricas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('mode-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="mode-ex">ds.mode('species')   # → valor más frecuente
+      <pre><code class="language-python" id="mode-ex">ds.mode('species')   # → valor más frecuente<br>
 ds.mode()            # → pd.Series</code></pre></div>
     </div>
   </div>
@@ -246,7 +246,7 @@ ds.mode()            # → pd.Series</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Desviación estándar muestral de una columna o de todas las numéricas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('std-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="std-ex">ds.std('sepal_length')   # → float
+      <pre><code class="language-python" id="std-ex">ds.std('sepal_length')   # → float<br>
 ds.std()                 # → pd.Series</code></pre></div>
     </div>
   </div>
@@ -276,8 +276,8 @@ ds.std()                 # → pd.Series</code></pre></div>
         <tr><td class="param-name">column</td><td class="param-type">str | None</td><td class="param-desc">Columna específica. None para todas.</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('quant-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="quant-ex">ds.quantile(0.25, 'sepal_length')        # Q1 de una columna
-ds.quantile([0.25, 0.5, 0.75])           # Cuartiles de todas
+      <pre><code class="language-python" id="quant-ex">ds.quantile(0.25, 'sepal_length')        # Q1 de una columna<br>
+ds.quantile([0.25, 0.5, 0.75])           # Cuartiles de todas<br>
 ds.quantile([0.1, 0.9], 'petal_width')  # Percentiles 10 y 90</code></pre></div>
     </div>
   </div>
@@ -295,7 +295,7 @@ ds.quantile([0.1, 0.9], 'petal_width')  # Percentiles 10 y 90</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Asimetría (sesgo) de la distribución. Valores positivos indican cola derecha, negativos cola izquierda.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('skew-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="skew-ex">skew = ds.skewness('sepal_length')
+      <pre><code class="language-python" id="skew-ex">skew = ds.skewness('sepal_length')<br>
 # >0: sesgo positivo (cola derecha), <0: sesgo negativo</code></pre></div>
     </div>
   </div>
@@ -308,7 +308,7 @@ ds.quantile([0.1, 0.9], 'petal_width')  # Percentiles 10 y 90</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Curtosis (apuntamiento) de la distribución. Mide cuánto difiere la distribución de la normal en sus colas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('kurt-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="kurt-ex">kurt = ds.kurtosis('petal_length')
+      <pre><code class="language-python" id="kurt-ex">kurt = ds.kurtosis('petal_length')<br>
 # >0: leptocúrtica (colas pesadas), <0: platicúrtica (colas ligeras)</code></pre></div>
     </div>
   </div>
@@ -328,11 +328,11 @@ ds.quantile([0.1, 0.9], 'petal_width')  # Percentiles 10 y 90</code></pre></div>
         <tr><td class="param-name">threshold</td><td class="param-type">float</td><td class="param-default">1.5</td><td class="param-desc">1.5 para IQR, 3 para zscore típicamente</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('out-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="out-ex">mask = ds.outliers('sepal_length', method='iqr', threshold=1.5)
-print(f"Outliers encontrados: {mask.sum()}")
-
-# Con z-score
-mask_z = ds.outliers('petal_length', method='zscore', threshold=3)
+      <pre><code class="language-python" id="out-ex">mask = ds.outliers('sepal_length', method='iqr', threshold=1.5)<br>
+print(f"Outliers encontrados: {mask.sum()}")<br>
+<br>
+# Con z-score<br>
+mask_z = ds.outliers('petal_length', method='zscore', threshold=3)<br>
 datos_limpios = data[~mask_z]  # Filtrar outliers</code></pre></div>
     </div>
   </div>
@@ -356,13 +356,13 @@ datos_limpios = data[~mask_z]  # Filtrar outliers</code></pre></div>
         <tr><td class="param-name">columns</td><td class="param-type">List[str] | None</td><td class="param-default">None</td><td class="param-desc">Subconjunto de columnas. None para todas las numéricas.</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('corr-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="corr-ex"># Correlación de Pearson
-corr = ds.correlation(method='pearson')
-
-# Correlación de Spearman para columnas específicas
-corr_sub = ds.correlation(
-    method='spearman',
-    columns=['sepal_length', 'petal_length', 'petal_width']
+      <pre><code class="language-python" id="corr-ex"># Correlación de Pearson<br>
+corr = ds.correlation(method='pearson')<br>
+<br>
+# Correlación de Spearman para columnas específicas<br>
+corr_sub = ds.correlation(<br>
+    method='spearman',<br>
+    columns=['sepal_length', 'petal_length', 'petal_width']<br>
 )</code></pre></div>
     </div>
   </div>
@@ -375,7 +375,7 @@ corr_sub = ds.correlation(
     <div class="method-body">
       <p class="method-desc">Calcula la matriz de covarianza entre variables numéricas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('cov-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="cov-ex">cov_matrix = ds.covariance()
+      <pre><code class="language-python" id="cov-ex">cov_matrix = ds.covariance()<br>
 cov_sub = ds.covariance(columns=['sepal_length', 'petal_length'])</code></pre></div>
     </div>
   </div>
@@ -400,20 +400,20 @@ cov_sub = ds.covariance(columns=['sepal_length', 'petal_length'])</code></pre></
         <tr><td class="param-name">plot_backend</td><td class="param-type">str</td><td class="param-default">'seaborn'</td><td class="param-desc">'seaborn', 'plotly' o 'matplotlib'</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('summary-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="summary-ex">resumen = ds.summary()
-print(resumen)                           # Tabla formateada
-
-# Convertir a DataFrame
-df_wide    = resumen.to_dataframe(format='wide')    # estadísticas en filas
-df_compact = resumen.to_dataframe(format='compact') # variables en filas
-df_long    = resumen.to_dataframe(format='long')    # formato largo
-
-# DataFrame estilizado para Jupyter
-styled = resumen.to_styled_df()          # Heatmap de valores
-
-# Resumen por categorías
-cats = resumen.to_categorical_summary()
-print(cats['Tendencia Central'])
+      <pre><code class="language-python" id="summary-ex">resumen = ds.summary()<br>
+print(resumen)                           # Tabla formateada<br>
+<br>
+# Convertir a DataFrame<br>
+df_wide    = resumen.to_dataframe(format='wide')    # estadísticas en filas<br>
+df_compact = resumen.to_dataframe(format='compact') # variables en filas<br>
+df_long    = resumen.to_dataframe(format='long')    # formato largo<br>
+<br>
+# DataFrame estilizado para Jupyter<br>
+styled = resumen.to_styled_df()          # Heatmap de valores<br>
+<br>
+# Resumen por categorías<br>
+cats = resumen.to_categorical_summary()<br>
+print(cats['Tendencia Central'])<br>
 print(cats['Dispersión'])</code></pre></div>
     </div>
   </div>
@@ -436,24 +436,24 @@ print(cats['Dispersión'])</code></pre></div>
         <tr><td class="param-name">handle_missing</td><td class="param-type">str</td><td class="param-default">'drop'</td><td class="param-desc">'drop', 'error' o 'warn'</td></tr>
       </tbody></table>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('lr-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="lr-ex"># Regresión simple
-modelo = ds.linear_regression(X='sepal_length', y='petal_length')
-print(modelo.summary())
-print(f"R²: {modelo.r_squared:.4f}")
-print(f"Intercepto: {modelo.intercept_:.4f}")
-print(f"Coeficiente: {modelo.coef_[0]:.4f}")
-
-# Predicciones
-import numpy as np
-X_nuevo = np.array([[5.0], [6.5], [7.2]])
-preds = modelo.predict(X_nuevo)
-
-# Regresión múltiple
-modelo_m = ds.linear_regression(
-    X=['sepal_length', 'sepal_width'],
-    y='petal_length',
-    engine='statsmodels',
-    show_plot=True
+      <pre><code class="language-python" id="lr-ex"># Regresión simple<br>
+modelo = ds.linear_regression(X='sepal_length', y='petal_length')<br>
+print(modelo.summary())<br>
+print(f"R²: {modelo.r_squared:.4f}")<br>
+print(f"Intercepto: {modelo.intercept_:.4f}")<br>
+print(f"Coeficiente: {modelo.coef_[0]:.4f}")<br>
+<br>
+# Predicciones<br>
+import numpy as np<br>
+X_nuevo = np.array([[5.0], [6.5], [7.2]])<br>
+preds = modelo.predict(X_nuevo)<br>
+<br>
+# Regresión múltiple<br>
+modelo_m = ds.linear_regression(<br>
+    X=['sepal_length', 'sepal_width'],<br>
+    y='petal_length',<br>
+    engine='statsmodels',<br>
+    show_plot=True<br>
 )</code></pre></div>
     </div>
   </div>
@@ -466,7 +466,7 @@ modelo_m = ds.linear_regression(
     <div class="method-body">
       <p class="method-desc">Muestra la documentación completa de la clase en la consola, en el idioma configurado (<code>lang</code>).</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('help-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="help-ex">ds = DescriptiveStats(data, lang='en-US')
+      <pre><code class="language-python" id="help-ex">ds = DescriptiveStats(data, lang='en-US')<br>
 ds.help()   # Imprime guía completa en inglés</code></pre></div>
     </div>
   </div>
@@ -491,8 +491,7 @@ ds.help()   # Imprime guía completa en inglés</code></pre></div>
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
 function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
 function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -1029,7 +1028,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>

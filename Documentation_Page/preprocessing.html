@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/datasets.html">Datasets</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/cli.html">Console</a>
       <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/viewx.html">ViewX</a>
-      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a>
+      <a href="https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/playground.html">Coder</a><a href="https://pypi.org/project/statslibx/" target="_blank">PyPI</a>
     </div>
     <button class="nav-pip" onclick="copyText('pip install statslibx')">pip install statslibx</button>
   </div>
@@ -144,19 +144,19 @@ footer{border-top:1px solid var(--border);padding:2rem;text-align:center;}
     <div class="method-body">
       <p class="method-desc">Inicializa el preprocessor con un DataFrame de pandas o polars. Los métodos que retornan <code>self</code> son encadenables.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('pp-init')">Copiar</button></div>
-      <pre><code class="language-python" id="pp-init">from statslibx import Preprocessing
-import pandas as pd
-
-df = pd.read_csv("datos.csv")
-pp = Preprocessing(df)
-
-# Fluent API (encadenamiento)
-df_limpio = (
-    Preprocessing(df)
-    .fill_nulls(fill_with=0, columns=['col1', 'col2'])
-    .normalize('precio')
-    .standardize('edad')
-    .data
+      <pre><code class="language-python" id="pp-init">from statslibx import Preprocessing<br>
+import pandas as pd<br>
+<br>
+df = pd.read_csv("datos.csv")<br>
+pp = Preprocessing(df)<br>
+<br>
+# Fluent API (encadenamiento)<br>
+df_limpio = (<br>
+    Preprocessing(df)<br>
+    .fill_nulls(fill_with=0, columns=['col1', 'col2'])<br>
+    .normalize('precio')<br>
+    .standardize('edad')<br>
+    .data<br>
 )</code></pre></div>
     </div>
   </div>
@@ -174,10 +174,10 @@ df_limpio = (
     <div class="method-body">
       <p class="method-desc">Detecta valores nulos por columna. Retorna DataFrame con columnas: <code>column</code>, <code>nulls</code>, <code>non_nulls</code>, <code>null_pct</code>.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('nulls-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="nulls-ex">nulos = pp.detect_nulls()
-print(nulos)
-
-# Solo columnas específicas
+      <pre><code class="language-python" id="nulls-ex">nulos = pp.detect_nulls()<br>
+print(nulos)<br>
+<br>
+# Solo columnas específicas<br>
 nulos = pp.detect_nulls(columns=['edad', 'salario'])</code></pre></div>
     </div>
   </div>
@@ -215,8 +215,8 @@ nulos = pp.detect_nulls(columns=['edad', 'salario'])</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Reporte completo de calidad por columna: dtype, nulos, % nulos, valores únicos y % completitud.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('dq-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="dq-ex">report = pp.data_quality()
-# column | dtype | nulls | null_pct | unique_values | completeness_pct
+      <pre><code class="language-python" id="dq-ex">report = pp.data_quality()<br>
+# column | dtype | nulls | null_pct | unique_values | completeness_pct<br>
 print(report)</code></pre></div>
     </div>
   </div>
@@ -231,7 +231,7 @@ print(report)</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Estadísticas descriptivas para columnas numéricas o categóricas respectivamente.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('desc2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="desc2-ex">pp.describe_numeric()      # count, mean, std, min, 25%, 50%, 75%, max
+      <pre><code class="language-python" id="desc2-ex">pp.describe_numeric()      # count, mean, std, min, 25%, 50%, 75%, max<br>
 pp.describe_categorical()  # count, unique, top, freq</code></pre></div>
     </div>
   </div>
@@ -249,8 +249,8 @@ pp.describe_categorical()  # count, unique, top, freq</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Rellena valores nulos con el valor especificado. Si <code>columns=None</code> aplica a todas las columnas.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('fill-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="fill-ex">pp.fill_nulls(fill_with=0)                          # Todas las columnas
-pp.fill_nulls(fill_with='Desconocido', columns='ciudad')  # Una columna
+      <pre><code class="language-python" id="fill-ex">pp.fill_nulls(fill_with=0)                          # Todas las columnas<br>
+pp.fill_nulls(fill_with='Desconocido', columns='ciudad')  # Una columna<br>
 pp.fill_nulls(fill_with=-1, columns=['col1', 'col2'])     # Varias columnas</code></pre></div>
     </div>
   </div>
@@ -264,7 +264,7 @@ pp.fill_nulls(fill_with=-1, columns=['col1', 'col2'])     # Varias columnas</cod
     <div class="method-body">
       <p class="method-desc">Normaliza una columna al rango [0, 1] usando Min-Max Scaling: <code>(x - min) / (max - min)</code>.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('norm2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="norm2-ex">pp.normalize('precio')
+      <pre><code class="language-python" id="norm2-ex">pp.normalize('precio')<br>
 df_resultado = pp.data  # Acceder al DataFrame transformado</code></pre></div>
     </div>
   </div>
@@ -278,7 +278,7 @@ df_resultado = pp.data  # Acceder al DataFrame transformado</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Estandariza una columna con Z-score: <code>(x - mean) / std</code>. Resultante tiene media≈0 y desv. std.≈1.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('std2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="std2-ex">pp.standardize('edad')
+      <pre><code class="language-python" id="std2-ex">pp.standardize('edad')<br>
 pp.standardize('salario')</code></pre></div>
     </div>
   </div>
@@ -292,8 +292,8 @@ pp.standardize('salario')</code></pre></div>
     <div class="method-body">
       <p class="method-desc">Convierte tipos de datos de columnas. Puede filtrar por tipo origen con <code>from_type</code>.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('dtypes-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="dtypes-ex">pp.change_dtypes(columns='precio', to_type='float')
-pp.change_dtypes(columns=['col1','col2'], to_type='string')
+      <pre><code class="language-python" id="dtypes-ex">pp.change_dtypes(columns='precio', to_type='float')<br>
+pp.change_dtypes(columns=['col1','col2'], to_type='string')<br>
 pp.change_dtypes(from_type='object', to_type='string')  # Todas las object → string</code></pre></div>
     </div>
   </div>
@@ -311,7 +311,7 @@ pp.change_dtypes(from_type='object', to_type='string')  # Todas las object → s
     <div class="method-body">
       <p class="method-desc">Filtra filas según una condición booleana compatible con pandas o polars.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('filter-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="filter-ex">pp.filter_rows(pp.data['edad'] >= 18)
+      <pre><code class="language-python" id="filter-ex">pp.filter_rows(pp.data['edad'] >= 18)<br>
 pp.filter_rows((pp.data['precio'] > 100) & (pp.data['stock'] > 0))</code></pre></div>
     </div>
   </div>
@@ -354,9 +354,9 @@ pp.filter_rows((pp.data['precio'] > 100) & (pp.data['stock'] > 0))</code></pre><
     <div class="method-body">
       <p class="method-desc">Detecta y retorna las filas que contienen outliers en la columna indicada. Si no hay outliers, imprime mensaje y retorna DataFrame vacío.</p>
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('outliers2-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="outliers2-ex">outliers_df = pp.detect_outliers('precio', method='iqr')
-print(f"Filas con outliers: {len(outliers_df)}")
-
+      <pre><code class="language-python" id="outliers2-ex">outliers_df = pp.detect_outliers('precio', method='iqr')<br>
+print(f"Filas con outliers: {len(outliers_df)}")<br>
+<br>
 outliers_z = pp.detect_outliers('salario', method='zscore')</code></pre></div>
     </div>
   </div>
@@ -368,29 +368,29 @@ outliers_z = pp.detect_outliers('salario', method='zscore')</code></pre></div>
     <div class="method-header"><div><div class="method-name">Pipeline de limpieza encadenado</div></div></div>
     <div class="method-body">
       <div class="code-block"><div class="code-header"><div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Python</span><button class="code-copy-btn" onclick="copyCode('pipeline-ex')">Copiar</button></div>
-      <pre><code class="language-python" id="pipeline-ex">from statslibx import Preprocessing
-import pandas as pd
-
-df = pd.read_csv("ventas_brutas.csv")
-
-# Pipeline completo de limpieza
-pp = Preprocessing(df)
-
-reporte = pp.data_quality()
-print(reporte)
-
-df_limpio = (
-    Preprocessing(df)
-    .fill_nulls(fill_with=0, columns=['ventas', 'descuento'])
-    .fill_nulls(fill_with='Desconocido', columns='region')
-    .rename_columns({'Ventas_Brutas': 'ventas', 'Fecha_Venta': 'fecha'})
-    .filter_rows(df['ventas'] > 0)
-    .filter_columns(['fecha', 'region', 'ventas', 'descuento'])
-    .normalize('ventas')
-    .standardize('descuento')
-    .data
-)
-
+      <pre><code class="language-python" id="pipeline-ex">from statslibx import Preprocessing<br>
+import pandas as pd<br>
+<br>
+df = pd.read_csv("ventas_brutas.csv")<br>
+<br>
+# Pipeline completo de limpieza<br>
+pp = Preprocessing(df)<br>
+<br>
+reporte = pp.data_quality()<br>
+print(reporte)<br>
+<br>
+df_limpio = (<br>
+    Preprocessing(df)<br>
+    .fill_nulls(fill_with=0, columns=['ventas', 'descuento'])<br>
+    .fill_nulls(fill_with='Desconocido', columns='region')<br>
+    .rename_columns({'Ventas_Brutas': 'ventas', 'Fecha_Venta': 'fecha'})<br>
+    .filter_rows(df['ventas'] > 0)<br>
+    .filter_columns(['fecha', 'region', 'ventas', 'descuento'])<br>
+    .normalize('ventas')<br>
+    .standardize('descuento')<br>
+    .data<br>
+)<br>
+<br>
 print(df_limpio.head())</code></pre></div>
       <div class="chain-note"><strong>Tip:</strong> Accede al DataFrame resultante con <code>.data</code> al final de la cadena. Los métodos <code>fill_nulls</code>, <code>normalize</code>, <code>standardize</code>, <code>filter_rows</code>, <code>filter_columns</code> y <code>rename_columns</code> retornan <code>self</code> y son encadenables.</div>
     </div>
@@ -416,8 +416,7 @@ print(df_limpio.head())</code></pre></div>
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast());}
 function copyCode(id){const el=document.getElementById(id);if(el)navigator.clipboard.writeText(el.innerText).then(()=>showToast());}
 function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
-Prism.highlightAll();
-</script>
+Prism.highlightAll();</script>
 <script>
 
 //  StatsLibX — mobile.js -- v2.8
@@ -954,7 +953,6 @@ pre[class*="language-"] {
     init();
   }
 
-})();
-</script>
+})();</script>
 </body>
 </html>
