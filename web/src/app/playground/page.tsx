@@ -7,11 +7,13 @@ import {
   RotateCcw,
   Trash2,
   Download,
+  Upload,
   FileCode,
   FileSpreadsheet,
   FolderTree,
   Search,
   Package,
+  PackagePlus,
   Settings,
   Terminal,
   Bug,
@@ -27,7 +29,7 @@ import {
   Loader2,
   Circle,
   CheckCircle2,
-
+  ExternalLink,
 } from "lucide-react";
 
 import { EditorView, keymap, lineNumbers, highlightActiveLine, dropCursor, rectangularSelection, crosshairCursor, highlightSpecialChars, drawSelection, highlightWhitespace } from "@codemirror/view";
@@ -371,6 +373,15 @@ export default function PlaygroundPage() {
   const [problems, setProblems] = useState<{ file: string; line: number; msg: string }[]>([]);
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
   const [execStatus, setExecStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [installedPackages, setInstalledPackages] = useState<{ name: string; installing: boolean; error?: string }[]>([
+    { name: "numpy", installing: false },
+    { name: "pandas", installing: false },
+    { name: "scipy", installing: false },
+    { name: "matplotlib", installing: false },
+    { name: "statslibx", installing: false },
+  ]);
+  const [installInput, setInstallInput] = useState("");
   const [explorerCollapsed, setExplorerCollapsed] = useState<Record<string, boolean>>({});
 
   const editorRef = useRef<HTMLDivElement>(null);
@@ -379,6 +390,7 @@ export default function PlaygroundPage() {
   const outputRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const terminalInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const resizeRef = useRef<{ startY: number; startH: number } | null>(null);
 
   const addOutput = useCallback((line: OutputLine) => {
@@ -635,6 +647,63 @@ export default function PlaygroundPage() {
     });
   }, []);
 
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const name = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const content = ev.target?.result as string;
+      setFiles(prev => ({ ...prev, [name]: content }));
+      setUploadedFiles(prev => prev.includes(name) ? prev : [...prev, name]);
+      setActiveFile(name);
+      setOpenFiles(prev => prev.includes(name) ? prev : [...prev, name]);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }, []);
+
+  const handleDeleteFile = useCallback((name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUploadedFiles(prev => prev.filter(f => f !== name));
+    setFiles(prev => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    if (activeFile === name) {
+      const remaining = openFiles.filter(f => f !== name);
+      setActiveFile(remaining.length > 0 ? remaining[remaining.length - 1] : "main.py");
+    }
+    setOpenFiles(prev => prev.filter(f => f !== name));
+  }, [activeFile, openFiles]);
+
+  const handleInstallPackage = useCallback(async (pkgName: string) => {
+    if (!pyodideRef.current || !pkgName.trim()) return;
+
+    setInstalledPackages(prev => prev.some(p => p.name === pkgName)
+      ? prev.map(p => p.name === pkgName ? { ...p, installing: true, error: undefined } : p)
+      : [...prev, { name: pkgName, installing: true }]
+    );
+
+    try {
+      const py = pyodideRef.current;
+      await py.runPythonAsync(`
+import micropip
+await micropip.install('${pkgName.replace(/'/g, "\\'")}')
+`);
+      setInstalledPackages(prev => prev.map(p =>
+        p.name === pkgName ? { ...p, installing: false, error: undefined } : p
+      ));
+      addOutput({ text: `Package installed: ${pkgName}`, type: "system" });
+    } catch (err: any) {
+      setInstalledPackages(prev => prev.map(p =>
+        p.name === pkgName ? { ...p, installing: false, error: err.message || "Installation failed" } : p
+      ));
+      addOutput({ text: `Failed to install ${pkgName}: ${err.message || err}`, type: "error" });
+    }
+  }, [addOutput]);
+
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     resizeRef.current = { startY: e.clientY, startH: bottomHeight };
@@ -659,8 +728,14 @@ export default function PlaygroundPage() {
   }
 
   const explorerFiles = useMemo(() => {
-    return FILE_ENTRIES;
-  }, []);
+    const builtIn = FILE_ENTRIES;
+    const uploaded = uploadedFiles.map(name => ({
+      name,
+      icon: name.endsWith(".csv") ? FileSpreadsheet as typeof FileCode : FileCode as typeof FileCode,
+      language: name.endsWith(".py") ? "python" : "text",
+    }));
+    return [...builtIn, ...uploaded];
+  }, [uploadedFiles]);
 
   const statusColor = execStatus === "idle" ? "text-muted"
     : execStatus === "running" ? "text-accent2"
@@ -735,21 +810,47 @@ export default function PlaygroundPage() {
                     {explorerFiles.map((file) => {
                       const Icon = file.icon;
                       const isActive = activeFile === file.name;
+                      const isUploaded = uploadedFiles.includes(file.name);
                       return (
-                        <button
+                        <div
                           key={file.name}
                           onClick={() => openFile(file.name)}
-                          className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer ${
+                          className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer group ${
                             isActive
                               ? "bg-[rgba(124,106,247,0.12)] text-white border-l-2 border-accent"
                               : "text-muted hover:text-white hover:bg-white/[0.04] border-l-2 border-transparent"
                           }`}
                         >
                           <Icon className="w-4 h-4 flex-shrink-0" style={{ color: file.name.endsWith(".csv") ? "#4fd1c5" : "#7c6af7" }} />
-                          <span className="truncate">{file.name}</span>
-                        </button>
+                          <span className="truncate flex-1">{file.name}</span>
+                          {isUploaded && (
+                            <button
+                              onClick={(e) => handleDeleteFile(file.name, e)}
+                              className="p-0.5 rounded hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer flex-shrink-0"
+                              title="Remove file"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
                       );
                     })}
+                    <div className="px-3 pt-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".py,.csv,.txt,.json,.md,.js,.ts,.ipynb"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-white hover:bg-white/[0.04] rounded transition-colors cursor-pointer border border-dashed border-[rgba(255,255,255,0.1)]"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        Upload File
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -767,14 +868,50 @@ export default function PlaygroundPage() {
 
                 {/* Packages View */}
                 {sidePanel === "packages" && (
-                  <div className="flex-1 p-3 space-y-2 overflow-y-auto">
-                    <div className="text-xs font-medium text-muted uppercase tracking-wider mb-2">Installed</div>
-                    {["numpy", "pandas", "scipy", "matplotlib", "statslibx"].map((pkg) => (
-                      <div key={pkg} className="flex items-center gap-2 text-sm text-white/80">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
-                        <span>{pkg}</span>
-                      </div>
-                    ))}
+                  <div className="flex-1 p-3 space-y-2 overflow-y-auto flex flex-col">
+                    <div className="text-xs font-medium text-muted uppercase tracking-wider mb-1">Installed Packages</div>
+                    <div className="flex-1 space-y-1">
+                      {installedPackages.map((pkg) => (
+                        <div key={pkg.name} className="flex items-center gap-2 text-sm text-white/80">
+                          {pkg.installing ? (
+                            <Loader2 className="w-3.5 h-3.5 text-accent animate-spin flex-shrink-0" />
+                          ) : pkg.error ? (
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                          ) : (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                          )}
+                          <span className="truncate">{pkg.name}</span>
+                          {pkg.error && <span className="text-[10px] text-red-400 truncate ml-auto">{pkg.error}</span>}
+                        </div>
+                      ))}
+                    </div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const name = installInput.trim();
+                        if (!name || !pyodideReady) return;
+                        handleInstallPackage(name);
+                        setInstallInput("");
+                      }}
+                      className="flex items-center gap-2 pt-2 border-t border-[rgba(255,255,255,0.06)]"
+                    >
+                      <input
+                        type="text"
+                        value={installInput}
+                        onChange={(e) => setInstallInput(e.target.value)}
+                        placeholder="Package name..."
+                        disabled={!pyodideReady}
+                        className="flex-1 bg-[#09090f] border border-[rgba(255,255,255,0.08)] rounded px-2.5 py-1.5 text-xs font-mono text-white placeholder-muted outline-none focus:border-accent/50 transition-colors disabled:opacity-40"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!pyodideReady || !installInput.trim()}
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs rounded bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer flex-shrink-0"
+                      >
+                        <PackagePlus className="w-3.5 h-3.5" />
+                        Install
+                      </button>
+                    </form>
                   </div>
                 )}
               </div>

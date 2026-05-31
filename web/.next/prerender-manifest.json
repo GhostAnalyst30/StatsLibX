@@ -122,30 +122,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/installation": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/installation",
-      "dataRoute": "/installation.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/docs/inferential": {
       "experimentalBypassFor": [
         {
@@ -161,6 +137,30 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/docs/inferential",
       "dataRoute": "/docs/inferential.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/docs/preprocessing": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/docs/preprocessing",
+      "dataRoute": "/docs/preprocessing.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -218,7 +218,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/docs/preprocessing": {
+    "/playground": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -231,8 +231,32 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/docs/preprocessing",
-      "dataRoute": "/docs/preprocessing.rsc",
+      "srcRoute": "/playground",
+      "dataRoute": "/playground.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/installation": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/installation",
+      "dataRoute": "/installation.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -257,30 +281,6 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/",
       "dataRoute": "/index.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/playground": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/playground",
-      "dataRoute": "/playground.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",

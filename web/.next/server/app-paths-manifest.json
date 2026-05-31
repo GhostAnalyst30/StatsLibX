@@ -4,10 +4,10 @@
   "/page": "app/page.js",
   "/docs/cli/page": "app/docs/cli/page.js",
   "/docs/computational/page": "app/docs/computational/page.js",
-  "/docs/descriptive/page": "app/docs/descriptive/page.js",
   "/docs/datasets/page": "app/docs/datasets/page.js",
   "/docs/inferential/page": "app/docs/inferential/page.js",
   "/docs/preprocessing/page": "app/docs/preprocessing/page.js",
+  "/docs/descriptive/page": "app/docs/descriptive/page.js",
   "/docs/utils/page": "app/docs/utils/page.js",
   "/docs/viewx/page": "app/docs/viewx/page.js",
   "/playground/page": "app/playground/page.js"

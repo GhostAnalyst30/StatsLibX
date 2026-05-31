@@ -56,8 +56,8 @@ see more here https://nextjs.org/docs/messages/app-static-to-dynamic-error`),"__
 
 # Output:
 # ╔══════════════════════════════════════════════╗
-# ║         Welcome to StatsLibX v0.2.8         ║
-# ║   Statistical Analysis for Data Science      ║
+# ║         Welcome to StatsLibX v0.2.8       ║
+# ║   Statistical Analysis for Data Science    ║
 # ╚══════════════════════════════════════════════╝
 #
 # Available commands:
