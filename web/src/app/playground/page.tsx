@@ -56,81 +56,57 @@ const FILES: Record<string, string> = {
   "main.py": `from statslibx import DescriptiveStats, InferentialStats
 from statslibx.datasets import load_iris, generate_dataset
 
-# Load sample data
+# Load sample data (returns pandas DataFrame)
 iris = load_iris()
-n = len(iris['target'])
-print(f"Iris dataset loaded! {n} samples")
-print(f"Features: {', '.join(iris['feature_names'])}")
+print(f"Iris dataset loaded! {len(iris)} samples")
+print(f"Columns: {', '.join(iris.columns)}")
 
 # Descriptive statistics
-stats = DescriptiveStats(iris['data']['sepal_length'])
-print(f"\\n=== Sepal Length Statistics ===")
-print(f"Mean: {stats.mean():.3f}")
-print(f"Median: {stats.median():.2f}")
-print(f"Std Dev: {stats.std():.3f}")
-print(f"Skewness: {stats.skewness():.3f}")
-print(f"Kurtosis: {stats.kurtosis():.3f}")
+stats = DescriptiveStats(iris)
+print("\\n=== Sepal Length Statistics ===")
+print(f"Mean: {stats.mean('sepal_length'):.3f}")
+print(f"Median: {stats.median('sepal_length'):.2f}")
+print(f"Std Dev: {stats.std('sepal_length'):.3f}")
 
 # Group stats by species
-target_names = iris['target_names']
-target = iris['target']
-sl = iris['data']['sepal_length']
-for idx, name in enumerate(target_names):
-    vals = [sl[i] for i, t in enumerate(target) if t == idx]
-    gs = DescriptiveStats(vals)
-    print(f"\\n{name}: mean={gs.mean():.2f}, std={gs.std():.2f}")
+for species in iris["species"].unique():
+    subset = iris[iris["species"] == species]
+    gs = DescriptiveStats(subset)
+    print(f"\\n{species}: mean={gs.mean('sepal_length'):.2f}, std={gs.std('sepal_length'):.2f}")
 
 # Inferential statistics
-infer = InferentialStats()
-group_a = iris['data']['sepal_length'][:50]
-group_b = iris['data']['sepal_length'][50:100]
-t_stat, p_val = infer.ttest_ind(group_a, group_b)
-print(f"\\n=== T-Test: setosa vs versicolor ===")
-print(f"T-statistic: {t_stat:.4f}")
-print(f"P-value: {p_val:.4f}")
-print(f"Significant: {p_val < 0.05}")
+infer = InferentialStats(iris)
+result = infer.t_test_2sample("sepal_length", "sepal_width")
+print("\\n=== T-Test: sepal_length vs sepal_width ===")
+print(result)
+
+# Synthetic data
+schema = {"value": {"dist": "normal", "mean": 10, "std": 2, "type": "float"}}
+synth = generate_dataset(n_rows=50, schema=schema)
+print(f"\\nGenerated dataset shape: {synth.shape}")
 `,
   "utils.py": `from statslibx import DescriptiveStats
-import math
 
-def describe_summary(data, name="Data"):
+def describe_summary(data, column=None, name="Data"):
     """Print a comprehensive summary of a dataset."""
     stats = DescriptiveStats(data)
     print(f"\\n{'='*50}")
     print(f"  {name} Summary")
     print(f"{'='*50}")
-    print(f"  Count:      {stats.count()}")
-    print(f"  Mean:       {stats.mean():.4f}")
-    print(f"  Std Dev:    {stats.std():.4f}")
-    print(f"  Min:        {stats.min():.4f}")
-    print(f"  Q1:         {stats.percentile(25):.4f}")
-    print(f"  Median:     {stats.median():.4f}")
-    print(f"  Q3:         {stats.percentile(75):.4f}")
-    print(f"  Max:        {stats.max():.4f}")
-    print(f"  Range:      {stats.range():.4f}")
-    print(f"  IQR:        {stats.iqr():.4f}")
-    print(f"  Skewness:   {stats.skewness():.4f}")
-    print(f"  Kurtosis:   {stats.kurtosis():.4f}")
+    if column:
+        print(f"  Mean:       {stats.mean(column):.4f}")
+        print(f"  Std Dev:    {stats.std(column):.4f}")
+        print(f"  Median:     {stats.median(column):.4f}")
+    else:
+        print(f"  Mean:       {stats.mean():.4f}")
+        print(f"  Std Dev:    {stats.std():.4f}")
+        print(f"  Median:     {stats.median():.4f}")
     print(f"{'='*50}")
     return stats
 
-def correlation_interpret(r):
-    """Interpret correlation coefficient."""
-    r = abs(r)
-    if r >= 0.9:
-        return "Very strong"
-    elif r >= 0.7:
-        return "Strong"
-    elif r >= 0.5:
-        return "Moderate"
-    elif r >= 0.3:
-        return "Weak"
-    else:
-        return "Very weak"
-
 if __name__ == "__main__":
-    sample = [12, 15, 14, 10, 18, 20, 13, 16, 11, 17]
-    describe_summary(sample, "Sample Data")
+    from statslibx.datasets import load_iris
+    describe_summary(load_iris(), column="sepal_length", name="Iris Sepal Length")
 `,
   "data.csv": `species,sepal_length,sepal_width,petal_length,petal_width
 setosa,5.1,3.5,1.4,0.2
@@ -146,39 +122,30 @@ virginica,6.9,3.2,5.7,2.3
 virginica,6.4,2.8,5.6,2.1
 virginica,6.8,3.0,5.5,2.1
 `,
-  "test_analysis.py": `from statslibx import DescriptiveStats, InferentialStats
+  "test_analysis.py": `from statslibx import DescriptiveStats, InferentialStats, ComputationalStats
 from statslibx.datasets import load_penguins, generate_dataset
-import math
 
 # Generate synthetic dataset
-synth = generate_dataset(n_samples=100, distribution="normal")
-data = synth["values"]
-print(f"Generated {len(data)} samples from {synth['distribution']} distribution")
-print(f"True mean: {synth['mean']}, True std: {synth['std']}")
+schema = {
+    "score": {"dist": "normal", "mean": 75, "std": 10, "type": "float"},
+    "group": {"dist": "categorical", "choices": ["A", "B"]},
+}
+df = generate_dataset(n_rows=100, schema=schema, seed=42)
+print(f"Generated {len(df)} rows")
 
-# Analyze
-stats = DescriptiveStats(data)
-print(f"\\n=== Analysis ===")
-print(f"Sample mean:  {stats.mean():.3f}")
-print(f"Sample std:   {stats.std():.3f}")
-print(f"Std error:    {stats.std() / math.sqrt(len(data)):.3f}")
+stats = DescriptiveStats(df)
+print(f"\\nScore mean: {stats.mean('score'):.2f}")
+print(f"Score std:  {stats.std('score'):.2f}")
 
-# Test against null hypothesis mu=0
-infer = InferentialStats()
-t, p = infer.ttest_1samp(data, popmean=0)
-print(f"T-test vs 0: t={t:.4f}, p={p:.4f}")
-print(f"Significant: {p < 0.05}")
+infer = InferentialStats(df)
+result = infer.t_test_1sample("score", popmean=70)
+print(f"\\nT-test vs 70: {result}")
 
-# Load penguins
-try:
-    penguins = load_penguins()
-    print(f"\\nPenguins dataset: {len(penguins)} samples")
-    if penguins:
-        first = penguins[0]
-        print(f"Species: {first['species']}")
-        print(f"Bill length: {first['bill_length_mm']}mm")
-except Exception as e:
-    print(f"Could not load penguins: {e}")
+cs = ComputationalStats(df)
+print(f"\\nCorrelation matrix shape: {cs.correlation_analysis()['correlation_matrix'].shape}")
+
+penguins = load_penguins()
+print(f"\\nPenguins dataset: {len(penguins)} rows, columns: {list(penguins.columns)}")
 `,
 };
 
@@ -189,163 +156,156 @@ const FILE_ENTRIES: FileNode[] = [
   { name: "test_analysis.py", icon: FileCode, language: "python" },
 ];
 
-const INITIAL_CODE = `from statslibx import DescriptiveStats, InferentialStats
-from statslibx.datasets import load_iris
-
-# Try out statslibx in the browser!
-iris = load_iris()
-stats = DescriptiveStats(iris['data']['sepal_length'])
-print(f"Mean: {stats.mean():.2f}")
-print(f"Std:  {stats.std():.2f}")
-`;
-
 const STUB_PYTHON_CODE = `
-import sys, math, random, statistics
-from collections import Counter
+import sys
+import math
+import pandas as pd
+import numpy as np
+from scipy import stats as scipy_stats
+
+class _TestResult:
+    def __init__(self, test_name, statistic, pvalue):
+        self.test_name = test_name
+        self.statistic = statistic
+        self.pvalue = pvalue
+    def __repr__(self):
+        sig = "significant" if self.pvalue < 0.05 else "not significant"
+        return f"{self.test_name}: statistic={self.statistic:.4f}, p={self.pvalue:.4f} ({sig})"
 
 class _DescriptiveStats:
     def __init__(self, data):
-        self._data = [float(x) for x in data] if hasattr(data, '__iter__') else [float(data)]
-        n = len(self._data)
-        self._n = n
-        if n > 0:
-            s = sum(self._data)
-            self._mean = s / n
-            self._sorted = sorted(self._data)
+        if isinstance(data, pd.DataFrame):
+            self._df = data
+            self._series = None
+        elif isinstance(data, pd.Series):
+            self._df = None
+            self._series = data
         else:
-            self._mean = float('nan')
-            self._sorted = []
+            self._series = pd.Series([float(x) for x in data])
+            self._df = None
 
-    def count(self): return self._n
-    def mean(self): return self._mean
-    def median(self):
-        n = self._n
-        if n == 0: return float('nan')
-        m = n // 2
-        return self._sorted[m] if n % 2 else (self._sorted[m-1] + self._sorted[m]) / 2
+    def _values(self, column=None):
+        if column is not None:
+            return self._df[column].dropna()
+        return self._series.dropna()
 
-    def mode(self):
-        if self._n == 0: return None
-        c = Counter(self._data)
-        mx = max(c.values())
-        return [k for k,v in c.items() if v == mx]
-
-    def std(self, ddof=1):
-        if self._n <= 1: return 0.0
-        v = sum((x - self._mean)**2 for x in self._data) / (self._n - ddof)
-        return math.sqrt(v)
-
-    def var(self, ddof=1):
-        if self._n <= 1: return 0.0
-        return sum((x - self._mean)**2 for x in self._data) / (self._n - ddof)
-
-    def min(self): return self._sorted[0] if self._sorted else float('nan')
-    def max(self): return self._sorted[-1] if self._sorted else float('nan')
-    def range(self): return self.max() - self.min() if self._n > 0 else float('nan')
-
-    def percentile(self, p):
-        if self._n == 0: return float('nan')
-        k = (p / 100.0) * (self._n - 1)
-        f = int(math.floor(k))
-        c = int(math.ceil(k))
-        if f == c: return self._sorted[int(k)]
-        return self._sorted[f] * (c - k) + self._sorted[c] * (k - f)
-
-    def iqr(self): return self.percentile(75) - self.percentile(25)
-
-    def skewness(self):
-        if self._n <= 2: return 0.0
-        s = self.std(ddof=0)
-        if s == 0: return 0.0
-        n = self._n
-        return (n / ((n-1)*(n-2))) * sum(((x - self._mean)/s)**3 for x in self._data)
-
-    def kurtosis(self):
-        if self._n <= 3: return 0.0
-        s = self.std(ddof=0)
-        if s == 0: return 0.0
-        n = self._n
-        m4 = sum(((x - self._mean)/s)**4 for x in self._data) / n
-        return (n*(n+1)/((n-1)*(n-2)*(n-3))) * (n-1) * (m4 - 3*(n-1)/(n+1)) + 3*(n-1)**2/((n-2)*(n-3))
-
+    def mean(self, column=None):
+        return float(self._values(column).mean())
+    def median(self, column=None):
+        return float(self._values(column).median())
+    def std(self, column=None, ddof=1):
+        return float(self._values(column).std(ddof=ddof))
+    def skewness(self, column=None):
+        return float(scipy_stats.skew(self._values(column), bias=False))
     def summary(self):
-        return {'count':self.count(),'mean':self.mean(),'std':self.std(),'min':self.min(),'q1':self.percentile(25),'median':self.median(),'q3':self.percentile(75),'max':self.max(),'skewness':self.skewness(),'kurtosis':self.kurtosis()}
+        if self._df is not None:
+            return type('S', (), {'to_dataframe': lambda self=None, format='wide': self._df.describe()})()
+        s = self._series
+        return {'count': len(s), 'mean': s.mean(), 'std': s.std()}
 
 class _InferentialStats:
-    def ttest_1samp(self, a, popmean=0):
-        n = len(a)
-        if n < 2: return (float('nan'), 1.0)
-        m = sum(a)/n
-        v = sum((x-m)**2 for x in a)/(n-1)
-        se = math.sqrt(v/n)
-        t = (m-popmean)/se if se>0 else 0.0
-        df = n-1
-        p = 2*(1-self._t_cdf(abs(t),df))
-        return (t,p)
+    def __init__(self, data):
+        self._df = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
 
-    def ttest_ind(self, a, b):
-        na,nb=len(a),len(b)
-        if na<2 or nb<2: return (float('nan'),1.0)
-        ma=sum(a)/na;mb=sum(b)/nb
-        va=sum((x-ma)**2 for x in a)/(na-1)
-        vb=sum((x-mb)**2 for x in b)/(nb-1)
-        se=math.sqrt(va/na+vb/nb)
-        t=(ma-mb)/se if se>0 else 0.0
-        num=(va/na+vb/nb)**2
-        den=(va/na)**2/(na-1)+(vb/nb)**2/(nb-1)
-        df=num/den if den>0 else 1
-        p=2*(1-self._t_cdf(abs(t),df))
-        return (t,p)
+    def t_test_1sample(self, column, popmean=0, **kwargs):
+        sample = self._df[column].dropna()
+        t, p = scipy_stats.ttest_1samp(sample, popmean)
+        return _TestResult(f"t-test 1-sample ({column})", float(t), float(p))
 
-    def pearsonr(self, x, y):
-        n=len(x)
-        if n<3: return (0.0,1.0)
-        mx=sum(x)/n;my=sum(y)/n
-        num=sum((xi-mx)*(yi-my) for xi,yi in zip(x,y))
-        dx=math.sqrt(sum((xi-mx)**2 for xi in x))
-        dy=math.sqrt(sum((yi-my)**2 for yi in y))
-        r=num/(dx*dy) if dx*dy>0 else 0.0
-        t=r*math.sqrt((n-2)/(1-r*r)) if abs(r)<1 else float('inf')
-        p=2*(1-self._t_cdf(abs(t),n-2))
-        return (r,p)
+    def t_test_2sample(self, column1, column2, **kwargs):
+        a = self._df[column1].dropna()
+        b = self._df[column2].dropna()
+        t, p = scipy_stats.ttest_ind(a, b, equal_var=kwargs.get('equal_var', True))
+        return _TestResult(f"t-test 2-sample ({column1} vs {column2})", float(t), float(p))
 
-    def _t_cdf(self, t, df):
-        x = df/(df+t*t)
-        return 1-0.5*self._betainc(df/2,0.5,x)
+    def confidence_interval(self, column, confidence=0.95):
+        s = self._df[column].dropna()
+        m = s.mean()
+        se = s.std(ddof=1) / math.sqrt(len(s))
+        h = se * scipy_stats.t.ppf((1 + confidence) / 2, len(s) - 1)
+        return (m - h, m + h)
 
-    def _betainc(self, a, b, x):
-        if x<0 or x>1: return 0
-        if x==0 or x==1: return x
-        import math as m
-        n=200; s=0.0
-        for i in range(n):
-            t=1.0
-            for j in range(i):
-                t*=(a+j)/(a+b+j)*x
-            s+=t
-        return s*(x**a)*((1-x)**b)/(a*m.gamma(a)*m.gamma(b)/m.gamma(a+b))
+class _ComputationalStats:
+    def __init__(self, data, seed=None):
+        self._df = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
+        if seed is not None:
+            np.random.seed(seed)
+
+    def correlation_analysis(self, method='pearson'):
+        return {'correlation_matrix': self._df.select_dtypes(include='number').corr(method=method)}
+
+    def bootstrapping(self, column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None):
+        col = self._df[column].dropna().values
+        stats = []
+        for _ in range(n_samples):
+            sample = np.random.choice(col, size=len(col), replace=True)
+            stats.append(np.mean(sample) if statistic == 'mean' else np.median(sample))
+        lo = np.percentile(stats, (1 - confidence_level) / 2 * 100)
+        hi = np.percentile(stats, (1 + confidence_level) / 2 * 100)
+        return type('B', (), {'summary': lambda: {'ci': (lo, hi), 'original': float(np.mean(col))}})()
+
+class _Preprocessing:
+    def __init__(self, data):
+        self.data = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
+    def preview_data(self, n=5):
+        return self.data.head(n)
+    def describe_numeric(self):
+        return self.data.select_dtypes(include='number').describe()
+
+_IRIS = pd.DataFrame({
+    'sepal_length': [5.1,4.9,4.7,5.0,5.4,6.0,6.1,5.8,6.2,6.7,6.9,6.4],
+    'sepal_width': [3.5,3.0,3.2,3.6,3.9,2.9,3.0,2.7,2.8,3.1,3.2,2.8],
+    'petal_length': [1.4,1.4,1.3,1.4,1.7,4.5,4.6,4.1,4.8,5.6,5.7,5.6],
+    'petal_width': [0.2,0.2,0.2,0.2,0.4,1.5,1.4,1.0,1.8,2.4,2.3,2.1],
+    'species': ['setosa']*5 + ['versicolor']*4 + ['virginica']*3,
+})
+
+_PENGUINS = pd.DataFrame({
+    'species': ['Adelie','Adelie','Chinstrap','Gentoo'],
+    'bill_length_mm': [39.1,39.5,46.5,50.1],
+    'bill_depth_mm': [18.7,17.4,17.9,16.3],
+    'flipper_length_mm': [181,186,192,230],
+    'body_mass_g': [3750,3800,3500,5700],
+})
+
+def _generate_dataset(n_rows, schema, seed=42):
+    rng = np.random.default_rng(seed)
+    data = {}
+    for col, cfg in schema.items():
+        dist = cfg['dist']
+        if dist == 'normal':
+            vals = rng.normal(cfg.get('mean', 0), cfg.get('std', 1), n_rows)
+        elif dist == 'categorical':
+            vals = rng.choice(cfg['choices'], n_rows)
+            data[col] = vals
+            continue
+        else:
+            vals = rng.normal(0, 1, n_rows)
+        if cfg.get('type') == 'int':
+            vals = np.round(vals).astype(int)
+        data[col] = vals
+    return pd.DataFrame(data)
 
 class _Datasets:
-    @staticmethod
-    def load_iris():
-        return {'data':{'sepal_length':[5.1,4.9,4.7,5.0,5.4,6.0,6.1,5.8,6.2,6.7,6.9,6.4,6.8],'sepal_width':[3.5,3.0,3.2,3.6,3.9,2.9,3.0,2.7,2.8,3.1,3.2,2.8,3.0],'petal_length':[1.4,1.4,1.3,1.4,1.7,4.5,4.6,4.1,4.8,5.6,5.7,5.6,5.5],'petal_width':[0.2,0.2,0.2,0.2,0.4,1.5,1.4,1.0,1.8,2.4,2.3,2.1,2.1]},'target':[0,0,0,0,0,1,1,1,1,2,2,2,2],'target_names':['setosa','versicolor','virginica'],'feature_names':['sepal_length','sepal_width','petal_length','petal_width']}
-    @staticmethod
-    def load_penguins():
-        return [{'species':'Adelie','bill_length_mm':39.1,'bill_depth_mm':18.7,'flipper_length_mm':181,'body_mass_g':3750},{'species':'Adelie','bill_length_mm':39.5,'bill_depth_mm':17.4,'flipper_length_mm':186,'body_mass_g':3800},{'species':'Chinstrap','bill_length_mm':46.5,'bill_depth_mm':17.9,'flipper_length_mm':192,'body_mass_g':3500},{'species':'Gentoo','bill_length_mm':50.1,'bill_depth_mm':16.3,'flipper_length_mm':230,'body_mass_g':5700}]
-    @staticmethod
-    def generate_dataset(n_samples=100, distribution='normal', mean=0, std=1):
-        if distribution=='normal': data=[random.gauss(mean,std) for _ in range(n_samples)]
-        elif distribution=='uniform': data=[random.uniform(mean-2*std,mean+2*std) for _ in range(n_samples)]
-        else: data=[random.gauss(mean,std) for _ in range(n_samples)]
-        return {'values':data,'distribution':distribution,'mean':mean,'std':std,'n':n_samples}
+    load_iris = staticmethod(lambda backend='pandas': _IRIS.copy())
+    load_penguins = staticmethod(lambda backend='pandas': _PENGUINS.copy())
+    load_dataset = staticmethod(lambda name, backend='pandas', **kw: _IRIS.copy() if 'iris' in name else _PENGUINS.copy())
+    generate_dataset = staticmethod(_generate_dataset)
 
 stub_module = type(sys)('statslibx')
 stub_module.DescriptiveStats = _DescriptiveStats
 stub_module.InferentialStats = _InferentialStats
+stub_module.ComputationalStats = _ComputationalStats
+stub_module.Preprocessing = _Preprocessing
 stub_module.datasets = _Datasets
+stub_module.__version__ = '0.2.9-stub'
 sys.modules['statslibx'] = stub_module
-
-del _DescriptiveStats, _InferentialStats, _Datasets, stub_module
+datasets_mod = type(sys)('statslibx.datasets')
+datasets_mod.load_iris = _Datasets.load_iris
+datasets_mod.load_penguins = _Datasets.load_penguins
+datasets_mod.load_dataset = _Datasets.load_dataset
+datasets_mod.generate_dataset = _Datasets.generate_dataset
+sys.modules['statslibx.datasets'] = datasets_mod
 `;
 
 type SidePanel = "explorer" | "search" | "packages" | null;
@@ -367,8 +327,8 @@ export default function PlaygroundPage() {
   const [bottomTab, setBottomTab] = useState<BottomTab>("output");
   const [terminalInput, setTerminalInput] = useState("");
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
-    "Welcome to StatsLibX Terminal",
-    "Type a command and press Enter",
+    "Python REPL — enter Python expressions only (not shell commands)",
+    "Example: from statslibx import DescriptiveStats; DescriptiveStats([1,2,3]).mean()",
   ]);
   const [problems, setProblems] = useState<{ file: string; line: number; msg: string }[]>([]);
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
@@ -478,8 +438,8 @@ export default function PlaygroundPage() {
           ...completionKeymap,
           ...searchKeymap,
           indentWithTab,
-          { key: "Ctrl-Enter", run: () => { handleRun(); return true; } },
-          { key: "Shift-Enter", run: () => { handleRun(); return true; } },
+          { key: "Ctrl-Enter", run: () => { handleRunRef.current(); return true; } },
+          { key: "Shift-Enter", run: () => { handleRunRef.current(); return true; } },
         ]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -538,6 +498,8 @@ export default function PlaygroundPage() {
     });
   }, [activeFile]);
 
+  const handleRunRef = useRef<() => void>(() => {});
+
   const handleRun = useCallback(async () => {
     if (!pyodideRef.current || isRunning) return;
 
@@ -552,6 +514,11 @@ export default function PlaygroundPage() {
     const py = pyodideRef.current;
 
     try {
+      const hasModule = await py.runPythonAsync(`import sys; 'statslibx' in sys.modules`);
+      if (!hasModule) {
+        await py.runPythonAsync(STUB_PYTHON_CODE);
+      }
+
       py.setStdout?.({
         batched: (msg: string) => addOutput({ text: msg, type: "stdout" }),
       });
@@ -581,6 +548,8 @@ export default function PlaygroundPage() {
 
     setIsRunning(false);
   }, [isRunning, activeFile, files, addOutput]);
+
+  handleRunRef.current = handleRun;
 
   const handleClearOutput = useCallback(() => {
     setOutput([]);
@@ -614,7 +583,7 @@ export default function PlaygroundPage() {
     URL.revokeObjectURL(url);
   }, [activeFile, files]);
 
-  const handleTerminalSubmit = useCallback((e: React.FormEvent) => {
+  const handleTerminalSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     const input = terminalInputRef.current;
     if (!input) return;
@@ -624,27 +593,33 @@ export default function PlaygroundPage() {
     setTerminalInput("");
 
     if (!pyodideRef.current) {
-      setTerminalHistory(prev => [...prev, `$ ${cmd}`, "  Pyodide not ready yet."]);
+      setTerminalHistory(prev => [...prev, `>>> ${cmd}`, "  Pyodide not ready yet."]);
       return;
     }
 
-    setTerminalHistory(prev => [...prev, `$ ${cmd}`]);
+    setTerminalHistory(prev => [...prev, `>>> ${cmd}`]);
 
     const py = pyodideRef.current;
-    py.setStdout?.({ batched: (msg: string) => {
-      setTerminalHistory(prev => [...prev, `  ${msg}`]);
-    }});
-    py.setStderr?.({ batched: (msg: string) => {
-      setTerminalHistory(prev => [...prev, `  ${msg}`]);
-    }});
-
-    py.runPythonAsync(cmd).then((result: any) => {
-      if (result !== undefined && result !== null) {
-        setTerminalHistory(prev => [...prev, `  ${String(result)}`]);
+    try {
+      const hasModule = await py.runPythonAsync(`import sys; 'statslibx' in sys.modules`);
+      if (!hasModule) {
+        await py.runPythonAsync(STUB_PYTHON_CODE);
       }
-    }).catch((err: any) => {
-      setTerminalHistory(prev => [...prev, `  Error: ${err.message || err}`]);
-    });
+
+      py.setStdout?.({ batched: (msg: string) => {
+        setTerminalHistory(prev => [...prev, msg]);
+      }});
+      py.setStderr?.({ batched: (msg: string) => {
+        setTerminalHistory(prev => [...prev, `Error: ${msg}`]);
+      }});
+
+      const result = await py.runPythonAsync(cmd);
+      if (result !== undefined && result !== null) {
+        setTerminalHistory(prev => [...prev, String(result)]);
+      }
+    } catch (err: any) {
+      setTerminalHistory(prev => [...prev, `Error: ${err.message || err}`]);
+    }
   }, []);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1040,7 +1015,7 @@ await micropip.install('${pkgName.replace(/'/g, "\\'")}')
                       onClick={() => setBottomTab("output")}
                     />
                     <PanelTab
-                      label="Terminal"
+                      label="Python REPL"
                       icon={Terminal}
                       active={bottomTab === "terminal"}
                       onClick={() => setBottomTab("terminal")}

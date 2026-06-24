@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { ClassCard } from "@/components/ClassCard";
 import { CodeBlock } from "@/components/CodeBlock";
+import Image from "next/image";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -108,7 +109,7 @@ const stats = [
   { icon: Layers, value: "6+", label: "Modules", color: "text-accent" },
   { icon: Hash, value: "40+", label: "Methods", color: "text-accent2" },
   { icon: Database, value: "6", label: "Built-in Datasets", color: "text-accent3" },
-  { icon: Package, value: "v0.2.8", label: "Version", color: "text-accent" },
+  { icon: Package, value: "v0.2.9", label: "Version", color: "text-accent" },
   { icon: Eye, value: "ViewX", label: "Integration", color: "text-accent2" },
 ];
 
@@ -144,10 +145,24 @@ export default function HomePage() {
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={fadeUp} className="flex justify-center mb-6">
+          <motion.div variants={fadeUp} className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full scale-150 pointer-events-none" />
+              <Image
+                src="/icons/favicon.svg"
+                alt="StatsLibX"
+                width={96}
+                height={96}
+                className="relative drop-shadow-[0_0_24px_rgba(124,106,247,0.35)]"
+                priority
+              />
+            </div>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="flex justify-center mb-4">
             <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
               <Package className="w-3 h-3" />
-              v0.2.8
+              v0.2.9
             </span>
           </motion.div>
 

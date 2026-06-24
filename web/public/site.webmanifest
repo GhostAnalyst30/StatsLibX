@@ -1,0 +1,20 @@
+{
+  "name": "StatsLibX",
+  "short_name": "StatsLibX",
+  "description": "Statistical analysis library for Python",
+  "icons": [
+    {
+      "src": "/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#1a1a2e",
+  "background_color": "#0d0d18",
+  "display": "standalone"
+}

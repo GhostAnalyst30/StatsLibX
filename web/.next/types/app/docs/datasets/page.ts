@@ -1,4 +1,4 @@
-// File: C:\Users\Usuario\Documents\Emmanuel Ascendra\Ciencia de Datos\Librerias Python\Libreria_Estadistica\web\src\app\docs\datasets\page.tsx
+// File: C:\Users\Usuario\Documents\Emmanuel Ascendra\GitHub_GhostAnalyst\Librerias_Python\Libreria_Estadistica\web\src\app\docs\datasets\page.tsx
 import * as entry from '../../../../../src/app/docs/datasets/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

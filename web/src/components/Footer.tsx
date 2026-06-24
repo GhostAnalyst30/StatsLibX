@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { GitBranch, Mail } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function Footer() {
   return (
     <footer className="border-t border-border py-8">
       <div className="container-main text-center">
-        <div className="font-syne font-extrabold text-lg text-white mb-1">
-          Stats<span className="text-accent">LibX</span>
+        <div className="flex justify-center mb-2">
+          <BrandLogo size={36} href="/" className="justify-center" />
         </div>
         <p className="text-sm text-muted">
-          Developed by Emmanuel Ascendra &middot; v0.2.8
+          Developed by Emmanuel Ascendra &middot; v0.2.9
         </p>
         <div className="flex items-center justify-center gap-5 mt-4">
           <Link

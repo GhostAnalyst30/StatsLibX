@@ -1,14 +1,16 @@
-from viewx import (
-    HTML,
-    Slides,
-    Report,
-    DataMatrix
-)
+try:
+    from viewx import HTML, Slides, Report, DataMatrix
+except ImportError as exc:
+    raise ImportError(
+        "ViewX is not installed. Install with: pip install viewx"
+    ) from exc
+
+from .adapters import to_report_data
 
 __all__ = [
     "HTML",
-    "DashBoard",
     "Slides",
     "Report",
-    "DataMatrix"
+    "DataMatrix",
+    "to_report_data",
 ]

@@ -1,34 +1,49 @@
-from typing import Optional, Union, List, Dict, Any
-import pandas as pd
+from __future__ import annotations
+
+import logging
+from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
+import pandas as pd
+
+from ..backend import Backend
+
+try:
+    import polars as pl
+    _POLARS_AVAILABLE = True
+except ImportError:
+    _POLARS_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 
 
 class Preprocessing:
 
-    def __init__(self, data: pd.DataFrame):
-        if not isinstance(data, pd.DataFrame):
-            raise TypeError("data must be a pandas DataFrame")
-        self.data = data
-        self.columns = list(self.data.columns)
+    def __init__(self, data):
+        self._backend = Backend(data)
+        self.data = self._backend.df
+        self.columns = list(self._backend.columns)
+
+    @property
+    def backend(self):
+        return self._backend
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
     def _is_pandas(self) -> bool:
-        return isinstance(self.data, pd.DataFrame)
+        return self._backend.is_pandas()
 
     def _count_nulls(self, column: str) -> int:
-        if self._is_pandas():
-            return int(self.data[column].isna().sum())
-        return int(self.data[column].null_count())
+        return int(self._backend.isna_sum().get(column, 0))
 
     def _get_columns(self, columns):
-            if columns is None:
-                return list(self.data.columns)
-            if isinstance(columns, str):
-                return [columns]
-            return columns 
+        if columns is None:
+            return list(self._backend.columns)
+        if isinstance(columns, str):
+            return [columns]
+        return columns
 
     # ------------------------------------------------------------------
     # Inspection
@@ -40,11 +55,12 @@ class Preprocessing:
     ) -> pd.DataFrame:
 
         columns = self._get_columns(columns)
-        total = self.data.shape[0]
+        total = self._backend.shape[0]
+        null_counts = self._backend.isna_sum()
 
         rows = []
         for col in columns:
-            nulls = self._count_nulls(col)
+            nulls = int(null_counts.get(col, 0))
             rows.append({
                 "column": col,
                 "nulls": nulls,
@@ -55,27 +71,36 @@ class Preprocessing:
         return pd.DataFrame(rows)
 
     def check_uniqueness(self) -> pd.DataFrame:
-        if self._is_pandas():
-            unique = self.data.nunique()
-            return pd.DataFrame({
-                "column": unique.index,
-                "unique_values": unique.values
+        rows = []
+        for col in self._backend.columns:
+            rows.append({
+                "column": col,
+                "unique_values": self._backend.nunique(col)
             })
+        return pd.DataFrame(rows)
 
     def preview_data(self, n: int = 5):
-        return self.data.head(n)
+        return self._backend.head(n)
 
     # ------------------------------------------------------------------
     # Description
     # ------------------------------------------------------------------
 
     def describe_numeric(self):
-        if self._is_pandas():
-            return self.data.select_dtypes(include=np.number).describe()
+        numeric_cols = self._backend.numeric_columns()
+        if not numeric_cols:
+            return pd.DataFrame()
+        if self._backend.is_pandas():
+            return self._backend.df[numeric_cols].describe()
+        return self._backend.df.select(numeric_cols).to_pandas().describe()
 
     def describe_categorical(self):
-        if self._is_pandas():
-            return self.data.select_dtypes(include="object").describe()
+        cat_cols = self._backend.categorical_columns()
+        if not cat_cols:
+            return pd.DataFrame()
+        if self._backend.is_pandas():
+            return self._backend.df[cat_cols].describe()
+        return self._backend.df.select(cat_cols).to_pandas().describe()
 
     # ------------------------------------------------------------------
     # Transformations
@@ -87,22 +112,22 @@ class Preprocessing:
         columns: Optional[Union[str, List[str]]] = None
     ):
         columns = self._get_columns(columns)
-
-        if self._is_pandas():
-            self.data[columns] = self.data[columns].fillna(fill_with)
-
+        self._backend.fillna(value=fill_with, columns=columns)
+        self.data = self._backend.df
         return self
 
     def normalize(self, column: str):
-        if self._is_pandas():
-            col = self.data[column]
-            self.data[column] = (col - col.min()) / (col.max() - col.min())
+        col = self._backend.col(column)
+        normalized = (col - col.min()) / (col.max() - col.min())
+        self._backend.set_col(column, normalized.values if hasattr(normalized, 'values') else normalized)
+        self.data = self._backend.df
         return self
 
     def standardize(self, column: str):
-        if self._is_pandas():
-            col = self.data[column]
-            self.data[column] = (col - col.mean()) / col.std()
+        col = self._backend.col(column)
+        standardized = (col - col.mean()) / col.std()
+        self._backend.set_col(column, standardized.values if hasattr(standardized, 'values') else standardized)
+        self.data = self._backend.df
         return self
 
     # ------------------------------------------------------------------
@@ -110,24 +135,21 @@ class Preprocessing:
     # ------------------------------------------------------------------
 
     def filter_rows(self, condition):
-        if self._is_pandas():
-            self.data = self.data.loc[condition]
+        if self._backend.is_pandas():
+            self._backend.filter_by_mask(condition)
         else:
-            self.data = self.data.filter(condition)
+            self._backend.filter_by_mask(condition)
+        self.data = self._backend.df
         return self
 
     def filter_columns(self, columns: List[str]):
-        if self._is_pandas():
-            self.data = self.data[columns]
-        else:
-            self.data = self.data.select(columns)
+        self._backend.select_columns(columns)
+        self.data = self._backend.df
         return self
 
     def rename_columns(self, mapping: Dict[str, str]):
-        if self._is_pandas():
-            self.data = self.data.rename(columns=mapping)
-        else:
-            self.data = self.data.rename(mapping)
+        self._backend.rename(mapping)
+        self.data = self._backend.df
         return self
 
     # ------------------------------------------------------------------
@@ -139,51 +161,50 @@ class Preprocessing:
         column: str,
         method: str = "iqr"
     ) -> pd.DataFrame:
-        if self._is_pandas():
-            series = self.data[column]
-        else:
-            series = self.data[column].to_pandas()
 
-        # 2. Calcular la máscara según el método
+        series = self._backend.col(column)
+
         if method == "iqr":
             q1 = series.quantile(0.25)
             q3 = series.quantile(0.75)
             iqr = q3 - q1
-            mask_values = (series < q1 - 1.5 * iqr) | (series > q3 + 1.5 * iqr)
+            mask = (series < q1 - 1.5 * iqr) | (series > q3 + 1.5 * iqr)
 
         elif method == "zscore":
             z = (series - series.mean()) / series.std()
-            mask_values = z.abs() > 3
+            mask = z.abs() > 3
+
         else:
             raise ValueError("method must be 'iqr' or 'zscore'")
 
-        outliers = self.data[mask_values.values]
+        if self._backend.is_pandas():
+            outliers = self._backend.df[mask.values]
+        else:
+            outliers = self._backend.df.filter(mask.values)
 
-        # 4. Manejo de retorno profesional
         if len(outliers) == 0:
             print(f"No outliers found in column '{column}'")
-            return outliers 
-        
-        return outliers
+            return outliers
 
+        return outliers
 
     # ------------------------------------------------------------------
     # Data Quality Report
     # ------------------------------------------------------------------
 
     def data_quality(self) -> pd.DataFrame:
-        total_rows = self.data.shape[0]
+        total_rows = self._backend.shape[0]
+        null_counts = self._backend.isna_sum()
         rows = []
 
-        for col in self.data.columns:
-            nulls = self._count_nulls(col)
+        for col in self._backend.columns:
+            nulls = int(null_counts.get(col, 0))
+            unique = self._backend.nunique(col)
 
-            if self._is_pandas():
-                dtype = str(self.data[col].dtype)
-                unique = self.data[col].nunique()
+            if self._backend.is_pandas():
+                dtype = str(self._backend.df[col].dtype)
             else:
-                dtype = str(self.data.schema[col])
-                unique = self.data[col].n_unique()
+                dtype = str(self._backend.df.schema[col])
 
             rows.append({
                 "column": col,
@@ -203,7 +224,7 @@ class Preprocessing:
         to_type: Optional[str] = None
     ) -> pd.DataFrame:
 
-        data = self.data
+        data = self._backend.df
 
         TYPE_MAP = {
             "string": "string",
@@ -216,83 +237,249 @@ class Preprocessing:
         }
 
         if columns is None:
-            columns = list(data.columns)
+            columns = list(self._backend.columns)
         elif isinstance(columns, str):
             columns = [columns]
 
         if to_type and to_type not in TYPE_MAP:
             raise ValueError(f"Unsupported to_type: {to_type}")
 
-        if self._is_pandas():
+        if self._backend.is_pandas():
 
             for col in columns:
 
                 if col not in data.columns:
                     print(f"Column '{col}' does not exist in the DataFrame")
-                    return
+                    return data
 
                 if from_type is not None:
                     current_type = str(data[col].dtype)
-
                     if from_type not in current_type:
                         continue
 
                 if to_type is not None:
                     try:
-
                         if to_type in ["int", "float", "number"]:
                             data[col] = pd.to_numeric(data[col], errors="raise")
-
                             if to_type == "int":
                                 data[col] = data[col].astype("int64")
-
                         elif to_type == "string":
                             data[col] = data[col].astype("string")
-
                         elif to_type == "object":
                             data[col] = data[col].astype("object")
-
                         else:
                             data[col] = data[col].astype(TYPE_MAP[to_type])
+
+                        self._backend.set_col(col, data[col])
 
                     except Exception:
                         print(f"Cannot convert column '{col}' to {to_type}")
 
-        return data
+        elif _POLARS_AVAILABLE:
+            polars_type_map = {
+                "int": pl.Int64,
+                "int64": pl.Int64,
+                "float": pl.Float64,
+                "float64": pl.Float64,
+                "number": pl.Float64,
+                "string": pl.Utf8,
+                "object": pl.Utf8,
+            }
+            for col in columns:
+                if col not in self._backend.columns:
+                    print(f"Column '{col}' does not exist in the DataFrame")
+                    return data
+
+                if from_type is not None:
+                    current_type = str(self._backend.df.schema[col])
+                    if from_type not in current_type:
+                        continue
+
+                if to_type is not None:
+                    try:
+                        target = polars_type_map.get(to_type, pl.Utf8)
+                        if to_type in ("int", "float", "number"):
+                            self._backend.df = self._backend.df.with_columns(
+                                pl.col(col).cast(target, strict=False)
+                            )
+                        else:
+                            self._backend.df = self._backend.df.with_columns(
+                                pl.col(col).cast(target)
+                            )
+                    except Exception:
+                        print(f"Cannot convert column '{col}' to {to_type}")
+
+        self.data = self._backend.df
+        return self._backend.df if not self._backend.is_pandas() else data
+
+    # ------------------------------------------------------------------
+    # Clean Data
+    # ------------------------------------------------------------------
 
     def clean_data(
         self,
-        # 🔍 Missing values
-        handle_missing: bool = False,
-        missing_strategy: str = "mean",  # mean, median, mode, drop, constant
-        fill_value=None,
-        
-        # 🧹 Duplicados
-        remove_duplicates: bool = False,
-        
-        # 📊 Tipos de datos
+        drop_duplicates: bool = True,
+        handle_missing: Union[str, bool] = "auto",
+        missing_strategy: str = "mean",
+        fill_value: Any = None,
+        remove_duplicates: Optional[bool] = None,
         convert_dtypes: bool = False,
-        
-        # 🚨 Outliers
         detect_outliers: bool = False,
         remove_outliers: bool = False,
-        outlier_method: str = "iqr",  # iqr, zscore
+        outlier_method: str = "iqr",
         z_thresh: float = 3.0,
-        
-        # 📏 Escalado / Normalización
         scale: bool = False,
-        scaling_method: str = "standard",  # standard, minmax, robust
-        
-        # 🔢 Transformaciones
+        scaling_method: str = "standard",
         log_transform: bool = False,
         sqrt_transform: bool = False,
-        
-        # 🧱 Columnas
-        drop_columns: list = None,
-        keep_columns: list = None,
+        drop_columns: Optional[List[str]] = None,
+        keep_columns: Optional[List[str]] = None,
+        **kwargs,
+    ) -> "Preprocessing":
+        """Comprehensive data cleaning pipeline."""
 
-        
-        # 🧪 Analisis
-        analizer: bool = True,
-        text_analizer: bool = False) -> pd.DataFrame | str:
-        pass
+        if remove_duplicates is not None:
+            drop_duplicates = remove_duplicates
+
+        if isinstance(handle_missing, bool):
+            handle_missing = "auto" if handle_missing else "skip"
+
+        if drop_columns:
+            remaining = [c for c in self._backend.columns if c not in drop_columns]
+            self.filter_columns(remaining)
+
+        if keep_columns:
+            self.filter_columns(keep_columns)
+
+        if drop_duplicates:
+            before = self._backend.shape[0]
+            df = self._backend.df.drop_duplicates()
+            self._backend = Backend(df)
+            after = self._backend.shape[0]
+            removed = before - after
+            if removed:
+                logger.info(f"Removed {removed} duplicate row(s)")
+            else:
+                logger.info("No duplicate rows found")
+
+        if handle_missing not in ("skip", False):
+            if handle_missing in ("auto", "drop"):
+                cols_count = self._backend.shape[1]
+                thresh = int(np.ceil(cols_count / 2))
+
+                if self._backend.is_pandas():
+                    df = self._backend.df.dropna(thresh=thresh)
+                elif _POLARS_AVAILABLE:
+                    null_expr = sum(
+                        pl.col(c).is_null().cast(pl.Int32) for c in self._backend.columns
+                    )
+                    threshold_cols = cols_count / 2
+                    df = self._backend.df.filter(null_expr < threshold_cols)
+                else:
+                    df = self._backend.df
+
+                self._backend = Backend(df)
+                logger.info("Dropped rows with >50% missing values")
+
+            if handle_missing in ("auto", "fill") or missing_strategy in ("mean", "median", "mode", "constant", "drop"):
+                for col in self._backend.numeric_columns():
+                    if missing_strategy == "drop":
+                        if self._backend.is_pandas():
+                            self._backend.df = self._backend.df.dropna(subset=[col])
+                        elif _POLARS_AVAILABLE:
+                            self._backend.df = self._backend.df.drop_nulls(subset=[col])
+                        continue
+                    if missing_strategy == "median":
+                        fill = self._backend.median(col)
+                    elif missing_strategy == "constant":
+                        fill = fill_value if fill_value is not None else 0
+                    else:
+                        fill = self._backend.mean(col)
+                    self._backend.fillna(value=fill, columns=[col])
+
+                for col in self._backend.categorical_columns():
+                    if missing_strategy == "drop":
+                        if self._backend.is_pandas():
+                            self._backend.df = self._backend.df.dropna(subset=[col])
+                        elif _POLARS_AVAILABLE:
+                            self._backend.df = self._backend.df.drop_nulls(subset=[col])
+                        continue
+                    try:
+                        mode_val = self._backend.mode(col)
+                        if mode_val is not None and not (isinstance(mode_val, np.ndarray) and len(mode_val) == 0):
+                            self._backend.fillna(value=mode_val, columns=[col])
+                    except Exception:
+                        continue
+                logger.info("Filled missing values according to strategy")
+
+        for col in self._backend.categorical_columns():
+            if self._backend.is_pandas():
+                self._backend.df[col] = self._backend.df[col].astype(str).str.strip()
+            elif _POLARS_AVAILABLE:
+                self._backend.df = self._backend.df.with_columns(
+                    pl.col(col).cast(pl.Utf8).str.strip_chars()
+                )
+        logger.info("Stripped whitespace from string columns")
+
+        if convert_dtypes:
+            self.change_dtypes()
+
+        for col in self._backend.columns:
+            if self._backend.is_pandas():
+                if self._backend.df[col].dtype == 'object':
+                    try:
+                        converted = pd.to_datetime(self._backend.df[col])
+                        self._backend.df[col] = converted
+                        logger.info(f"Converted column '{col}' to datetime")
+                    except (ValueError, TypeError):
+                        pass
+            elif _POLARS_AVAILABLE:
+                if self._backend.df[col].dtype == pl.Utf8:
+                    try:
+                        self._backend.df = self._backend.df.with_columns(
+                            pl.col(col).str.strptime(pl.Datetime, strict=False)
+                        )
+                        logger.info(f"Converted column '{col}' to datetime")
+                    except Exception:
+                        pass
+
+        if detect_outliers or remove_outliers:
+            for col in self._backend.numeric_columns():
+                series = self._backend.col(col)
+                if outlier_method == "iqr":
+                    q1, q3 = series.quantile(0.25), series.quantile(0.75)
+                    iqr = q3 - q1
+                    mask = (series >= q1 - 1.5 * iqr) & (series <= q3 + 1.5 * iqr)
+                else:
+                    z = (series - series.mean()) / (series.std() + 1e-8)
+                    mask = z.abs() <= z_thresh
+                if remove_outliers:
+                    if self._backend.is_pandas():
+                        self._backend.filter_by_mask(mask.values)
+                    elif _POLARS_AVAILABLE:
+                        self._backend.filter_by_mask(mask.to_list())
+
+        if log_transform or sqrt_transform:
+            for col in self._backend.numeric_columns():
+                arr = self._backend.col_numpy(col)
+                if log_transform:
+                    arr = np.log1p(np.clip(arr, a_min=0, a_max=None))
+                if sqrt_transform:
+                    arr = np.sqrt(np.clip(arr, a_min=0, a_max=None))
+                self._backend.set_col(col, arr)
+
+        if scale:
+            for col in self._backend.numeric_columns():
+                series = self._backend.col(col)
+                if scaling_method == "minmax":
+                    scaled = (series - series.min()) / (series.max() - series.min() + 1e-8)
+                elif scaling_method == "robust":
+                    med = series.median()
+                    iqr = series.quantile(0.75) - series.quantile(0.25)
+                    scaled = (series - med) / (iqr + 1e-8)
+                else:
+                    scaled = (series - series.mean()) / (series.std() + 1e-8)
+                self._backend.set_col(col, scaled.values if hasattr(scaled, 'values') else scaled)
+
+        self.data = self._backend.df
+        return self

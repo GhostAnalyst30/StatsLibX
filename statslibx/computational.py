@@ -1,3 +1,4 @@
+from itertools import combinations
 from typing import Union, Optional, Literal, List, Tuple, Any, Dict
 import pandas as pd
 import numpy as np
@@ -12,7 +13,13 @@ from scipy.optimize import minimize
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 import warnings
+import logging
+
+from .backend import Backend
+
 warnings.filterwarnings('ignore')
+
+logger = logging.getLogger(__name__)
 
 
 class BaseResult(ABC):
@@ -79,6 +86,17 @@ class RegressionResult(BaseResult):
         self.y_values = np.array(self.y).flatten()
         self.n_samples = len(self.y_values)
         
+        if self.interaction_terms and self.n_features > 1:
+            interaction_cols = []
+            interaction_names = []
+            for i, j in combinations(range(self.n_features), 2):
+                interaction_cols.append(self.X_values[:, i] * self.X_values[:, j])
+                interaction_names.append(f"{self.feature_names[i]}*{self.feature_names[j]}")
+            if interaction_cols:
+                self.X_values = np.column_stack([self.X_values, np.column_stack(interaction_cols)])
+                self.feature_names = self.feature_names + interaction_names
+                self.n_features = self.X_values.shape[1]
+
         # Create polynomial features if needed
         if self.degree > 1 and self.n_features == 1:
             self.X_poly = np.column_stack([self.X_values ** i for i in range(1, self.degree + 1)])
@@ -648,6 +666,7 @@ class BootstrappingResult(BaseResult):
     def __repr__(self):
         return f"<BootstrappingResult statistic={self.statistic}, n_samples={self.n_samples}, original={self.original_stat:.4f}>"
 
+
 class ComputationalStats:
     """
     Enhanced class for computational statistics with improved functionality
@@ -668,19 +687,15 @@ class ComputationalStats:
         lang : str
             Language for outputs ('es-ES' or 'en-US')
         """
-        if isinstance(data, pd.DataFrame):
-            self.data = data
-        elif isinstance(data, np.ndarray):
-            self.data = pd.DataFrame(data)
-        else:
-            raise TypeError("Data must be a pandas.DataFrame or numpy.ndarray.")
+        self._backend = Backend(data)
+        self.data = self._backend.df
         
         self.seed = seed
         if seed is not None:
             np.random.seed(seed)
         
-        self._numeric_cols = self.data.select_dtypes(include=["number"]).columns.tolist()
-        self._categorical_cols = self.data.select_dtypes(include=["object", "category"]).columns.tolist()
+        self._numeric_cols = self._backend.numeric_columns()
+        self._categorical_cols = self._backend.categorical_columns()
         self.lang = lang
         
         self._translations = {
@@ -697,6 +712,11 @@ class ComputationalStats:
                 'bootstrapping': 'Bootstrapping'
             }
         }
+    
+    @property
+    def backend(self):
+        """Return the Backend instance."""
+        return self._backend
     
     def regression(self, X: Union[List[str], str], y: str, 
                    degree: int = 1, interaction_terms: bool = False) -> RegressionResult:
@@ -718,8 +738,10 @@ class ComputationalStats:
         --------
         RegressionResult object
         """
-        X_data = self.data[X]
-        y_data = self.data[y]
+        pdf = self._backend.to_pandas()
+        x_cols = [X] if isinstance(X, str) else list(X)
+        X_data = pdf[x_cols]
+        y_data = pdf[y]
         
         return RegressionResult(X_data, y_data, degree=degree, interaction_terms=interaction_terms)
     
@@ -826,7 +848,8 @@ class ComputationalStats:
         --------
         BootstrappingResult object
         """
-        data = self.data[column].dropna().values
+        data = self._backend.col_numpy(column)
+        data = data[~np.isnan(data)]
         return BootstrappingResult(data, n_samples, statistic, confidence_level, custom_func)
     
     def k_means(self, k: int, max_iters: int = 100, 
@@ -847,7 +870,7 @@ class ComputationalStats:
         --------
         Dictionary with clustering results
         """
-        X = self.data[self._numeric_cols].values
+        X = np.column_stack([self._backend.col_numpy(c) for c in self._numeric_cols])
         
         # K-means++ initialization
         if init_method == 'kmeans++':
@@ -935,18 +958,20 @@ class ComputationalStats:
         --------
         Dictionary with correlation matrix and p-values
         """
-        corr_matrix = self.data[self._numeric_cols].corr(method=method)
+        corr_matrix = self._backend.corr(method=method)
         
         # Compute p-values for Pearson correlation
         p_values = None
         if method == 'pearson':
-            n = len(self.data)
+            n = self._backend.shape[0]
             p_values = pd.DataFrame(index=self._numeric_cols, columns=self._numeric_cols)
             for i in range(len(self._numeric_cols)):
                 for j in range(len(self._numeric_cols)):
                     if i <= j:
-                        corr, p = scipy_stats.pearsonr(self.data[self._numeric_cols[i]], 
-                                                  self.data[self._numeric_cols[j]])
+                        corr, p = scipy_stats.pearsonr(
+                            self._backend.col_numpy(self._numeric_cols[i]),
+                            self._backend.col_numpy(self._numeric_cols[j])
+                        )
                         p_values.iloc[i, j] = p
                         p_values.iloc[j, i] = p
         
@@ -1000,10 +1025,10 @@ class ComputationalStats:
         --------
         DataFrame with descriptive statistics
         """
+        pdf = self._backend.to_pandas()
         if by is None or by not in self._categorical_cols:
-            return self.data[self._numeric_cols].describe()
-        else:
-            return self.data.groupby(by)[self._numeric_cols].describe()
+            return pdf[self._numeric_cols].describe()
+        return pdf.groupby(by)[self._numeric_cols].describe()
     
     def plot_distribution(self, column: str, by: Optional[str] = None, 
                           kind: Literal['hist', 'box', 'violin'] = 'hist',
@@ -1022,38 +1047,60 @@ class ComputationalStats:
         interactive : bool
             Whether to use interactive plot
         """
+        pdf = self._backend.to_pandas()
         if interactive:
             if kind == 'hist':
-                fig = px.histogram(self.data, x=column, color=by, marginal='box', **kwargs)
+                fig = px.histogram(pdf, x=column, color=by, marginal='box', **kwargs)
             elif kind == 'box':
-                fig = px.box(self.data, x=by, y=column, **kwargs) if by else px.box(self.data, y=column)
+                fig = px.box(pdf, x=by, y=column, **kwargs) if by else px.box(pdf, y=column)
             elif kind == 'violin':
-                fig = px.violin(self.data, x=by, y=column, box=True, **kwargs) if by else px.violin(self.data, y=column)
+                fig = px.violin(pdf, x=by, y=column, box=True, **kwargs) if by else px.violin(pdf, y=column)
             fig.update_layout(title=f'Distribution of {column}', template='plotly_white')
             fig.show()
         else:
             plt.figure(figsize=(10, 6))
             if kind == 'hist':
                 if by:
-                    for category in self.data[by].unique():
-                        subset = self.data[self.data[by] == category]
+                    for category in pdf[by].unique():
+                        subset = pdf[pdf[by] == category]
                         plt.hist(subset[column], alpha=0.5, label=str(category), **kwargs)
                     plt.legend()
                 else:
-                    plt.hist(self.data[column], edgecolor='black', alpha=0.7, **kwargs)
+                    plt.hist(pdf[column], edgecolor='black', alpha=0.7, **kwargs)
             elif kind == 'box':
                 if by:
-                    self.data.boxplot(column=column, by=by, **kwargs)
+                    pdf.boxplot(column=column, by=by, **kwargs)
                 else:
-                    self.data.boxplot(column=column, **kwargs)
+                    pdf.boxplot(column=column, **kwargs)
             elif kind == 'violin':
                 if by:
-                    import seaborn as sns
-                    sns.violinplot(data=self.data, x=by, y=column, **kwargs)
+                    sns.violinplot(data=pdf, x=by, y=column, **kwargs)
                 else:
-                    sns.violinplot(data=self.data, y=column, **kwargs)
+                    sns.violinplot(data=pdf, y=column, **kwargs)
             
             plt.title(f'Distribution of {column}')
             plt.tight_layout()
             plt.show()
 
+    def help(self) -> None:
+        """Display help for ComputationalStats methods."""
+        text = """
+ComputationalStats — regression, interpolation, bootstrapping, clustering.
+
+Methods:
+  .regression(X, y, degree=1, interaction_terms=False)
+  .linear_regression(X, y)
+  .polynomial_regression(X, y, degree=2)
+  .find_best_degree(X, y, max_degree=5, metric='r2')
+  .interpolation(points, method='lagrange', spline_degree=3)
+  .bootstrapping(column, n_samples=1000, statistic='mean', confidence_level=0.95)
+  .k_means(k, max_iters=100, init_method='kmeans++')
+  .elbow_method(max_k=10)
+  .correlation_analysis(method='pearson')
+  .plot_correlation_heatmap(method='pearson')
+  .descriptive_statistics(by=None)
+  .plot_distribution(column, by=None, kind='hist')
+
+Accepts pandas or polars DataFrames via Backend.
+"""
+        print(text)

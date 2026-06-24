@@ -1,9 +1,23 @@
+import logging
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from typing import Union, Literal, Dict, Any, Tuple
 from datetime import datetime
 from scipy import stats
+
+from .backend import Backend
+from ._stats_utils import (
+    check_normality,
+    analytic_ci,
+    bootstrap_ci,
+    cohens_d,
+    hedges_g,
+    detect_outliers,
+)
+
+logger = logging.getLogger(__name__)
+
 
 class InferentialStats:
     """    
@@ -76,25 +90,63 @@ class InferentialStats:
         data : DataFrame o ndarray
             Data to analyze
         """
-
-        if isinstance(data, pd.DataFrame):
-            self.data = data
-        elif isinstance(data, np.ndarray):
-            self.data = pd.DataFrame(data)
-        else:
-            raise TypeError(
-                "Data must be a pandas.DataFrame or numpy.ndarray."
-            )   
-
-        if isinstance(data, np.ndarray):
-            if data.ndim == 1:
-                data = pd.DataFrame({'var': data})
-            else:
-                data = pd.DataFrame(data, columns=[f'var_{i}' for i in range(data.shape[1])])
-        
-        self._numeric_cols = data.select_dtypes(include=["number"]).columns.tolist()
-        self._categorical_cols = self.data.select_dtypes(include=["object", "category"]).columns.tolist()
+        self._backend = Backend(data)
+        self.data = self._backend.df
         self.lang = lang
+        self._numeric_cols = self._backend.numeric_columns()
+        self._categorical_cols = self._backend.categorical_columns()
+        logger.info(f"InferentialStats initialized with {self._backend.type} backend, "
+                     f"{len(self._numeric_cols)} numeric cols, "
+                     f"{len(self._categorical_cols)} categorical cols")
+
+    @classmethod
+    def from_file(
+        cls,
+        path: str,
+        backend: str = "pandas",
+        sep: str = ",",
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ) -> "InferentialStats":
+        """Load data from a file and return an InferentialStats instance."""
+        from .datasets import load_dataset
+        return cls(load_dataset(path, backend=backend, sep=sep), lang=lang)
+
+    @property
+    def backend(self):
+        return self._backend.type
+
+    def numeric_columns(self) -> list:
+        """Return list of numeric column names."""
+        return self._numeric_cols
+
+    def categorical_columns(self) -> list:
+        """Return list of categorical column names."""
+        return self._categorical_cols
+
+    # ── Validation helpers ────────────────────────────────────────────
+
+    def _validate_column(self, column: str) -> None:
+        if column not in self._backend.columns:
+            raise ValueError(
+                f"Column '{column}' not found. "
+                f"Available columns: {self._backend.columns}"
+            )
+
+    def _validate_numeric(self, column: str) -> None:
+        self._validate_column(column)
+        if column not in self._numeric_cols:
+            raise TypeError(
+                f"Column '{column}' is not numeric. "
+                f"Numeric columns: {self._numeric_cols}"
+            )
+
+    def _validate_categorical(self, column: str) -> None:
+        self._validate_column(column)
+        if column not in self._categorical_cols:
+            raise TypeError(
+                f"Column '{column}' is not categorical. "
+                f"Categorical columns: {self._categorical_cols}"
+            )
 
     # ============= INTERVALOS DE CONFIANZA =============
     
@@ -116,34 +168,24 @@ class InferentialStats:
         --------
         tuple : (lower_bound, upper_bound, point_estimate)
         """
-        from scipy import stats
+        logger.info(f"Computing {statistic} confidence interval for column '{column}' "
+                     f"with confidence {confidence}")
+        self._validate_numeric(column)
         
-        data = self.data[column].dropna()
+        data = self._backend.col_numpy(column)
+        data = data[~np.isnan(data)]
         n = len(data)
-        alpha = 1 - confidence
         
         if statistic == 'mean':
-            point_est = data.mean()
-            se = stats.sem(data)
-            margin = se * stats.t.ppf((1 + confidence) / 2, n - 1)
-            return (point_est - margin, point_est + margin, point_est)
+            result = analytic_ci(data, confidence=confidence)
+            return (result['lower'], result['upper'], result['point_estimate'])
         
         elif statistic == 'median':
-            # Bootstrap para mediana
-            point_est = data.median()
-            n_bootstrap = 10000
-            bootstrap_medians = []
-            for _ in range(n_bootstrap):
-                sample = np.random.choice(data, size=n, replace=True)
-                bootstrap_medians.append(np.median(sample))
-            
-            lower = np.percentile(bootstrap_medians, (alpha/2) * 100)
-            upper = np.percentile(bootstrap_medians, (1 - alpha/2) * 100)
-            return (lower, upper, point_est)
+            result = bootstrap_ci(data, confidence=confidence, statistic='median')
+            return (result['lower'], result['upper'], result['point_estimate'])
         
         elif statistic == 'proportion':
-            # Asume datos binarios (0/1)
-            point_est = data.mean()
+            point_est = np.mean(data)
             se = np.sqrt(point_est * (1 - point_est) / n)
             z_critical = stats.norm.ppf((1 + confidence) / 2)
             margin = z_critical * se
@@ -169,9 +211,11 @@ class InferentialStats:
         alternative : str
             Hipótesis alternativa
         """
-        from scipy import stats
+        logger.info(f"Running one-sample t-test on column '{column}'")
+        self._validate_numeric(column)
         
-        data = self.data[column].dropna()
+        data = self._backend.col_numpy(column)
+        data = data[~np.isnan(data)]
         
         if popmean is not None:
             statistic, pvalue = stats.ttest_1samp(data, popmean, alternative=alternative)
@@ -183,7 +227,7 @@ class InferentialStats:
                 alternative=alternative,
                 params={
                     'popmean': popmean, 
-                    'sample_mean': data.mean(), 
+                    'sample_mean': np.mean(data), 
                     'n': len(data),
                     'df': len(data) - 1
                 },
@@ -191,7 +235,6 @@ class InferentialStats:
             )
         
         elif popmedian is not None:
-            # Wilcoxon signed-rank test para mediana
             statistic, pvalue = stats.wilcoxon(data - popmedian, alternative=alternative)
 
             return TestResult(
@@ -201,7 +244,7 @@ class InferentialStats:
                 alternative=alternative,
                 params={
                     'popmedian': popmedian,
-                    'sample_median': data.median(),
+                    'sample_median': np.median(data),
                     'n': len(data)
                 }
             )
@@ -224,12 +267,19 @@ class InferentialStats:
         alternative : str
             Hipótesis alternativa
         """
-        from scipy import stats
+        logger.info(f"Running two-sample t-test on columns '{column1}' and '{column2}'")
+        self._validate_numeric(column1)
+        self._validate_numeric(column2)
         
-        data1 = self.data[column1].dropna()
-        data2 = self.data[column2].dropna()
+        data1 = self._backend.col_numpy(column1)
+        data1 = data1[~np.isnan(data1)]
+        data2 = self._backend.col_numpy(column2)
+        data2 = data2[~np.isnan(data2)]
         
         statistic, pvalue = stats.ttest_ind(data1, data2, equal_var=equal_var, alternative=alternative)
+        
+        d = cohens_d(data1, data2)
+        g = hedges_g(data1, data2)
         
         return TestResult(
             test_name='T-Test de Dos Muestras',
@@ -237,10 +287,12 @@ class InferentialStats:
             pvalue=pvalue,
             alternative=alternative,
             params={
-                'mean1': data1.mean(), 'mean2': data2.mean(),
-                'std1': data1.std(), 'std2': data2.std(),
+                'mean1': np.mean(data1), 'mean2': np.mean(data2),
+                'std1': np.std(data1, ddof=1), 'std2': np.std(data2, ddof=1),
                 'n1': len(data1), 'n2': len(data2),
-                'equal_var': equal_var
+                'equal_var': equal_var,
+                'cohens_d': d,
+                'hedges_g': g
             },
             alpha=alpha
         )
@@ -257,10 +309,13 @@ class InferentialStats:
         alternative:
             "two-sided", "less" o "greater"
         """
-        from scipy import stats
+        logger.info(f"Running paired t-test on columns '{column1}' and '{column2}'")
+        self._validate_numeric(column1)
+        self._validate_numeric(column2)
         
-        data1 = self.data[column1].dropna()
-        data2 = self.data[column2].dropna()
+        paired = self._backend.to_pandas()[[column1, column2]].dropna()
+        data1 = paired[column1].to_numpy()
+        data2 = paired[column2].to_numpy()
         
         statistic, pvalue = stats.ttest_rel(data1, data2, alternative=alternative)
         
@@ -269,7 +324,7 @@ class InferentialStats:
             statistic=statistic,
             pvalue=pvalue,
             alternative=alternative,
-            params={'mean_diff': (data1 - data2).mean(), 'n': len(data1)},
+            params={'mean_diff': np.mean(data1 - data2), 'n': len(data1)},
             alpha=alpha
         )
     
@@ -285,10 +340,14 @@ class InferentialStats:
         alternative : str
             Hipótesis alternativa
         """
-        from scipy import stats
+        logger.info(f"Running Mann-Whitney U test on columns '{column1}' and '{column2}'")
+        self._validate_numeric(column1)
+        self._validate_numeric(column2)
         
-        data1 = self.data[column1].dropna()
-        data2 = self.data[column2].dropna()
+        data1 = self._backend.col_numpy(column1)
+        data1 = data1[~np.isnan(data1)]
+        data2 = self._backend.col_numpy(column2)
+        data2 = data2[~np.isnan(data2)]
         
         statistic, pvalue = stats.mannwhitneyu(data1, data2, alternative=alternative)
         
@@ -298,8 +357,8 @@ class InferentialStats:
             pvalue=pvalue,
             alternative=alternative,
             params={
-                'median1': data1.median(),
-                'median2': data2.median(),
+                'median1': np.median(data1),
+                'median2': np.median(data2),
                 'n1': len(data1),
                 'n2': len(data2)
             },
@@ -316,9 +375,11 @@ class InferentialStats:
         column1, column2 : str
             Variables categóricas a probar
         """
-        from scipy import stats
+        logger.info(f"Running chi-square test on columns '{column1}' and '{column2}'")
+        self._validate_categorical(column1)
+        self._validate_categorical(column2)
         
-        contingency_table = pd.crosstab(self.data[column1], self.data[column2])
+        contingency_table = self._backend.crosstab(column1, column2, margins=False)
         chi2, pvalue, dof, expected = stats.chi2_contingency(contingency_table)
         
         return TestResult(
@@ -342,7 +403,10 @@ class InferentialStats:
         groups : str
             Variable de agrupación (categórica)
         """
-        from scipy import stats
+        logger.info(f"Running one-way ANOVA on column '{column}' grouped by '{groups}'")
+        self._validate_numeric(column)
+        self._validate_column(groups)
+        
         clean_data = self.data[[column, groups]].dropna()
         
         groups_data = [group[column].values
@@ -352,14 +416,18 @@ class InferentialStats:
 
         statistic, pvalue = stats.f_oneway(*groups_data)
         
+        n_total = sum(len(g) for g in groups_data)
+        k = len(groups_data)
         return TestResult(  
             test_name='ANOVA de Un Factor',
             statistic=statistic,
             pvalue=pvalue,
             alternative='two-sided',
             params={
-                'groups': len(groups_data),
-                'n_total': sum(len(g) for g in groups_data)
+                'groups': k,
+                'n_total': n_total,
+                'dfn': k - 1,
+                'dfd': n_total - k,
             },
             alpha=alpha
         )
@@ -376,7 +444,9 @@ class InferentialStats:
         groups : str
             Variable de agrupación (categórica)
         """
-        from scipy import stats
+        logger.info(f"Running Kruskal-Wallis test on column '{column}' grouped by '{groups}'")
+        self._validate_numeric(column)
+        self._validate_column(groups)
 
         clean_data = self.data[[column, groups]].dropna()
         
@@ -386,14 +456,17 @@ class InferentialStats:
                     ]
         statistic, pvalue = stats.kruskal(*groups_data)
         
+        n_total = sum(len(g) for g in groups_data)
+        k = len(groups_data)
         return TestResult(
             test_name='Kruskal-Wallis Test',
             statistic=statistic,
             pvalue=pvalue,
             alternative='two-sided',
             params={
-                'groups': len(groups_data),
-                'n_total': sum(len(g) for g in groups_data)
+                'groups': k,
+                'n_total': n_total,
+                'df': k - 1,
             },
             alpha=alpha
         )
@@ -423,22 +496,22 @@ class InferentialStats:
         TestResult o dict
             Si method='all', retorna dict con todos los resultados
         """
-        from scipy import stats
+        logger.info(f"Running normality test on column '{column}' with method='{method}', "
+                     f"test_statistic='{test_statistic}'")
+        self._validate_numeric(column)
         
-        data = self.data[column].dropna().values
+        data = self._backend.col_numpy(column)
+        data = data[~np.isnan(data)]
         n = len(data)
         
-        # Centrar los datos según el estadístico elegido
         if test_statistic == 'mean':
             loc = np.mean(data)
             scale = np.std(data, ddof=1)
         elif test_statistic == 'median':
             loc = np.median(data)
-            # MAD (Median Absolute Deviation) como escala
             scale = np.median(np.abs(data - loc)) * 1.4826
         elif test_statistic == 'mode':
-            from scipy.stats import mode as scipy_mode
-            mode_result = scipy_mode(data, keepdims=True)
+            mode_result = stats.mode(data, keepdims=True)
             loc = mode_result.mode[0]
             scale = np.std(data, ddof=1)
         else:
@@ -450,8 +523,7 @@ class InferentialStats:
         if method == 'all':
             results = {}
             
-            # Shapiro-Wilk
-            if n <= 5000:  # Shapiro tiene límite de muestra
+            if n <= 5000:
                 stat_sw, p_sw = stats.shapiro(data)
                 results['shapiro'] = TestResult(
                     test_name=f'Shapiro-Wilk ({test_statistic})',
@@ -461,7 +533,6 @@ class InferentialStats:
                     params={'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
                 )
             
-            # Kolmogorov-Smirnov
             stat_ks, p_ks = stats.kstest(data, 'norm', args=(loc, scale))
             results['kolmogorov_smirnov'] = TestResult(
                 test_name=f'Kolmogorov-Smirnov ({test_statistic})',
@@ -471,7 +542,6 @@ class InferentialStats:
                 params={'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
             )
             
-            # Anderson-Darling
             anderson_result = stats.anderson(data, dist='norm')
             results['anderson_darling'] = TestResult(
                 test_name=f'Anderson-Darling ({test_statistic})',
@@ -481,7 +551,6 @@ class InferentialStats:
                 params={'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
             )
             
-            # Jarque-Bera
             stat_jb, p_jb = stats.jarque_bera(data)
             results['jarque_bera'] = TestResult(
                 test_name=f'Jarque-Bera ({test_statistic})',
@@ -517,7 +586,13 @@ class InferentialStats:
             statistic = anderson_result.statistic
             critical_values = anderson_result.critical_values
             significance_levels = anderson_result.significance_level
-            params = {'n': n, 'test_statistic': test_statistic, 'loc': loc, 'scale': scale}
+            normal = statistic < critical_values[2]  # 5% significance level
+            params = {
+                'n': n, 'test_statistic': test_statistic,
+                'loc': loc, 'scale': scale,
+                'normal': normal,
+                'critical_value_5pct': critical_values[2],
+            }
         
         elif method == 'jarque_bera':
             statistic, pvalue = stats.jarque_bera(data)
@@ -572,50 +647,47 @@ class InferentialStats:
             Método de homocedasticidad
             'levene', 'bartlett' o 'var_test' 
         """
-        data = self.data
+        logger.info(f"Running hypothesis test: method='{method}', column1='{column1}', column2='{column2}'")
 
         if column1 is None:
             raise ValueError("Debes especificar 'column1'.")
 
-        x = data[column1].dropna()
+        self._validate_numeric(column1)
+
+        x = self._backend.col_numpy(column1)
+        x = x[~np.isnan(x)]
 
         if method in ["difference_mean", "variance"] and column2 is None:
             raise ValueError("Para este método debes pasar 'column2'.")
 
-        y = data[column2].dropna() if column2 else None
+        y = None
+        if column2:
+            self._validate_numeric(column2)
+            y = self._backend.col_numpy(column2)
+            y = y[~np.isnan(y)]
 
-        # --- homoscedasticity test ---
         homo_result = None
         if method in ["difference_mean", "variance"]:
             homo_result = self._homoscedasticity_test(x, y, homoscedasticity)
 
-        # --- MAIN HYPOTHESIS TESTS ---
         if method == "mean":
-            # One-sample t-test
             t_stat, p_value = stats.ttest_1samp(x, popmean=pop_mean)
             test_name = "One-sample t-test"
 
         elif method == "difference_mean":
-            # Two-sample t-test
             equal_var = homo_result["equal_var"]
             t_stat, p_value = stats.ttest_ind(x, y, equal_var=equal_var)
             test_name = "Two-sample t-test"
 
         elif method == "proportion":
-            # Proportion test (z-test)
-
-            x = np.asarray(x)
-
-            # Caso 1: datos ya binarios
             unique_vals = np.unique(x)
-            if set(unique_vals).issubset({0, 1}):
+            if set(unique_vals).issubset({0, 1}) and len(unique_vals) == 2:
 
                 if pop_proportion is None:
                     raise ValueError("Debe especificarse pop_proportion")
 
                 pop_p = pop_proportion
 
-            # Caso 2: datos continuos → binarizar
             else:
                 if not isinstance(pop_proportion, tuple):
                     raise ValueError(
@@ -642,9 +714,7 @@ class InferentialStats:
             t_stat = z_stat
             test_name = "Proportion Z-test"
 
-
         elif method == "variance":
-            # Classic F-test
             var_x = np.var(x, ddof=1)
             var_y = np.var(y, ddof=1)
             F = var_x / var_y
@@ -654,11 +724,10 @@ class InferentialStats:
             p_value = 2 * min(stats.f.cdf(F, dfn, dfd), 1 - stats.f.cdf(F, dfn, dfd))
             t_stat = F
             test_name = "Variance F-test"
-
-        if p_value < alpha:
-            self.interpretation = "Se RECHAZA la hipótesis nula"
         else:
-            self.interpretation = ("Se RECHAZA la hipotesis alternativa")
+            raise ValueError(f"Método '{method}' no reconocido")
+
+        interpretation = "Se rechaza la hipotesis nula" if p_value < alpha else "No se rechaza la hipotesis nula"
         return TestResult(
             test_name=test_name,
             statistic=t_stat,
@@ -674,12 +743,13 @@ class InferentialStats:
         y,
         method: Literal["levene", "bartlett", "var_test"] = "levene") -> Dict[str, Any]:
 
+        logger.info(f"Running homoscedasticity test with method='{method}'")
+
         if method == "levene":
             stat, p = stats.levene(x, y)
         elif method == "bartlett":
             stat, p = stats.bartlett(x, y)
         elif method == "var_test":
-            # R's var.test equivalent: F-test
             var_x = np.var(x, ddof=1)
             var_y = np.var(y, ddof=1)
             F = var_x / var_y
@@ -694,7 +764,7 @@ class InferentialStats:
             "method": method,
             "statistic": stat,
             "p_value": p,
-            "equal_var": p > 0.05   # estándar
+            "equal_var": p > 0.05
         }
     
     def variance_test(self, column1: str, column2: str,
@@ -719,17 +789,21 @@ class InferentialStats:
         --------
         TestResult
         """
-        from scipy import stats
+        logger.info(f"Running variance test on columns '{column1}' and '{column2}' with method='{method}'")
+        self._validate_numeric(column1)
+        self._validate_numeric(column2)
 
-        data1 = self.data[column1].dropna().values
-        data2 = self.data[column2].dropna().values
+        data1 = self._backend.col_numpy(column1)
+        data1 = data1[~np.isnan(data1)]
+        data2 = self._backend.col_numpy(column2)
+        data2 = data2[~np.isnan(data2)]
 
         if method == 'levene':
             statistic, pvalue = stats.levene(data1, data2, center=center)
             test_name = f'Test de Levene (center={center})'
             params = {
-                'var1': data1.var(ddof=1),
-                'var2': data2.var(ddof=1),
+                'var1': np.var(data1, ddof=1),
+                'var2': np.var(data2, ddof=1),
                 'n1': len(data1), 'n2': len(data2)
             }
 
@@ -737,20 +811,18 @@ class InferentialStats:
             statistic, pvalue = stats.bartlett(data1, data2)
             test_name = 'Test de Bartlett'
             params = {
-                'var1': data1.var(ddof=1),
-                'var2': data2.var(ddof=1),
+                'var1': np.var(data1, ddof=1),
+                'var2': np.var(data2, ddof=1),
                 'n1': len(data1), 'n2': len(data2)
             }
 
         elif method == 'var_test':
-            # F-test clásico de comparación de varianzas
-            var1 = data1.var(ddof=1)
-            var2 = data2.var(ddof=1)
+            var1 = np.var(data1, ddof=1)
+            var2 = np.var(data2, ddof=1)
             f_stat = var1 / var2
             df1 = len(data1) - 1
             df2 = len(data2) - 1
 
-            # p-valor bilateral
             pvalue = 2 * min(
                 stats.f.cdf(f_stat, df1, df2),
                 1 - stats.f.cdf(f_stat, df1, df2)
@@ -1399,10 +1471,14 @@ class TestResult:
 
         if self.pvalue is not None:
             if self.pvalue < self.alpha:
-                self.interpretation = "Se RECHAZA la hipótesis nula"
+                self.interpretation = "Se rechaza la hipotesis nula"
             else:
-                self.interpretation = "Se RECHAZA la hipótesis alternativa"
+                self.interpretation = "No se rechaza la hipotesis nula"
         
+    @property
+    def additional_params(self) -> dict:
+        """Alias for params, for backward compatibility."""
+        return self.params or {}
     def __repr__(self):
         return self._format_output()
     
@@ -1420,7 +1496,6 @@ class TestResult:
         output.append("-" * 80)
         output.append(f"{'Estadístico':<40} {self.statistic:>20.6f}")
 
-        # Mostrar valores críticos o p-value
         if self.critical_values is not None and self.significance_levels is not None:
             output.append("Valores Críticos:")
             for sl, cv in zip(self.significance_levels, self.critical_values):
@@ -1428,15 +1503,11 @@ class TestResult:
         elif self.pvalue is not None:
             output.append(f"{'Valor p':<40} {self.pvalue:>20.6e}")
 
-        # -------------------------
-        # INTERPRETACIÓN
-        # -------------------------
         output.append("\nINTERPRETACIÓN:")
         output.append("-" * 80)
 
         alpha = 0.05
 
-        # Caso tests con p-value
         if self.pvalue is not None:
             output.append(f"Alpha = {alpha}")
 
@@ -1445,9 +1516,7 @@ class TestResult:
             else:
                 output.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
 
-        # Caso tests con valores críticos (ej. Anderson-Darling)
         else:
-            # Protección mínima
             if self.significance_levels is None or self.critical_values is None:
                 output.append("Resultado no disponible")
             else:
@@ -1467,9 +1536,6 @@ class TestResult:
                 else:
                     output.append("✔️ No hay evidencia suficiente para rechazar la hipótesis nula")
 
-        # -------------------------
-        # HOMOCEDASTICIDAD
-        # -------------------------
         if isinstance(self.homo_result, dict):
             homo = self.homo_result
 
@@ -1484,9 +1550,6 @@ class TestResult:
                 elif homo.get("equal_var") is False:
                     output.append("❌ No se asume igualdad de varianzas")
 
-        # -------------------------
-        # PARÁMETROS
-        # -------------------------
         if isinstance(self.params, dict):
             output.append("\nPARÁMETROS:")
             output.append("-" * 80)

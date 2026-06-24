@@ -10,7 +10,7 @@ export default function DatasetsDocs() {
         title="Datasets"
         description="Built-in datasets for quick experimentation, plus synthetic data generation utilities. Load classic ML datasets with a single function call or generate custom data with configurable probability distributions."
         icon={<Database className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
@@ -180,7 +180,7 @@ X, y = load_penguins(
           <MethodCard
             name="generate_dataset"
             signature="generate_dataset(n_rows, schema, seed=None, save=False, filename=None) -> pd.DataFrame"
-            description="Generate a synthetic dataset with <code>n_rows</code> rows according to a schema dict. Each key in the schema defines a column and its distribution. A random seed is set to 42 if not provided."
+            description="Generate a synthetic dataset with <code>n_rows</code> rows according to a schema dict. Each key in the schema defines a column and its distribution. Uses <code>numpy.random.Generator</code> for reproducible random sampling (v0.2.9). A random seed is set to 42 if not provided."
             parameters={[
               { name: "n_rows", type: "int", description: "Number of rows to generate." },
               { name: "schema", type: "dict", description: "Dictionary mapping column names to distribution configs. See Schema Reference below." },

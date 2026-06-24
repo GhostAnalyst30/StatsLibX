@@ -19,6 +19,15 @@ export const metadata: Metadata = {
     "inferential statistics",
     "computational statistics",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/icons/favicon.svg", type: "image/svg+xml" }],
+    shortcut: ["/favicon.ico"],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

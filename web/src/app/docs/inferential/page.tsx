@@ -9,18 +9,21 @@ export default function InferentialStatsDocs() {
         title="InferentialStats"
         description="A class for performing inferential statistical analysis, including hypothesis tests, confidence intervals, normality tests, and more."
         icon={<FlaskConical className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
         <h2 className="section-title">Class Overview</h2>
         <p className="text-sm text-muted leading-relaxed">
           The <code className="code-inline">InferentialStats</code> class provides a comprehensive suite of
-          inferential statistical tools. It accepts <code className="code-inline">pandas.DataFrame</code> or{" "}
-          <code className="code-inline">numpy.ndarray</code> as input and supports hypothesis testing,
-          confidence intervals, normality tests, and variance tests across parametric and non-parametric
-          methods. All methods return a <code className="code-inline">TestResult</code> object with a
-          consistent interface for inspecting statistics, p-values, and significance.
+          inferential statistical tools. It accepts <code className="code-inline">pandas.DataFrame</code>,{" "}
+          <code className="code-inline">polars.DataFrame</code>, or{" "}
+          <code className="code-inline">numpy.ndarray</code> as input with automatic backend detection,
+          and supports hypothesis testing, confidence intervals, normality tests, and variance tests
+          across parametric and non-parametric methods. A <code className="code-inline">backend</code>
+          property exposes the active backend. All methods return a <code className="code-inline">TestResult</code>
+          object with a consistent interface for inspecting statistics, p-values, and significance.
+           v0.2.9 also fixes an ndarray handling bug in internal data conversion.
         </p>
       </section>
 
@@ -36,12 +39,12 @@ export default function InferentialStatsDocs() {
             <span className="text-xs font-mono text-muted ml-2">Constructor signature</span>
           </div>
           <pre>
-            <code>InferentialStats(data: pd.DataFrame | np.ndarray, lang: Literal[&apos;es-ES&apos;, &apos;en-US&apos;] = &apos;es-ES&apos;)</code>
+            <code>InferentialStats(data: pd.DataFrame | pl.DataFrame | np.ndarray, lang: Literal[&apos;es-ES&apos;, &apos;en-US&apos;] = &apos;es-ES&apos;)</code>
           </pre>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="px-2.5 py-1 rounded-md bg-white/5 border border-border text-xs font-mono text-muted">
-            data : pd.DataFrame | np.ndarray — Input data for analysis
+            data : pd.DataFrame | pl.DataFrame | np.ndarray — Input data for analysis (auto-detects pandas/polars)
           </span>
           <span className="px-2.5 py-1 rounded-md bg-white/5 border border-border text-xs font-mono text-muted">
             lang : Literal[&apos;es-ES&apos;, &apos;en-US&apos;] — Language for output labels (default: &apos;es-ES&apos;)
@@ -63,7 +66,7 @@ export default function InferentialStatsDocs() {
             ]}
             returns="tuple[float, float, float]"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({"salary": [48000, 52000, 56000, 61000, 49000, 53000, 58000]})
 inf = InferentialStats(df, lang="en-US")
@@ -90,7 +93,7 @@ print(f"Median: {median:.2f}, 99% CI: [{lower:.2f}, {upper:.2f}]")`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({"score": [85, 92, 78, 95, 88, 90, 84, 91, 87, 93]})
 inf = InferentialStats(df, lang="en-US")
@@ -118,7 +121,7 @@ print(f"Significant: {result.is_significant}")`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "group_a": [23, 25, 29, 22, 27, 24, 26],
@@ -146,7 +149,7 @@ if result.is_significant:
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "before": [150, 155, 148, 160, 152, 158, 145],
@@ -171,7 +174,7 @@ print(f"Mean difference: {result.params['mean_diff']:.2f}")`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "control": [12, 15, 18, 11, 14, 16, 13],
@@ -197,7 +200,7 @@ print(f"Median control: {result.params['median1']}, Median treatment: {result.pa
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "gender": ["Male", "Female", "Male", "Female", "Male", "Female"] * 10,
@@ -223,7 +226,7 @@ print(result.params["contingency_table"])`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "score": [85, 88, 90, 92, 78, 82, 80, 84, 95, 91, 93, 97],
@@ -248,7 +251,7 @@ print(f"Total observations: {result.params['n_total']}")`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "score": [85, 88, 90, 92, 78, 82, 80, 84, 95, 91, 93, 97],
@@ -277,7 +280,7 @@ if result.is_significant:
             returns="TestResult | dict[str, TestResult]"
             example={`import pandas as pd
 import numpy as np
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({"values": np.random.normal(50, 10, 100)})
 inf = InferentialStats(df, lang="en-US")
@@ -314,7 +317,7 @@ print(results["jarque_bera"])`}
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "score": [85, 92, 78, 95, 88, 90, 84, 91, 87, 93],
@@ -349,7 +352,7 @@ if result.homo_result:
             ]}
             returns="TestResult"
             example={`import pandas as pd
-from stats_lib import InferentialStats
+from statslibx import InferentialStats
 
 df = pd.DataFrame({
     "group_a": [23, 25, 29, 22, 27, 24, 26],

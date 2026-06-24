@@ -1,10 +1,196 @@
 import numpy as np
 import pandas as pd
+import logging
 from typing import Optional, Union, Literal, List
 from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+
+from .backend import Backend
+from ._stats_utils import detect_outliers, cohens_d
+
+logger = logging.getLogger(__name__)
+
+
+class LinearRegressionResult:
+    """Clase para resultados de regresión lineal"""
+
+    def __init__(self, X, y, X_names, y_name, engine='statsmodels', fit_intercept=True):
+        self.X = X
+        self.y = y
+        self.X_names = X_names
+        self.y_name = y_name
+        self.engine = engine
+        self.fit_intercept = fit_intercept
+        self.model = None
+        self.results = None
+        self.show_plot = False
+        self.plot_backend = 'seaborn'
+
+        # Atributos que se llenarán después del fit
+        self.coef_ = None
+        self.intercept_ = None
+        self.r_squared = None
+        self.adj_r_squared = None
+        self.f_statistic = None
+        self.f_pvalue = None
+        self.aic = None
+        self.bic = None
+        self.residuals = None
+        self.predictions = None
+        self.std_errors = None
+        self.t_values = None
+        self.p_values = None
+
+    def fit(self):
+        """Ajustar el modelo"""
+        if self.engine == 'statsmodels':
+            import statsmodels.api as sm
+            X = self.X.copy()
+            if self.fit_intercept:
+                X = sm.add_constant(X)
+            self.model = sm.OLS(self.y, X)
+            self.results = self.model.fit()
+
+            # Extraer atributos
+            if self.fit_intercept:
+                self.intercept_ = self.results.params[0]
+                self.coef_ = self.results.params[1:]
+                self.std_errors = self.results.bse[1:]
+                self.t_values = self.results.tvalues[1:]
+                self.p_values = self.results.pvalues[1:]
+            else:
+                self.intercept_ = 0
+                self.coef_ = self.results.params
+                self.std_errors = self.results.bse
+                self.t_values = self.results.tvalues
+                self.p_values = self.results.pvalues
+
+            self.r_squared = self.results.rsquared
+            self.adj_r_squared = self.results.rsquared_adj
+            self.f_statistic = self.results.fvalue
+            self.f_pvalue = self.results.f_pvalue
+            self.aic = self.results.aic
+            self.bic = self.results.bic
+            self.residuals = self.results.resid
+            self.predictions = self.results.fittedvalues
+
+        else:  # scikit-learn
+            from sklearn.linear_model import LinearRegression
+            self.model = LinearRegression(fit_intercept=self.fit_intercept)
+            self.model.fit(self.X, self.y)
+
+            self.coef_ = self.model.coef_
+            self.intercept_ = self.model.intercept_
+            self.predictions = self.model.predict(self.X)
+            self.residuals = self.y - self.predictions
+            self.r_squared = self.model.score(self.X, self.y)
+
+            # Calcular R^2 ajustado
+            n, k = self.X.shape
+            self.adj_r_squared = 1 - (1 - self.r_squared) * (n - 1) / (n - k - 1)
+
+        return self
+
+    def predict(self, X_new):
+        """Hacer predicciones con nuevos datos"""
+        if self.engine == 'statsmodels':
+            import statsmodels.api as sm
+            if self.fit_intercept:
+                X_new = sm.add_constant(X_new)
+            return self.results.predict(X_new)
+        else:
+            return self.model.predict(X_new)
+
+    def summary(self):
+        """Mostrar resumen estilo OLS"""
+        return self.__repr__()
+
+    def __repr__(self):
+        output = []
+        output.append("=" * 100)
+        output.append("RESULTADOS DE REGRESIÓN LINEAL".center(100))
+        output.append("=" * 100)
+        output.append(f"Variable Dependiente: {self.y_name}")
+        output.append(f"Variables Independientes: {', '.join(self.X_names)}")
+        output.append(f"Motor: {self.engine}")
+        output.append(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        output.append("-" * 100)
+
+        # Información del modelo
+        output.append("\nINFORMACIÓN DEL MODELO:")
+        output.append("-" * 100)
+        output.append(f"{'Estadístico':<50} {'Valor':>20}")
+        output.append("-" * 100)
+        output.append(f"{'R-cuadrado':<50} {self.r_squared:>20.6f}")
+        output.append(f"{'R-cuadrado Ajustado':<50} {self.adj_r_squared:>20.6f}")
+
+        if self.f_statistic is not None:
+            output.append(f"{'Estadístico F':<50} {self.f_statistic:>20.6f}")
+            output.append(f"{'Prob (F-estadístico)':<50} {self.f_pvalue:>20.6e}")
+
+        if self.aic is not None:
+            output.append(f"{'AIC':<50} {self.aic:>20.6f}")
+            output.append(f"{'BIC':<50} {self.bic:>20.6f}")
+
+        # Coeficientes
+        output.append("\nCOEFICIENTES:")
+        output.append("-" * 100)
+        if self.std_errors is not None:
+            output.append(f"{'Variable':<20} {'Coef.':>15} {'Std Err':>15} {'t':>15} {'P>|t|':>15}")
+            output.append("-" * 100)
+            output.append(f"{'const':<20} {self.intercept_:>15.6f} {'-':>15} {'-':>15} {'-':>15}")
+            for i, name in enumerate(self.X_names):
+                output.append(
+                    f"{name:<20} {self.coef_[i]:>15.6f} {self.std_errors[i]:>15.6f} "
+                    f"{self.t_values[i]:>15.3f} {self.p_values[i]:>15.6f}"
+                )
+        else:
+            output.append(f"{'Variable':<20} {'Coeficiente':>20}")
+            output.append("-" * 100)
+            output.append(f"{'const':<20} {self.intercept_:>20.6f}")
+            for i, name in enumerate(self.X_names):
+                output.append(f"{name:<20} {self.coef_[i]:>20.6f}")
+
+        # Análisis de residuos
+        output.append("\nANÁLISIS DE RESIDUOS:")
+        output.append("-" * 100)
+        output.append(f"{'Estadístico':<50} {'Valor':>20}")
+        output.append("-" * 100)
+        output.append(f"{'Media de Residuos':<50} {np.mean(self.residuals):>20.6f}")
+        output.append(f"{'Desv. Std. de Residuos':<50} {np.std(self.residuals):>20.6f}")
+        output.append(f"{'Mínimo Residuo':<50} {np.min(self.residuals):>20.6f}")
+        output.append(f"{'Máximo Residuo':<50} {np.max(self.residuals):>20.6f}")
+        output.append("=" * 100)
+
+        if self.show_plot:
+            self.plot()
+            output.append("\n[Gráficos diagnósticos generados]")
+
+        return "\n".join(output)
+
+    def plot(self):
+        """Generar gráficos de regresión y residuales"""
+        if len(self.X_names) == 1:
+            # Scatter + línea de regresión
+            df_plot = pd.DataFrame({
+                self.X_names[0]: self.X.flatten(),
+                self.y_name: self.y,
+                'Predicciones': self.predictions
+            })
+            sns.lmplot(x=self.X_names[0], y=self.y_name, data=df_plot, ci=None)
+            plt.title(f"Regresión lineal: {self.y_name} ~ {self.X_names[0]}")
+            plt.show()
+        else:
+            # Para regresión múltiple, solo gráfico residuos vs predicciones
+            plt.scatter(self.predictions, self.residuals)
+            plt.axhline(0, color='red', linestyle='--')
+            plt.xlabel("Predicciones")
+            plt.ylabel("Residuos")
+            plt.title("Residuos vs Predicciones")
+            plt.show()
+
 
 class DescriptiveStats:
     """    
@@ -82,9 +268,8 @@ class DescriptiveStats:
         
         ## **Parameters:**
 
-        - **data** : Data to analyze
-        - **backend** : 'pandas' or 'polars' for processing
-        (Proximamente estara habilitado polars para big data)
+        - **data** : pandas DataFrame, polars DataFrame, or numpy.ndarray
+        - Polars is supported for I/O and preprocessing; statistics use numpy internally.
 
         **Examples:**
 
@@ -92,20 +277,46 @@ class DescriptiveStats:
         stats = DescriptiveStats(data)
         ``
         """
-        if isinstance(data, pd.DataFrame):
-            self.data = data
-        elif isinstance(data, np.ndarray):
-            self.data = pd.DataFrame(data)
-        else:
-            raise TypeError(
-                "Data must be a pandas.DataFrame or numpy.ndarray."
-            )
+        self._backend = Backend(data)
+        self.data = self._backend.df
         
-        self._numeric_cols = self.data.select_dtypes(include=["number"]).columns.tolist()
-        self._categorical_cols = self.data.select_dtypes(include=["object", "category"]).columns.tolist()
+        self._numeric_cols = self._backend.numeric_columns()
+        self._categorical_cols = self._backend.categorical_columns()
         self.lang = lang
 
-        
+    @classmethod
+    def from_file(
+        cls,
+        path: str,
+        backend: str = "pandas",
+        sep: str = ",",
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ) -> "DescriptiveStats":
+        """Load data from a file and return a DescriptiveStats instance."""
+        from .datasets import load_dataset
+        return cls(load_dataset(path, backend=backend, sep=sep), lang=lang)
+
+    @property
+    def backend(self):
+        return self._backend.type
+
+    # ── Validation helpers ────────────────────────────────────────────
+
+    def _validate_column(self, column: str) -> None:
+        if column not in self._backend.columns:
+            raise ValueError(
+                f"Column '{column}' not found. "
+                f"Available columns: {self._backend.columns}"
+            )
+
+    def _validate_numeric(self, column: str) -> None:
+        self._validate_column(column)
+        if column not in self._numeric_cols:
+            raise TypeError(
+                f"Column '{column}' is not numeric. "
+                f"Numeric columns: {self._numeric_cols}"
+            )
+
     # ============= MÉTODOS UNIVARIADOS =============
     
     def mean(self, column: Optional[str] = None) -> Union[float, pd.Series]:
@@ -118,9 +329,11 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column
         """
+        logger.info(f"Computing mean for column: {column}")
         if column:
-            return self.data[column].mean()
-        return self.data[self._numeric_cols].mean()
+            self._validate_numeric(column)
+            return self._backend.mean(column)
+        return pd.Series({col: self._backend.mean(col) for col in self._numeric_cols})
     
     def median(self, column: Optional[str] = None) -> Union[float, pd.Series]:
         """
@@ -132,9 +345,11 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column
         """
+        logger.info(f"Computing median for column: {column}")
         if column:
-            return self.data[column].median()
-        return self.data[self._numeric_cols].median()
+            self._validate_numeric(column)
+            return self._backend.median(column)
+        return pd.Series({col: self._backend.median(col) for col in self._numeric_cols})
     
     def mode(self, column: Optional[str] = None):
         """
@@ -146,11 +361,13 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column
         """
+        logger.info(f"Computing mode for column: {column}")
         if column:
-            return self.data[column].mode()[0]
-        return self.data[self._numeric_cols].mode().iloc[0]
+            self._validate_numeric(column)
+            return self._backend.mode(column)
+        return pd.Series({col: self._backend.mode(col) for col in self._numeric_cols})
     
-    def variance(self, column: Optional[str] = None) -> Union[float, pd.Series]:
+    def variance(self, column: Optional[str] = None, ddof: int = 1) -> Union[float, pd.Series]:
         """
         Varianza / Variance
         
@@ -159,12 +376,16 @@ class DescriptiveStats:
         column : str
             Nombre de la columna
             Name of the column
+        ddof : int, default 1
+            Delta degrees of freedom (1 = sample, 0 = population)
         """
+        logger.info(f"Computing variance for column: {column}")
         if column:
-            return self.data[column].var()
-        return self.data[self._numeric_cols].var()
+            self._validate_numeric(column)
+            return self._backend.var(column, ddof=ddof)
+        return pd.Series({col: self._backend.var(col, ddof=ddof) for col in self._numeric_cols})
     
-    def std(self, column: Optional[str] = None) -> Union[float, pd.Series]:
+    def std(self, column: Optional[str] = None, ddof: int = 1) -> Union[float, pd.Series]:
         """
         Desviación estándar / Standard deviation
 
@@ -173,11 +394,14 @@ class DescriptiveStats:
         column : str
             Nombre de la columna
             Name of the column
-        
+        ddof : int, default 1
+            Delta degrees of freedom (1 = sample, 0 = population)
         """
+        logger.info(f"Computing std for column: {column}")
         if column:
-            return self.data[column].std()
-        return self.data[self._numeric_cols].std()
+            self._validate_numeric(column)
+            return self._backend.std(column, ddof=ddof)
+        return pd.Series({col: self._backend.std(col, ddof=ddof) for col in self._numeric_cols})
     
     def skewness(self, column: Optional[str] = None) -> Union[float, pd.Series]:
         """
@@ -189,9 +413,11 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column        
         """
+        logger.info(f"Computing skewness for column: {column}")
         if column:
-            return self.data[column].skew()
-        return self.data[self._numeric_cols].skew()
+            self._validate_numeric(column)
+            return self._backend.skew(column)
+        return pd.Series({col: self._backend.skew(col) for col in self._numeric_cols})
     
     def kurtosis(self, column: Optional[str] = None) -> Union[float, pd.Series]:
         """
@@ -203,9 +429,11 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column
         """
+        logger.info(f"Computing kurtosis for column: {column}")
         if column:
-            return self.data[column].kurtosis()
-        return self.data[self._numeric_cols].kurtosis()
+            self._validate_numeric(column)
+            return self._backend.kurtosis(column)
+        return pd.Series({col: self._backend.kurtosis(col) for col in self._numeric_cols})
     
     def quantile(self, q: Union[float, List[float]], column: Optional[str] = None):
         """
@@ -220,9 +448,14 @@ class DescriptiveStats:
             Nombre de la columna
             Name of the column
         """
+        logger.info(f"Computing quantile q={q} for column: {column}")
         if column:
-            return self.data[column].quantile(q)
-        return self.data[self._numeric_cols].quantile(q)
+            self._validate_numeric(column)
+            if isinstance(q, (int, float)):
+                return self._backend.quantile(column, q)
+            return pd.Series({str(qi): self._backend.quantile(column, qi) for qi in q})
+        return pd.DataFrame({col: [self._backend.quantile(col, qi) for qi in q] for col in self._numeric_cols},
+                            index=[str(qi) for qi in q])
     
     def outliers(self, column: str, method: Literal['iqr', 'zscore'] = 'iqr', 
                  threshold: float = 1.5) -> pd.Series:
@@ -241,20 +474,11 @@ class DescriptiveStats:
             1.5 para IQR, 3 para zscore típicamente
             1.5 for IQR, 3 for zscore typically
         """
-        col_data = self.data[column]
-        
-        if method == 'iqr':
-            q1 = col_data.quantile(0.25)
-            q3 = col_data.quantile(0.75)
-            iqr = q3 - q1
-            lower_bound = q1 - threshold * iqr
-            upper_bound = q3 + threshold * iqr
-            outliers = (col_data < lower_bound) | (col_data > upper_bound)
-        else:  # zscore
-            z_scores = np.abs((col_data - col_data.mean()) / col_data.std())
-            outliers = z_scores > threshold
-        
-        return outliers
+        logger.info(f"Detecting outliers in column: {column} using method: {method}")
+        self._validate_numeric(column)
+        col_data = self._backend.col(column)
+        mask = detect_outliers(col_data.values, method=method, threshold=threshold)
+        return pd.Series(mask, index=col_data.index)
     
     # ============= MÉTODOS MULTIVARIADOS =============
     
@@ -271,8 +495,14 @@ class DescriptiveStats:
             Lista de columnas a incluir
             List of columns to include
         """
-        data_subset = self.data[columns] if columns else self.data[self._numeric_cols]
-        return data_subset.corr(method=method)
+        logger.info(f"Computing correlation matrix using method: {method}")
+        if columns:
+            for col in columns:
+                self._validate_numeric(col)
+        corr_matrix = self._backend.corr(method=method)
+        if columns:
+            corr_matrix = corr_matrix.loc[columns, columns]
+        return corr_matrix
     
     def covariance(self, columns: Optional[List[str]] = None) -> pd.DataFrame:
         """
@@ -284,8 +514,14 @@ class DescriptiveStats:
             Lista de columnas a incluir
             List of columns to include
         """
-        data_subset = self.data[columns] if columns else self.data[self._numeric_cols]
-        return data_subset.cov()
+        logger.info("Computing covariance matrix")
+        if columns:
+            for col in columns:
+                self._validate_numeric(col)
+        cov_matrix = self._backend.cov()
+        if columns:
+            cov_matrix = cov_matrix.loc[columns, columns]
+        return cov_matrix
     
     # ============= MÉTODOS DE RESUMEN =============
     
@@ -306,25 +542,31 @@ class DescriptiveStats:
         plot_backend : str
             'seaborn', 'plotly' o 'matplotlib'
         """
-        cols = columns if columns else self._numeric_cols
+        logger.info(f"Generating summary for columns: {columns}")
+        if columns:
+            for col in columns:
+                self._validate_numeric(col)
+            cols = columns
+        else:
+            cols = self._numeric_cols
         
         results = {}
         for col in cols:
-            col_data = self.data[col]
+            col_series = self._backend.col(col)
             results[col] = {
-                'count': col_data.count(),
-                'mean': col_data.mean(),
-                'median': col_data.median(),
-                'mode': col_data.mode()[0] if len(col_data.mode()) > 0 else np.nan,
-                'std': col_data.std(),
-                'variance': col_data.var(),
-                'min': col_data.min(),
-                'q1': col_data.quantile(0.25),
-                'q3': col_data.quantile(0.75),
-                'max': col_data.max(),
-                'iqr': col_data.quantile(0.75) - col_data.quantile(0.25),
-                'skewness': col_data.skew(),
-                'kurtosis': col_data.kurtosis(),
+                'count': col_series.count(),
+                'mean': self._backend.mean(col),
+                'median': self._backend.median(col),
+                'mode': self._backend.mode(col),
+                'std': self._backend.std(col, ddof=1),
+                'variance': self._backend.var(col, ddof=1),
+                'min': self._backend.min(col),
+                'q1': self._backend.quantile(col, 0.25),
+                'q3': self._backend.quantile(col, 0.75),
+                'max': self._backend.max(col),
+                'iqr': self._backend.quantile(col, 0.75) - self._backend.quantile(col, 0.25),
+                'skewness': self._backend.skew(col),
+                'kurtosis': self._backend.kurtosis(col),
             }
         
         return DescriptiveSummary(results, show_plot=show_plot, plot_backend=plot_backend)
@@ -363,16 +605,22 @@ class DescriptiveStats:
         handle_missing:
             'drop', 'error' o 'warn'
         """
+        logger.info(f"Running linear regression: {y} ~ {X}")
         if isinstance(X, str):
             X = [X]
 
+        pdf = self._backend.to_pandas()
+
         # Verificar columnas
-        missing_columns = [col for col in [y] + X if col not in self.data.columns]
+        missing_columns = [col for col in [y] + X if col not in pdf.columns]
         if missing_columns:
             raise ValueError(f"Columnas no encontradas: {missing_columns}")
 
+        for col in [y] + X:
+            self._validate_numeric(col)
+
         # Preparar datos
-        regression_data = self.data[[y] + X].copy()
+        regression_data = pdf[[y] + X].copy()
         numeric_cols = regression_data.select_dtypes(include=[np.number]).columns
         for col in numeric_cols:
             regression_data[col] = regression_data[col].replace([np.inf, -np.inf], np.nan)
@@ -1008,193 +1256,3 @@ class DescriptiveSummary:
             'Cuartiles': df_wide.loc[['min', 'q1', 'q3', 'max']],
             'Forma': df_wide.loc[['skewness', 'kurtosis']]
         }
-    
-
-import numpy as np
-from datetime import datetime
-
-
-import numpy as np
-import pandas as pd
-from datetime import datetime
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-class LinearRegressionResult:
-    """Clase para resultados de regresión lineal"""
-
-    def __init__(self, X, y, X_names, y_name, engine='statsmodels', fit_intercept=True):
-        self.X = X
-        self.y = y
-        self.X_names = X_names
-        self.y_name = y_name
-        self.engine = engine
-        self.fit_intercept = fit_intercept
-        self.model = None
-        self.results = None
-        self.show_plot = False
-        self.plot_backend = 'seaborn'
-
-        # Atributos que se llenarán después del fit
-        self.coef_ = None
-        self.intercept_ = None
-        self.r_squared = None
-        self.adj_r_squared = None
-        self.f_statistic = None
-        self.f_pvalue = None
-        self.aic = None
-        self.bic = None
-        self.residuals = None
-        self.predictions = None
-        self.std_errors = None
-        self.t_values = None
-        self.p_values = None
-
-    def fit(self):
-        """Ajustar el modelo"""
-        if self.engine == 'statsmodels':
-            import statsmodels.api as sm
-            X = self.X.copy()
-            if self.fit_intercept:
-                X = sm.add_constant(X)
-            self.model = sm.OLS(self.y, X)
-            self.results = self.model.fit()
-
-            # Extraer atributos
-            if self.fit_intercept:
-                self.intercept_ = self.results.params[0]
-                self.coef_ = self.results.params[1:]
-                self.std_errors = self.results.bse[1:]
-                self.t_values = self.results.tvalues[1:]
-                self.p_values = self.results.pvalues[1:]
-            else:
-                self.intercept_ = 0
-                self.coef_ = self.results.params
-                self.std_errors = self.results.bse
-                self.t_values = self.results.tvalues
-                self.p_values = self.results.pvalues
-
-            self.r_squared = self.results.rsquared
-            self.adj_r_squared = self.results.rsquared_adj
-            self.f_statistic = self.results.fvalue
-            self.f_pvalue = self.results.f_pvalue
-            self.aic = self.results.aic
-            self.bic = self.results.bic
-            self.residuals = self.results.resid
-            self.predictions = self.results.fittedvalues
-
-        else:  # scikit-learn
-            from sklearn.linear_model import LinearRegression
-            self.model = LinearRegression(fit_intercept=self.fit_intercept)
-            self.model.fit(self.X, self.y)
-
-            self.coef_ = self.model.coef_
-            self.intercept_ = self.model.intercept_
-            self.predictions = self.model.predict(self.X)
-            self.residuals = self.y - self.predictions
-            self.r_squared = self.model.score(self.X, self.y)
-
-            # Calcular R^2 ajustado
-            n, k = self.X.shape
-            self.adj_r_squared = 1 - (1 - self.r_squared) * (n - 1) / (n - k - 1)
-
-        return self
-
-    def predict(self, X_new):
-        """Hacer predicciones con nuevos datos"""
-        if self.engine == 'statsmodels':
-            import statsmodels.api as sm
-            if self.fit_intercept:
-                X_new = sm.add_constant(X_new)
-            return self.results.predict(X_new)
-        else:
-            return self.model.predict(X_new)
-
-    def summary(self):
-        """Mostrar resumen estilo OLS"""
-        return self.__repr__()
-
-    def __repr__(self):
-        output = []
-        output.append("=" * 100)
-        output.append("RESULTADOS DE REGRESIÓN LINEAL".center(100))
-        output.append("=" * 100)
-        output.append(f"Variable Dependiente: {self.y_name}")
-        output.append(f"Variables Independientes: {', '.join(self.X_names)}")
-        output.append(f"Motor: {self.engine}")
-        output.append(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        output.append("-" * 100)
-
-        # Información del modelo
-        output.append("\nINFORMACIÓN DEL MODELO:")
-        output.append("-" * 100)
-        output.append(f"{'Estadístico':<50} {'Valor':>20}")
-        output.append("-" * 100)
-        output.append(f"{'R-cuadrado':<50} {self.r_squared:>20.6f}")
-        output.append(f"{'R-cuadrado Ajustado':<50} {self.adj_r_squared:>20.6f}")
-
-        if self.f_statistic is not None:
-            output.append(f"{'Estadístico F':<50} {self.f_statistic:>20.6f}")
-            output.append(f"{'Prob (F-estadístico)':<50} {self.f_pvalue:>20.6e}")
-
-        if self.aic is not None:
-            output.append(f"{'AIC':<50} {self.aic:>20.6f}")
-            output.append(f"{'BIC':<50} {self.bic:>20.6f}")
-
-        # Coeficientes
-        output.append("\nCOEFICIENTES:")
-        output.append("-" * 100)
-        if self.std_errors is not None:
-            output.append(f"{'Variable':<20} {'Coef.':>15} {'Std Err':>15} {'t':>15} {'P>|t|':>15}")
-            output.append("-" * 100)
-            output.append(f"{'const':<20} {self.intercept_:>15.6f} {'-':>15} {'-':>15} {'-':>15}")
-            for i, name in enumerate(self.X_names):
-                output.append(
-                    f"{name:<20} {self.coef_[i]:>15.6f} {self.std_errors[i]:>15.6f} "
-                    f"{self.t_values[i]:>15.3f} {self.p_values[i]:>15.6f}"
-                )
-        else:
-            output.append(f"{'Variable':<20} {'Coeficiente':>20}")
-            output.append("-" * 100)
-            output.append(f"{'const':<20} {self.intercept_:>20.6f}")
-            for i, name in enumerate(self.X_names):
-                output.append(f"{name:<20} {self.coef_[i]:>20.6f}")
-
-        # Análisis de residuos
-        output.append("\nANÁLISIS DE RESIDUOS:")
-        output.append("-" * 100)
-        output.append(f"{'Estadístico':<50} {'Valor':>20}")
-        output.append("-" * 100)
-        output.append(f"{'Media de Residuos':<50} {np.mean(self.residuals):>20.6f}")
-        output.append(f"{'Desv. Std. de Residuos':<50} {np.std(self.residuals):>20.6f}")
-        output.append(f"{'Mínimo Residuo':<50} {np.min(self.residuals):>20.6f}")
-        output.append(f"{'Máximo Residuo':<50} {np.max(self.residuals):>20.6f}")
-        output.append("=" * 100)
-
-        if self.show_plot:
-            self.plot()
-            output.append("\n[Gráficos diagnósticos generados]")
-
-        return "\n".join(output)
-
-    def plot(self):
-        """Generar gráficos de regresión y residuales"""
-        if len(self.X_names) == 1:
-            # Scatter + línea de regresión
-            df_plot = pd.DataFrame({
-                self.X_names[0]: self.X.flatten(),
-                self.y_name: self.y,
-                'Predicciones': self.predictions
-            })
-            sns.lmplot(x=self.X_names[0], y=self.y_name, data=df_plot, ci=None)
-            plt.title(f"Regresión lineal: {self.y_name} ~ {self.X_names[0]}")
-            plt.show()
-        else:
-            # Para regresión múltiple, solo gráfico residuos vs predicciones
-            plt.scatter(self.predictions, self.residuals)
-            plt.axhline(0, color='red', linestyle='--')
-            plt.xlabel("Predicciones")
-            plt.ylabel("Residuos")
-            plt.title("Residuos vs Predicciones")
-            plt.show()
-

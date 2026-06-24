@@ -1,52 +1,77 @@
 """
-StatsLibx - Librería de Estadística para Python
-Autor: Emmanuel Ascendra
-Versión: 0.2.8
+StatsLibx — Statistical library for Python.
+
+Provides descriptive, inferential, and computational statistics,
+data preprocessing, dataset loading, and visualization utilities.
 """
 
-__version__ = "0.2.8"
+from __future__ import annotations
+
+import logging
+import sys
+
+__version__ = "0.2.9"
 __author__ = "Emmanuel Ascendra"
 
-# Importar las clases principales
+# ── Logging configuration ─────────────────────────────────────────────
+
+_log_fmt = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
+_handler = logging.StreamHandler(sys.stdout)
+_handler.setFormatter(logging.Formatter(_log_fmt, datefmt="%H:%M:%S"))
+
+logger = logging.getLogger("statslibx")
+logger.addHandler(_handler)
+logger.setLevel(logging.WARNING)
+
+# ── Public API exports ────────────────────────────────────────────────
+
 from .descriptive import DescriptiveStats, DescriptiveSummary
 from .inferential import InferentialStats, TestResult
 from .computational import ComputationalStats
 from .utils import UtilsStats
 from .preprocessing import Preprocessing
 from .datasets import load_dataset, generate_dataset
-from .viewx import HTML, Slides, Report, DataMatrix
 
-# Definir qué se expone cuando se hace: from statslib import *
+try:
+    from .viewx import HTML, Slides, Report, DataMatrix, to_report_data
+except ImportError:
+    HTML = Slides = Report = DataMatrix = to_report_data = None  # type: ignore[misc, assignment]
+
 __all__ = [
-    # Clases principales
-    'DescriptiveStats',
-    'InferentialStats',
-    'ComputationalStats',
-    'UtilsStats',
-    'Preprocessing',
-    'load_dataset',
-    'generate_dataset',
-
-    # Viewx
-    'HTML',
-    'Slides',
-    'Report',
-    'DataMatrix'
+    "DescriptiveStats",
+    "InferentialStats",
+    "ComputationalStats",
+    "UtilsStats",
+    "Preprocessing",
+    "DescriptiveSummary",
+    "TestResult",
+    "load_dataset",
+    "generate_dataset",
+    "HTML",
+    "Slides",
+    "Report",
+    "DataMatrix",
+    "to_report_data",
+    "logger",
 ]
 
-# Mensaje de bienvenida (opcional)
-def welcome():
-    """Muestra información sobre la librería"""
+# ── Welcome message ───────────────────────────────────────────────────
+
+def welcome() -> None:
+    """Display library information."""
     print(f"StatsLibx v{__version__}")
-    print(f"Librería de estadística descriptiva e inferencial")
-    print(f"Autor: {__author__}")
-    print(f"\nClases disponibles:")
-    print(f"  - DescriptiveStats: Estadística descriptiva")
-    print(f"  - InferentialStats: Estadística inferencial")
-    print(f"  - ComputacionalStats: Estadística computacional")
-    print(f"  - UtilsStats: Utilidades Extras")
-    print(f"\nMódulos disponibles:")
-    print(f"  - Datasets: Carga de Datasets")
-    print(f"  - Preprocessing: Preprocesamiento de datos")
-    print(f"\nPara más información: help(statslibx)")
-    print(f"\nO lee la información en: https://ghostanalyst30.github.io/StatsLibX/Documentation_Page/index.html")
+    print("Descriptive and inferential statistics library")
+    print(f"Author: {__author__}")
+    print()
+    print("Classes:")
+    print("  - DescriptiveStats   Descriptive statistics")
+    print("  - InferentialStats   Inferential statistics")
+    print("  - ComputationalStats Computational statistics")
+    print("  - UtilsStats         Utilities and visualization")
+    print("  - Preprocessing      Data preparation")
+    print()
+    print("Modules:")
+    print("  - datasets           Built-in datasets and generators")
+    print()
+    print(f"Docs: https://ghostanalyst30.github.io/StatsLibX/")
+    print(f"Web:  https://ghostanalyst30.github.io/StatsLibX/web/")

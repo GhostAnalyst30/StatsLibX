@@ -4,10 +4,10 @@
   "/page": "/",
   "/docs/cli/page": "/docs/cli",
   "/docs/computational/page": "/docs/computational",
+  "/docs/descriptive/page": "/docs/descriptive",
   "/docs/datasets/page": "/docs/datasets",
   "/docs/inferential/page": "/docs/inferential",
   "/docs/preprocessing/page": "/docs/preprocessing",
-  "/docs/descriptive/page": "/docs/descriptive",
   "/docs/utils/page": "/docs/utils",
   "/docs/viewx/page": "/docs/viewx",
   "/playground/page": "/playground"

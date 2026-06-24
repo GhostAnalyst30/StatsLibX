@@ -9,7 +9,7 @@ export default function PreprocessingDocs() {
         title="Preprocessing"
         description="A class for data preprocessing and cleaning. Provides methods for null detection, missing value handling, scaling, standardization, filtering, outlier detection, type conversion, and comprehensive data quality reporting."
         icon={<Filter className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
@@ -56,7 +56,7 @@ export default function PreprocessingDocs() {
             ]}
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, None, 3, None, 5], "B": [10, 20, None, 40, 50]})
 pp = Preprocessing(df)
@@ -76,7 +76,7 @@ print(all_nulls)`}
             description="Return unique value counts for each column in the dataset."
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, 2, 2, 3, 3], "B": ["x", "y", "z", "z", "z"]})
 pp = Preprocessing(df)
@@ -94,7 +94,7 @@ print(uniques)`}
             ]}
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": range(1, 101), "B": range(101, 201)})
 pp = Preprocessing(df)
@@ -114,7 +114,7 @@ print(preview)`}
             description="Generate descriptive statistics for all numeric columns (count, mean, std, min, quartiles, max)."
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10.5, 20.3, 30.1, 40.7, 50.2]})
 pp = Preprocessing(df)
@@ -129,7 +129,7 @@ print(num_desc)`}
             description="Generate descriptive statistics for all categorical (object) columns (count, unique, top, freq)."
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": ["cat", "dog", "cat", "bird", "dog"], "B": [1, 2, 3, 4, 5]})
 pp = Preprocessing(df)
@@ -153,7 +153,7 @@ print(cat_desc)`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, None, 3, None, 5], "B": [10, 20, None, 40, 50]})
 pp = Preprocessing(df)
@@ -172,7 +172,7 @@ print(pp.data)`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [10, 20, 30, 40, 100]})
 pp = Preprocessing(df)
@@ -190,7 +190,7 @@ print(pp.data)  # Values scaled between 0 and 1`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [10, 20, 30, 40, 50]})
 pp = Preprocessing(df)
@@ -213,7 +213,7 @@ print(pp.data)  # Z-score standardized values`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
 pp = Preprocessing(df)
@@ -232,7 +232,7 @@ print(pp.data)`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6], "C": [7, 8, 9]})
 pp = Preprocessing(df)
@@ -250,7 +250,7 @@ print(pp.data)`}
             ]}
             returns="Preprocessing (self)"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"old_name": [1, 2, 3], "another_old": [4, 5, 6]})
 pp = Preprocessing(df)
@@ -275,7 +275,7 @@ print(pp.data.columns.tolist())`}
             returns="pd.DataFrame"
             note="The IQR method flags values below Q1 - 1.5*IQR or above Q3 + 1.5*IQR. The z-score method flags values with absolute z-score greater than 3."
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": [10, 12, 11, 13, 100, 11, 12, 200]})
 pp = Preprocessing(df)
@@ -300,7 +300,7 @@ print("Z-score outliers:", outliers_z)`}
             description="Generate a complete data quality report with dtypes, null counts, null percentages, unique value counts, and completeness percentages for every column."
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({
     "A": [1, None, 3, None, 5],
@@ -324,7 +324,7 @@ print(report)`}
             ]}
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({"A": ["1", "2", "3"], "B": [1.1, 2.2, 3.3]})
 pp = Preprocessing(df)
@@ -341,7 +341,7 @@ print(converted_all.dtypes)`}
           <MethodCard
             name="clean_data"
             signature="clean_data(handle_missing: bool = False, missing_strategy: str = 'mean', fill_value=None, remove_duplicates: bool = False, convert_dtypes: bool = False, detect_outliers: bool = False, remove_outliers: bool = False, outlier_method: str = 'iqr', z_thresh: float = 3.0, scale: bool = False, scaling_method: str = 'standard', log_transform: bool = False, sqrt_transform: bool = False, drop_columns: list = None, keep_columns: list = None, analizer: bool = True, text_analizer: bool = False)"
-            description="Comprehensive data cleaning pipeline. Handles missing values, removes duplicates, converts dtypes, detects and removes outliers, scales/normalizes data, applies log or sqrt transformations, and drops or keeps specific columns in a single call."
+            description="Comprehensive data cleaning pipeline (fully implemented in v0.2.9). Handles missing values, removes duplicates, converts dtypes, detects and removes outliers, scales/normalizes data, applies log or sqrt transformations, and drops or keeps specific columns in a single call."
             parameters={[
               { name: "handle_missing", type: "bool", description: "Whether to handle missing values.", default: "False" },
               { name: "missing_strategy", type: "str", description: "Strategy for missing values: 'mean', 'median', 'mode', 'drop', 'constant'.", default: "'mean'" },
@@ -363,7 +363,7 @@ print(converted_all.dtypes)`}
             ]}
             returns="pd.DataFrame | str"
             example={`import pandas as pd
-from stats_lib import Preprocessing
+from statslibx import Preprocessing
 
 df = pd.DataFrame({
     "A": [1, None, 3, None, 5, 100],

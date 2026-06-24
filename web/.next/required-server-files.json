@@ -99,7 +99,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\Ciencia de Datos\\Librerias Python\\Libreria_Estadistica\\web",
+    "outputFileTracingRoot": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\GitHub_GhostAnalyst\\Librerias_Python\\Libreria_Estadistica\\web",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -289,10 +289,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\Ciencia de Datos\\Librerias Python\\Libreria_Estadistica\\web"
+      "root": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\GitHub_GhostAnalyst\\Librerias_Python\\Libreria_Estadistica\\web"
     }
   },
-  "appDir": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\Ciencia de Datos\\Librerias Python\\Libreria_Estadistica\\web",
+  "appDir": "C:\\Users\\Usuario\\Documents\\Emmanuel Ascendra\\GitHub_GhostAnalyst\\Librerias_Python\\Libreria_Estadistica\\web",
   "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",

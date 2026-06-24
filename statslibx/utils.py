@@ -1,12 +1,25 @@
+import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from typing import Union, List, Optional, Literal, Tuple
+from typing import Any, Union, List, Optional, Literal, Tuple, Dict
 import warnings
 import os
 from scipy import stats
 import seaborn as sns
 from pathlib import Path
+
+from ._stats_utils import (
+    detect_outliers as _detect_outliers,
+    check_normality as _check_normality,
+    confidence_interval as _confidence_interval,
+    analytic_ci as _analytic_ci,
+    bootstrap_ci as _bootstrap_ci,
+    cohens_d as _cohens_d,
+    hedges_g as _hedges_g,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class UtilsStats:
@@ -86,20 +99,19 @@ class UtilsStats:
     """
     
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Inicializar la clase utilitaria"""
-        self._plot_backend = 'seaborn'
-        self._default_figsize = (12, 5)
-        self._save_fig = False
-        self._fig_format = 'png'
-        self._fig_dpi = 300
-        self._figures_dir = 'figures'
+        self._plot_backend: str = 'seaborn'
+        self._default_figsize: Tuple[int, int] = (12, 5)
+        self._save_fig: bool = False
+        self._fig_format: str = 'png'
+        self._fig_dpi: int = 300
+        self._figures_dir: str = 'figures'
         
-        # Configuración de estilo para matplotlib
         plt.style.use('default')
         self._setup_plotting_style()
     
-    def _setup_plotting_style(self):
+    def _setup_plotting_style(self) -> None:
         """Configurar estilos de plotting por defecto"""
         plt.rcParams['figure.figsize'] = [self._default_figsize[0], self._default_figsize[1]]
         plt.rcParams['figure.dpi'] = self._fig_dpi
@@ -109,11 +121,11 @@ class UtilsStats:
         plt.rcParams['grid.alpha'] = 0.3
         plt.rcParams['lines.linewidth'] = 2
     
-    def set_plot_backend(self, backend: Literal['matplotlib', 'seaborn', 'plotly']):
+    def set_plot_backend(self, backend: Literal['matplotlib', 'seaborn', 'plotly']) -> None:
         """Establecer el backend de visualización por defecto"""
         self._plot_backend = backend
     
-    def set_default_figsize(self, figsize: Tuple[int, int]):
+    def set_default_figsize(self, figsize: Tuple[int, int]) -> None:
         """Establecer el tamaño de figura por defecto"""
         self._default_figsize = figsize
         plt.rcParams['figure.figsize'] = [figsize[0], figsize[1]]
@@ -121,14 +133,14 @@ class UtilsStats:
     def set_save_fig_options(self, save_fig: Optional[bool] = False, 
                             fig_format: str = 'png', 
                             fig_dpi: int = 300,
-                            figures_dir: str = 'figures'):
+                            figures_dir: str = 'figures') -> None:
         """Configurar opciones para guardar figuras"""
         self._save_fig = save_fig
         self._fig_format = fig_format
         self._fig_dpi = fig_dpi
         self._figures_dir = figures_dir
     
-    def _save_figure(self, fig, filename: str, **kwargs):
+    def _save_figure(self, fig, filename: str, **kwargs) -> None:
         """Guardar figura si save_fig está activado"""
         if self._save_fig:
             try:
@@ -182,6 +194,7 @@ class UtilsStats:
         >>> df = utils.load_data("datos.xlsx", sheet_name="Hoja1")
         >>> df = utils.load_data("datos.json")
         """
+        logger.info(f"Loading data from path: {path}")
         path = Path(path)
         
         if not path.exists():
@@ -231,7 +244,6 @@ class UtilsStats:
             - data: Los datos procesados
             - data_source: String indicando la fuente ('file' o 'memory')
         """
-        # Si es string o Path, intentar cargar como archivo
         if isinstance(data, (str, Path)):
             path = Path(data)
             if path.exists():
@@ -242,7 +254,6 @@ class UtilsStats:
             else:
                 raise FileNotFoundError(f"El archivo no existe: {path}")
         
-        # Si ya son datos en memoria, devolverlos tal cual
         return data, 'memory'
 
     # ============= MÉTODOS DE ANÁLISIS ESTADÍSTICO (ACTUALIZADOS) =============
@@ -253,7 +264,6 @@ class UtilsStats:
         
         Ahora acepta también rutas de archivos
         """
-        # Intentar resolver si es un archivo
         data, source = self._resolve_data(data)
         
         if isinstance(data, pd.DataFrame):
@@ -297,29 +307,31 @@ class UtilsStats:
         >>> utils.check_normality("datos.csv", column="edad")
         >>> utils.check_normality(np.random.normal(0, 1, 100))
         """
-        # Resolver datos
+        logger.info("Checking normality with Shapiro-Wilk test")
         data, source = self._resolve_data(data, column)
         
-        # Extraer array
         if isinstance(data, pd.DataFrame):
             if column is None:
                 raise ValueError("Debe especificar 'column' cuando data es DataFrame")
             data = data[column]
         
         if isinstance(data, pd.Series):
-            data = data.dropna().values
+            data_array = data.dropna().values
         else:
-            data = np.array(data)
-            data = data[~np.isnan(data)]
+            data_array = np.array(data)
+            data_array = data_array[~np.isnan(data_array)]
         
-        shapiro_stat, shapiro_p = stats.shapiro(data)
+        result = _check_normality(data_array, method='shapiro')
+        
+        is_normal = result['p_value'] > alpha
+        interpretation = 'Normal' if is_normal else 'No Normal'
         
         return {
-            'is_normal': shapiro_p > alpha,
-            'shapiro_statistic': shapiro_stat,
-            'shapiro_pvalue': shapiro_p,
+            'is_normal': is_normal,
+            'shapiro_statistic': result['statistic'],
+            'shapiro_pvalue': result['p_value'],
             'alpha': alpha,
-            'interpretation': 'Normal' if shapiro_p > alpha else 'No Normal'
+            'interpretation': interpretation
         }
 
     def calculate_confidence_intervals(self, 
@@ -341,10 +353,9 @@ class UtilsStats:
         method : str
             'parametric' o 'bootstrap'
         """
-        # Resolver datos
+        logger.info(f"Calculating confidence intervals (method={method}, level={confidence_level})")
         data, source = self._resolve_data(data, column)
         
-        # Extraer array
         if isinstance(data, pd.DataFrame):
             if column is None:
                 raise ValueError("Debe especificar 'column' cuando data es DataFrame")
@@ -357,32 +368,15 @@ class UtilsStats:
             data_clean = data_clean[~np.isnan(data_clean)]
         
         n = len(data_clean)
-        mean = np.mean(data_clean)
-        std = np.std(data_clean, ddof=1)
+        mean = float(np.mean(data_clean))
+        std = float(np.std(data_clean, ddof=1))
         
-        if method == 'parametric':
-            se = std / np.sqrt(n)
-            z_value = stats.t.ppf((1 + confidence_level) / 2, n - 1)
-            margin_error = z_value * se
-            
-            ci_lower = mean - margin_error
-            ci_upper = mean + margin_error
-            
-        elif method == 'bootstrap':
-            n_bootstraps = 1000
-            bootstrap_means = []
-            
-            for _ in range(n_bootstraps):
-                bootstrap_sample = np.random.choice(data_clean, size=n, replace=True)
-                bootstrap_means.append(np.mean(bootstrap_sample))
-            
-            alpha = 1 - confidence_level
-            ci_lower = np.percentile(bootstrap_means, (alpha / 2) * 100)
-            ci_upper = np.percentile(bootstrap_means, (1 - alpha / 2) * 100)
-            margin_error = (ci_upper - ci_lower) / 2
-            
-        else:
-            raise ValueError("Método debe ser 'parametric' o 'bootstrap'")
+        ci_method = 'analytic' if method == 'parametric' else 'bootstrap'
+        ci_result = _confidence_interval(data_clean, confidence=confidence_level, method=ci_method)
+        
+        ci_lower = ci_result['lower']
+        ci_upper = ci_result['upper']
+        margin_error = (ci_upper - ci_lower) / 2
         
         return {
             'mean': mean,
@@ -417,10 +411,9 @@ class UtilsStats:
         np.ndarray
             Array booleano indicando outliers
         """
-        # Resolver datos
+        logger.info(f"Detecting outliers (method={method})")
         data, source = self._resolve_data(data, column)
         
-        # Extraer array
         if isinstance(data, pd.DataFrame):
             if column is None:
                 raise ValueError("Debe especificar 'column' cuando data es DataFrame")
@@ -431,26 +424,15 @@ class UtilsStats:
         
         data_clean = data[~np.isnan(data)]
         
-        if method == 'iqr':
-            q1 = np.percentile(data_clean, 25)
-            q3 = np.percentile(data_clean, 75)
-            iqr = q3 - q1
-            lower_bound = q1 - 1.5 * iqr
-            upper_bound = q3 + 1.5 * iqr
-            outliers = (data_clean < lower_bound) | (data_clean > upper_bound)
-            
-        elif method == 'zscore':
-            threshold = kwargs.get('threshold', 3)
-            z_scores = np.abs((data_clean - np.mean(data_clean)) / np.std(data_clean))
-            outliers = z_scores > threshold
-            
-        elif method == 'isolation_forest':
+        if method == 'isolation_forest':
             from sklearn.ensemble import IsolationForest
             contamination = kwargs.get('contamination', 0.1)
             X = data_clean.reshape(-1, 1)
             clf = IsolationForest(contamination=contamination, random_state=42)
             outliers = clf.fit_predict(X) == -1
-            
+        elif method in ('iqr', 'zscore'):
+            threshold = kwargs.get('threshold', 3) if method == 'zscore' else 1.5
+            outliers = _detect_outliers(data_clean, method=method, threshold=threshold)
         else:
             raise ValueError("Método debe ser 'iqr', 'zscore', o 'isolation_forest'")
         
@@ -464,40 +446,32 @@ class UtilsStats:
         """
         Calcula el tamaño del efecto entre dos grupos
         """
+        logger.info(f"Calculating effect size (method={method})")
 
-        # --- Preparar arrays ---
-        # Caso 1: data es DataFrame y group1/group2 son nombres de columna
         if isinstance(data, pd.DataFrame):
             group1 = np.array(data[group1])
             group2 = np.array(data[group2])
-        # Caso 2: data no es None, y es una serie o array, usarlo como group1
         elif isinstance(data, (pd.Series, np.ndarray)) and group2 is not None:
             group1 = np.array(data)
             group2 = np.array(group2)
-        # Caso 3: group1 y group2 ya son arrays o Series
         else:
             group1 = np.array(group1)
             group2 = np.array(group2)
             
-        # Eliminar nan automáticamente
         group1 = group1[~np.isnan(group1)]
         group2 = group2[~np.isnan(group2)]
 
-
-        # --- Calcular estadísticas ---
-        mean1, mean2 = np.mean(group1), np.mean(group2)
-        std1, std2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
+        mean1, mean2 = float(np.mean(group1)), float(np.mean(group2))
+        std1, std2 = float(np.std(group1, ddof=1)), float(np.std(group2, ddof=1))
         n1, n2 = len(group1), len(group2)
-        
-        pooled_std = np.sqrt(((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2))
-        cohens_d = (mean1 - mean2) / pooled_std
-        
+
         if method == 'hedges':
-            correction = 1 - (3 / (4 * (n1 + n2) - 9))
-            effect_size = cohens_d * correction
+            effect_size = _hedges_g(group1, group2)
         else:
-            effect_size = cohens_d
-        
+            effect_size = _cohens_d(group1, group2)
+
+        pooled_std = float(np.sqrt(((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2)))
+
         abs_effect = abs(effect_size)
         if abs_effect < 0.2:
             interpretation = "Muy pequeño"
@@ -519,24 +493,20 @@ class UtilsStats:
 
     # ============= MÉTODOS DE VISUALIZACIÓN COMPLETOS =============
 
-    def _plot_distribution_seaborn(self, data, plot_type, bins, figsize, title, **kwargs):
+    def _plot_distribution_seaborn(self, data, plot_type: str, bins: int, figsize, title: str, **kwargs):
         """Implementación con seaborn"""
         if plot_type == 'all':
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
             
-            # Histograma
             sns.histplot(data, bins=bins, kde=True, ax=axes[0, 0])
             axes[0, 0].set_title('Histograma con KDE')
             
-            # Box plot
             sns.boxplot(y=data, ax=axes[0, 1])
             axes[0, 1].set_title('Box Plot')
             
-            # Violin plot
             sns.violinplot(y=data, ax=axes[1, 0])
             axes[1, 0].set_title('Violin Plot')
             
-            # Q-Q plot
             stats.probplot(data, dist="norm", plot=axes[1, 1])
             axes[1, 1].set_title('Q-Q Plot')
             
@@ -560,21 +530,18 @@ class UtilsStats:
         
         return fig
 
-    def _plot_distribution_matplotlib(self, data, plot_type, bins, figsize, title, **kwargs):
+    def _plot_distribution_matplotlib(self, data, plot_type: str, bins: int, figsize, title: str, **kwargs):
         """Implementación con matplotlib puro"""
         if plot_type == 'all':
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
             
-            # Histograma
             axes[0, 0].hist(data, bins=bins, alpha=0.7, edgecolor='black', density=True)
             axes[0, 0].set_title('Histograma')
             axes[0, 0].set_ylabel('Densidad')
             
-            # Box plot
             axes[0, 1].boxplot(data)
             axes[0, 1].set_title('Box Plot')
             
-            # KDE
             from scipy.stats import gaussian_kde
             kde = gaussian_kde(data)
             x_range = np.linspace(data.min(), data.max(), 100)
@@ -583,7 +550,6 @@ class UtilsStats:
             axes[1, 0].set_title('KDE')
             axes[1, 0].set_ylabel('Densidad')
             
-            # Q-Q plot
             stats.probplot(data, dist="norm", plot=axes[1, 1])
             axes[1, 1].set_title('Q-Q Plot')
             
@@ -612,7 +578,7 @@ class UtilsStats:
         
         return fig
     
-    def _plot_distribution_plotly(self, data, plot_type, bins, title, **kwargs):
+    def _plot_distribution_plotly(self, data, plot_type: str, bins: int, title: str, **kwargs):
         """Implementación con plotly"""
         try:
             import plotly.graph_objects as go
@@ -627,16 +593,12 @@ class UtilsStats:
                 subplot_titles=('Histograma', 'Box Plot', 'Violin Plot', 'Distribución Acumulada')
             )
             
-            # Histograma
             fig.add_trace(go.Histogram(x=data, nbinsx=bins, name='Histograma'), row=1, col=1)
             
-            # Box plot
             fig.add_trace(go.Box(y=data, name='Box Plot'), row=1, col=2)
             
-            # Violin plot
             fig.add_trace(go.Violin(y=data, name='Violin Plot'), row=2, col=1)
             
-            # Distribución acumulada
             hist, bin_edges = np.histogram(data, bins=bins, density=True)
             cdf = np.cumsum(hist * np.diff(bin_edges))
             fig.add_trace(go.Scatter(x=bin_edges[1:], y=cdf, name='CDF'), row=2, col=2)
@@ -690,14 +652,13 @@ class UtilsStats:
         >>> utils.plot_distribution("datos.csv", column="edad")
         >>> utils.plot_distribution(df, column="salario", plot_type="all")
         """
+        logger.info(f"Plotting distribution (type={plot_type}, backend={backend})")
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
         self._save_fig = save_fig
         
-        # Resolver datos
         data, source = self._resolve_data(data, column)
         
-        # Extraer datos
         if isinstance(data, pd.DataFrame):
             if column is None:
                 raise ValueError("Debe especificar 'column' cuando data es DataFrame")
@@ -725,7 +686,6 @@ class UtilsStats:
             else:
                 raise ValueError(f"Backend '{backend}' no soportado")
             
-            # Guardar figura si está activado
             if save_fig and backend != 'plotly':
                 self._save_figure(fig, filename)
             
@@ -757,12 +717,12 @@ class UtilsStats:
         backend : str, optional
             Backend de visualización
         """
+        logger.info(f"Plotting correlation matrix (method={method}, backend={backend})")
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
         self.save_fig = save_fig 
         filename = filename or "matriz_correlacion"
 
-        # Resolver datos
         data, source = self._resolve_data(data)
         
         if not isinstance(data, pd.DataFrame):
@@ -770,7 +730,6 @@ class UtilsStats:
         else:
             data = data.select_dtypes(include=['float64', 'int64'])
         
-        # Calcular matriz de correlación
         corr_matrix = data.corr(method=method)
         
         if backend == 'seaborn':
@@ -811,7 +770,6 @@ class UtilsStats:
                 height=figsize[1]*100
             )
         
-        # Guardar figura
         if save_fig:
             if backend == 'seaborn':
                 self._save_figure(fig, filename)
@@ -842,12 +800,12 @@ class UtilsStats:
         data : DataFrame, str o Path
             Datos o ruta al archivo
         """
+        logger.info(f"Plotting scatter matrix (backend={backend})")
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
         self.save_fig = save_fig 
         filename = filename or "scatter_matrix"
         
-        # Resolver datos
         data, source = self._resolve_data(data)
         
         if not isinstance(data, pd.DataFrame):
@@ -870,7 +828,6 @@ class UtilsStats:
             fig, ax = plt.subplots(figsize=figsize)
             scatter_matrix(data, ax=ax, **kwargs)
         
-        # Guardar figura
         if save_fig:
             if backend in ['seaborn', 'pandas']:
                 self._save_figure(fig.figure if hasattr(fig, 'figure') else fig, filename)
@@ -903,10 +860,9 @@ class UtilsStats:
         
         Ahora acepta rutas de archivos
         """
-        # Resolver datos
+        logger.info(f"Plotting distribution with CI (method={ci_method}, level={confidence_level})")
         data, source = self._resolve_data(data, column)
         
-        # ======= PREPARACIÓN =======
         if isinstance(data, pd.DataFrame):
             if column is None:
                 raise ValueError("Debe especificar 'column' cuando data es DataFrame")
@@ -922,20 +878,14 @@ class UtilsStats:
         data_array = plot_data.values
         filename = filename or f"distribucion_ci_{data_name.lower().replace(' ', '_')}"
 
-        # Estadísticas
         ci_result = self.calculate_confidence_intervals(data_array, confidence_level=confidence_level, method=ci_method)
         normality_result = self.check_normality(data_array)
 
-        # KDE
         kde = stats.gaussian_kde(data_array)
         x_range = np.linspace(data_array.min(), data_array.max(), 300)
 
-        # ======= FIGURA =======
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize or (14, 6))
 
-        # ============================================================
-        # PANEL 1: HISTOGRAMA + KDE
-        # ============================================================
         ax1.hist(data_array, bins=bins, density=True,
                 color='skyblue', edgecolor='black', alpha=0.7)
 
@@ -950,22 +900,14 @@ class UtilsStats:
         ax1.legend()
         ax1.grid(alpha=0.3)
 
-        # ============================================================
-        # PANEL 2: KDE + INTERVALO DE CONFIANZA
-        # ============================================================
-
-        # KDE pura
         ax2.plot(x_range, kde(x_range), 'r-', linewidth=2, label='KDE')
 
-        # Intervalo de Confianza
         ax2.axvspan(ci_result["ci_lower"], ci_result["ci_upper"],
                     color='orange', alpha=0.3,
                     label=f"IC {confidence_level*100:.0f}%")
 
-        # Media
         ax2.axvline(ci_result["mean"], color='red', linewidth=2)
 
-        # Distribución normal teórica (si aplica)
         if normality_result["is_normal"]:
             normal_y = stats.norm.pdf(x_range, ci_result['mean'], ci_result['std'])
             ax2.plot(x_range, normal_y, 'g--', linewidth=2, alpha=0.7,
@@ -977,7 +919,6 @@ class UtilsStats:
         ax2.legend()
         ax2.grid(alpha=0.3)
 
-        # ======= CUADRO DE INFO =======
         info = (
             f"Estadísticas de {data_name}:\n"
             f"• n = {ci_result['n']}\n"
@@ -995,7 +936,6 @@ class UtilsStats:
 
         plt.tight_layout()
 
-        # Guardado opcional
         self.save_fig = save_fig
         if save_fig:
             self._save_figure(fig, filename)
@@ -1003,7 +943,32 @@ class UtilsStats:
 
     # ============= MÉTODOS UTILITARIOS ADICIONALES =============
 
-    def get_descriptive_stats(self, data, column=None):
+    def get_descriptive_stats(self, data: Union[pd.DataFrame, pd.Series, np.ndarray, list], column: Optional[str] = None, columns: Optional[List[str]] = None) -> dict:
+        """
+        Estadísticas descriptivas completas
+
+        Parameters:
+        -----------
+        data : DataFrame, Series, ndarray o list
+            Datos a analizar
+        column : str, optional
+            Nombre de la columna a analizar (si data es DataFrame)
+        columns : list of str, optional
+            Lista de columnas a analizar (si data es DataFrame). Si se especifica,
+            retorna un dict con las estadísticas para cada columna.
+
+        Returns:
+        --------
+        dict
+            Diccionario con las estadísticas descriptivas
+        """
+        if columns is not None:
+            if not isinstance(data, pd.DataFrame):
+                raise ValueError("El parámetro 'columns' requiere un DataFrame")
+            result: Dict[str, dict] = {}
+            for col in columns:
+                result[col] = self.get_descriptive_stats(data, column=col)
+            return result
 
         if isinstance(data, pd.DataFrame):
             if column is None:
@@ -1024,21 +989,21 @@ class UtilsStats:
 
         return {
             'count': len(data_clean),
-            'mean': np.mean(data_clean),
-            'median': np.median(data_clean),
+            'mean': float(np.mean(data_clean)),
+            'median': float(np.median(data_clean)),
             'mode': mode_result.mode,
-            'std': np.std(data_clean, ddof=1),
-            'variance': np.var(data_clean, ddof=1),
-            'min': np.min(data_clean),
-            'max': np.max(data_clean),
-            'q1': np.percentile(data_clean, 25),
-            'q3': np.percentile(data_clean, 75),
-            'iqr': np.percentile(data_clean, 75) - np.percentile(data_clean, 25),
-            'skewness': stats.skew(data_clean),
-            'kurtosis': stats.kurtosis(data_clean),
-            'range': np.max(data_clean) - np.min(data_clean)
+            'std': float(np.std(data_clean, ddof=1)),
+            'variance': float(np.var(data_clean, ddof=1)),
+            'min': float(np.min(data_clean)),
+            'max': float(np.max(data_clean)),
+            'q1': float(np.percentile(data_clean, 25)),
+            'q3': float(np.percentile(data_clean, 75)),
+            'iqr': float(np.percentile(data_clean, 75) - np.percentile(data_clean, 25)),
+            'skewness': float(stats.skew(data_clean)),
+            'kurtosis': float(stats.kurtosis(data_clean)),
+            'range': float(np.max(data_clean) - np.min(data_clean))
         }
-    def help(self):
+    def help(self) -> None:
         """
         Muestra ayuda completa de la clase DescriptiveStats
         """

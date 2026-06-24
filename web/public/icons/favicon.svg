@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0d0d18"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f6ad55"/>
+      <stop offset="100%" style="stop-color:#e8903a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="32" height="32" rx="7" ry="7" fill="url(#bg)"/>
+
+  <!-- Subtle border -->
+  <rect width="32" height="32" rx="7" ry="7" fill="none" stroke="#f6ad55" stroke-width="1" opacity="0.35"/>
+
+  <!-- SLX text — fitted tightly -->
+  <text
+    x="16"
+    y="22"
+    font-family="'Arial Black', 'Helvetica Neue', sans-serif"
+    font-weight="900"
+    font-size="12.5"
+    fill="url(#textGrad)"
+    text-anchor="middle"
+    letter-spacing="-0.5"
+  >SLX</text>
+</svg>

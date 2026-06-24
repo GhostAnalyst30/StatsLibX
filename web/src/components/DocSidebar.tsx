@@ -13,6 +13,7 @@ import {
   Eye,
   Shell,
 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const sections = [
   {
@@ -52,6 +53,7 @@ export function DocSidebar() {
   return (
     <aside className="w-60 shrink-0 hidden lg:block">
       <div className="sticky top-20 py-6 pr-4 space-y-6">
+        <BrandLogo size={24} href="/" className="px-3 mb-2" />
         {sections.map((group) => (
           <div key={group.label}>
             <h4 className="font-syne text-xs font-semibold text-muted uppercase tracking-widest mb-2 px-3">

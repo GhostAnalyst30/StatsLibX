@@ -61,7 +61,7 @@ export default function ComputationalStatsPage() {
         title="ComputationalStats"
         description="Computational statistical methods including regression, interpolation, bootstrapping, and clustering algorithms for advanced data analysis."
         icon={<Cpu className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
@@ -74,7 +74,7 @@ export default function ComputationalStatsPage() {
           </p>
           <div className="border border-border rounded-lg p-4 bg-black/20">
             <p className="text-sm font-mono text-muted mb-1">
-              <span className="text-accent">from</span> statslib <span className="text-accent">import</span> ComputationalStats
+              <span className="text-accent">from</span> statslibx <span className="text-accent">import</span> ComputationalStats
             </p>
             <p className="text-sm font-mono text-muted">
               cs = ComputationalStats(data)

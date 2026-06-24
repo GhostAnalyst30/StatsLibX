@@ -9,7 +9,7 @@ export default function UtilsStatsDocs() {
         title="UtilsStats"
         description="A utility class providing helper functions for data loading, validation, formatting, statistical testing, outlier detection, effect size calculation, and visualisation configuration. Complements the core statistical classes with practical data science utilities."
         icon={<Wrench className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
@@ -38,7 +38,7 @@ export default function UtilsStatsDocs() {
               { name: "backend", type: "'matplotlib' | 'seaborn' | 'plotly'", description: "Name of the plotting backend to use globally." },
             ]}
             returns="None"
-            example={`from stats_lib import UtilsStats
+            example={`from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -57,7 +57,7 @@ utils.set_plot_backend("seaborn")`}
               { name: "figsize", type: "tuple[int, int]", description: "Figure dimensions as (width, height) in inches." },
             ]}
             returns="None"
-            example={`from stats_lib import UtilsStats
+            example={`from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -76,7 +76,7 @@ utils.set_default_figsize((12, 6))`}
               { name: "figures_dir", type: "str", description: "Directory path where figures will be saved.", default: "'figures'" },
             ]}
             returns="None"
-            example={`from stats_lib import UtilsStats
+            example={`from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -103,7 +103,7 @@ utils.set_save_fig_options(
               { name: "**kwargs", type: "Any", description: "Additional keyword arguments passed to the underlying pandas reader (e.g. sep, header, sheet_name)." },
             ]}
             returns="pd.DataFrame"
-            example={`from stats_lib import UtilsStats
+            example={`from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -129,7 +129,7 @@ df_json = utils.load_data("data.json")`}
             ]}
             returns="pd.DataFrame"
             example={`import numpy as np
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -161,7 +161,7 @@ df = utils.validate_dataframe(data)`}
               { name: "scientific", type: "bool", description: "Whether to use scientific notation.", default: "False" },
             ]}
             returns="str"
-            example={`from stats_lib import UtilsStats
+            example={`from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -191,7 +191,7 @@ print(utils.format_number(1234.56789))  # "1234.567890"`}
             ]}
             returns="dict"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -215,7 +215,7 @@ print(result)
             ]}
             returns="dict"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -251,7 +251,7 @@ print(ci_boot)`}
             ]}
             returns="pd.Series (boolean mask)"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -289,7 +289,7 @@ print(df[outliers_if])`}
             ]}
             returns="dict"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -329,7 +329,7 @@ print(result_g)`}
             ]}
             returns="dict"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -372,7 +372,7 @@ print(all_stats)`}
             ]}
             returns="matplotlib.figure.Figure | plotly.graph_objects.Figure"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -403,7 +403,7 @@ fig = utils.plot_distribution(df, column="values", plot_type="box")`}
             ]}
             returns="matplotlib.figure.Figure | plotly.graph_objects.Figure"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -435,7 +435,7 @@ fig = utils.plot_correlation_matrix(df, method="spearman", triangular=True)`}
             ]}
             returns="matplotlib.figure.Figure | plotly.graph_objects.Figure"
             example={`import pandas as pd
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 
@@ -469,7 +469,7 @@ fig = utils.plot_scatter_matrix(df, columns=["height", "weight"])`}
             returns="matplotlib.figure.Figure | plotly.graph_objects.Figure"
             example={`import pandas as pd
 import numpy as np
-from stats_lib import UtilsStats
+from statslibx import UtilsStats
 
 utils = UtilsStats()
 

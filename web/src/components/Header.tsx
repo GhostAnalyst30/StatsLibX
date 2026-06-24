@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navItems = [
   { href: "/", label: "Home", icon: BarChart3 },
@@ -63,12 +64,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 glass">
       <div className="container-main flex items-center justify-between h-14">
-        <Link
-          href="/"
-          className="font-syne font-extrabold text-base text-white tracking-tight no-underline"
-        >
-          Stats<span className="text-accent">LibX</span>
-        </Link>
+        <BrandLogo size={28} />
 
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) =>

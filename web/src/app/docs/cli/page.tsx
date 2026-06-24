@@ -16,7 +16,8 @@ export default function CliDocs() {
         <p className="text-sm text-muted leading-relaxed mb-4">
           The StatsLibX CLI provides fast, terminal-based access to the library's core
           functionality. After installation, the <code className="code-inline">statslibx</code> command
-          is available globally in your shell. Every command follows the same structure:
+          is available globally in your shell. The internals now use dataclasses for structured
+          configuration (v0.2.9). Every command follows the same structure:
         </p>
         <div className="code-block">
           <div className="code-header">
@@ -360,7 +361,7 @@ export default function CliDocs() {
 
 # Output:
 # ╔══════════════════════════════════════════════╗
-# ║         Welcome to StatsLibX v0.2.8       ║
+# ║         Welcome to StatsLibX v0.2.9       ║
 # ║   Statistical Analysis for Data Science    ║
 # ╚══════════════════════════════════════════════╝
 #

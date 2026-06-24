@@ -9,16 +9,19 @@ export default function DescriptiveStatsDocs() {
         title="DescriptiveStats"
         description="A class for performing univariate and multivariate descriptive statistical analysis. Provides tools for exploratory data analysis, measures of central tendency, dispersion, distribution shape, and linear regression."
         icon={<BarChart3 className="w-6 h-6" />}
-        version="0.2.8"
+        version="0.2.9"
       />
 
       <section className="mb-12">
         <h2 className="section-title">Class Overview</h2>
         <p className="text-sm text-muted leading-relaxed">
           The <code className="code-inline">DescriptiveStats</code> class is the core module for descriptive
-          statistical analysis. It accepts <code className="code-inline">pandas.DataFrame</code> or{" "}
-          <code className="code-inline">numpy.ndarray</code> as input and provides a rich set of methods
-          for understanding your data.
+          statistical analysis. It accepts <code className="code-inline">pandas.DataFrame</code>,{" "}
+          <code className="code-inline">polars.DataFrame</code>, or{" "}
+          <code className="code-inline">numpy.ndarray</code> as input with automatic backend detection,
+          and provides a rich set of methods for understanding your data.
+          A <code className="code-inline">backend</code> property exposes the active backend
+          (<code className="code-inline">"pandas"</code> or <code className="code-inline">"polars"</code>).
         </p>
       </section>
 
@@ -34,12 +37,12 @@ export default function DescriptiveStatsDocs() {
             <span className="text-xs font-mono text-muted ml-2">Constructor signature</span>
           </div>
           <pre>
-            <code>DescriptiveStats(data: pd.DataFrame | np.ndarray, lang: Literal[&apos;es-ES&apos;, &apos;en-US&apos;] = &apos;es-ES&apos;)</code>
+            <code>DescriptiveStats(data: pd.DataFrame | pl.DataFrame | np.ndarray, lang: Literal[&apos;es-ES&apos;, &apos;en-US&apos;] = &apos;es-ES&apos;)</code>
           </pre>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="px-2.5 py-1 rounded-md bg-white/5 border border-border text-xs font-mono text-muted">
-            data : pd.DataFrame | np.ndarray — Input data for analysis
+            data : pd.DataFrame | pl.DataFrame | np.ndarray — Input data for analysis (auto-detects pandas/polars)
           </span>
           <span className="px-2.5 py-1 rounded-md bg-white/5 border border-border text-xs font-mono text-muted">
             lang : Literal[&apos;es-ES&apos;, &apos;en-US&apos;] — Language for output labels (default: &apos;es-ES&apos;)
@@ -59,7 +62,7 @@ export default function DescriptiveStatsDocs() {
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -81,7 +84,7 @@ print(means)`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 100], "B": [10, 20, 30, 40, 50]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -99,7 +102,7 @@ print(f"Median of A: {median_a}")`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 1, 2, 3, 3, 3]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -117,7 +120,7 @@ print(f"Mode of A: {mode_a}")`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -135,7 +138,7 @@ print(f"Variance of A: {var_a}")`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -153,7 +156,7 @@ print(f"Std of A: {std_a}")`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 100]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -171,7 +174,7 @@ print(f"Skewness of A: {skew}")  # Positive right skew`}
             ]}
             returns="float | pd.Series"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -190,7 +193,7 @@ print(f"Kurtosis of A: {kurt}")`}
             ]}
             returns="float | pd.Series | pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -214,7 +217,7 @@ print(quartiles)`}
             ]}
             returns="pd.Series (boolean mask)"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [10, 12, 11, 13, 100, 11, 12]})
 ds = DescriptiveStats(df, lang="en-US")
@@ -237,7 +240,7 @@ print(df[outliers_iqr])`}
             returns="pd.DataFrame"
             note="Pearson measures linear correlation, Spearman measures monotonic rank correlation, and Kendall measures ordinal association."
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({
     "A": [1, 2, 3, 4, 5],
@@ -260,7 +263,7 @@ print(corr_pearson)`}
             ]}
             returns="pd.DataFrame"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({
     "A": [1, 2, 3, 4, 5],
@@ -283,7 +286,7 @@ print(cov)`}
             ]}
             returns="DescriptiveSummary"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({
     "Age": [23, 45, 31, 47, 52, 36, 29],
@@ -311,7 +314,7 @@ print(summary.to_styled_df())`}
             ]}
             returns="LinearRegressionResult"
             example={`import pandas as pd
-from stats_lib import DescriptiveStats
+from statslibx import DescriptiveStats
 
 df = pd.DataFrame({
     "Hours": [1, 2, 3, 4, 5, 6, 7],
