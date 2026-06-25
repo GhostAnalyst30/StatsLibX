@@ -9,7 +9,7 @@ export default function UtilsStatsDocs() {
         title="UtilsStats"
         description="A utility class providing helper functions for data loading, validation, formatting, statistical testing, outlier detection, effect size calculation, and visualisation configuration. Complements the core statistical classes with practical data science utilities."
         icon={<Wrench className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">

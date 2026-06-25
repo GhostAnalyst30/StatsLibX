@@ -61,7 +61,7 @@ export default function ComputationalStatsPage() {
         title="ComputationalStats"
         description="Computational statistical methods including regression, interpolation, bootstrapping, and clustering algorithms for advanced data analysis."
         icon={<Cpu className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">

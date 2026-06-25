@@ -10,7 +10,7 @@ export default function ViewXDocs() {
         title="ViewX"
         description="Visualization and reporting integration layer. ViewX provides HTML report generation, slide deck creation, comprehensive reporting, and data matrix visualization — all integrated with StatsLibX."
         icon={<Eye className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">

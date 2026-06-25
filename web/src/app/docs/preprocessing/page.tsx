@@ -9,7 +9,7 @@ export default function PreprocessingDocs() {
         title="Preprocessing"
         description="A class for data preprocessing and cleaning. Provides methods for null detection, missing value handling, scaling, standardization, filtering, outlier detection, type conversion, and comprehensive data quality reporting."
         icon={<Filter className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">
@@ -341,7 +341,7 @@ print(converted_all.dtypes)`}
           <MethodCard
             name="clean_data"
             signature="clean_data(handle_missing: bool = False, missing_strategy: str = 'mean', fill_value=None, remove_duplicates: bool = False, convert_dtypes: bool = False, detect_outliers: bool = False, remove_outliers: bool = False, outlier_method: str = 'iqr', z_thresh: float = 3.0, scale: bool = False, scaling_method: str = 'standard', log_transform: bool = False, sqrt_transform: bool = False, drop_columns: list = None, keep_columns: list = None, analizer: bool = True, text_analizer: bool = False)"
-            description="Comprehensive data cleaning pipeline (fully implemented in v0.2.9). Handles missing values, removes duplicates, converts dtypes, detects and removes outliers, scales/normalizes data, applies log or sqrt transformations, and drops or keeps specific columns in a single call."
+            description="Comprehensive data cleaning pipeline (fully implemented in v0.3.0). Handles missing values, removes duplicates, converts dtypes, detects and removes outliers, scales/normalizes data, applies log or sqrt transformations, and drops or keeps specific columns in a single call."
             parameters={[
               { name: "handle_missing", type: "bool", description: "Whether to handle missing values.", default: "False" },
               { name: "missing_strategy", type: "str", description: "Strategy for missing values: 'mean', 'median', 'mode', 'drop', 'constant'.", default: "'mean'" },

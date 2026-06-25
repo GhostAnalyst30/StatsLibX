@@ -1,4 +1,4 @@
-"""Smoke tests for statslibx v0.2.9."""
+"""Smoke tests for statslibx v0.3.0."""
 
 import importlib.util
 
@@ -24,7 +24,7 @@ requires_polars = pytest.mark.skipif(
 
 
 def test_version():
-    assert __version__ == "0.2.9"
+    assert __version__ == "0.3.0"
 
 
 def test_backend_pandas():

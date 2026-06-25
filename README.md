@@ -26,11 +26,11 @@
 
 **StatsLibX** es una librería de Python moderna para análisis estadístico y ciencia de datos. Ofrece una API clara basada en clases, soporte dual **pandas / polars**, datasets embebidos, preprocesamiento, estadística computacional y un puente de reportes con **ViewX**.
 
-> **Versión actual:** `0.2.9` · **Autor:** Emmanuel Ascendra
+> **Versión actual:** `0.3.0` · **Autor:** Emmanuel Ascendra
 
 ---
 
-## Novedades en v0.2.9
+## Novedades en v0.3.0
 
 | Área | Cambio |
 |------|--------|
@@ -40,7 +40,7 @@
 | **Preprocessing** | `clean_data()` ampliado (escalado, outliers, transforms) y `change_dtypes()` con polars |
 | **ViewX** | `to_report_data()` — serializa resultados statslibx para `Report` / `HTML` |
 | **Packaging** | `pyproject.toml`, extras opcionales, CLI `statslibx`, marcador `py.typed` |
-| **Docs web** | Sitio Next.js v0.2.9, playground Pyodide alineado con la API real |
+| **Docs web** | Sitio Next.js v0.3.0, playground Pyodide alineado con la API real |
 
 ---
 
@@ -289,5 +289,5 @@ Abre un [issue](https://github.com/GhostAnalyst30/StatsLibX/issues) o un pull re
 ---
 
 <p align="center">
-  Desarrollado por <strong>Emmanuel Ascendra</strong> · StatsLibX v0.2.9 · MIT License
+  Desarrollado por <strong>Emmanuel Ascendra</strong> · StatsLibX v0.3.0 · MIT License
 </p>

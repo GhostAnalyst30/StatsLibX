@@ -109,7 +109,7 @@ const stats = [
   { icon: Layers, value: "6+", label: "Modules", color: "text-accent" },
   { icon: Hash, value: "40+", label: "Methods", color: "text-accent2" },
   { icon: Database, value: "6", label: "Built-in Datasets", color: "text-accent3" },
-  { icon: Package, value: "v0.2.9", label: "Version", color: "text-accent" },
+  { icon: Package, value: "v0.3.0", label: "Version", color: "text-accent" },
   { icon: Eye, value: "ViewX", label: "Integration", color: "text-accent2" },
 ];
 
@@ -162,7 +162,7 @@ export default function HomePage() {
           <motion.div variants={fadeUp} className="flex justify-center mb-4">
             <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
               <Package className="w-3 h-3" />
-              v0.2.9
+              v0.3.0
             </span>
           </motion.div>
 

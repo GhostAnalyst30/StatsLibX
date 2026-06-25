@@ -9,7 +9,7 @@ export default function DescriptiveStatsDocs() {
         title="DescriptiveStats"
         description="A class for performing univariate and multivariate descriptive statistical analysis. Provides tools for exploratory data analysis, measures of central tendency, dispersion, distribution shape, and linear regression."
         icon={<BarChart3 className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">

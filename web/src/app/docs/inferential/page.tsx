@@ -9,7 +9,7 @@ export default function InferentialStatsDocs() {
         title="InferentialStats"
         description="A class for performing inferential statistical analysis, including hypothesis tests, confidence intervals, normality tests, and more."
         icon={<FlaskConical className="w-6 h-6" />}
-        version="0.2.9"
+        version="0.3.0"
       />
 
       <section className="mb-12">
@@ -23,7 +23,7 @@ export default function InferentialStatsDocs() {
           across parametric and non-parametric methods. A <code className="code-inline">backend</code>
           property exposes the active backend. All methods return a <code className="code-inline">TestResult</code>
           object with a consistent interface for inspecting statistics, p-values, and significance.
-           v0.2.9 also fixes an ndarray handling bug in internal data conversion.
+           v0.3.0 also fixes an ndarray handling bug in internal data conversion.
         </p>
       </section>
 

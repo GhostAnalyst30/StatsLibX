@@ -10,7 +10,7 @@ export function Footer() {
           <BrandLogo size={36} href="/" className="justify-center" />
         </div>
         <p className="text-sm text-muted">
-          Developed by Emmanuel Ascendra &middot; v0.2.9
+          Developed by Emmanuel Ascendra &middot; v0.3.0
         </p>
         <div className="flex items-center justify-center gap-5 mt-4">
           <Link
