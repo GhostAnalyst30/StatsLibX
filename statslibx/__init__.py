@@ -25,6 +25,7 @@ logger.setLevel(logging.WARNING)
 
 # ── Public API exports ────────────────────────────────────────────────
 
+from .backend import Backend, BackendType, resolve_backend
 from .descriptive import DescriptiveStats, DescriptiveSummary
 from .inferential import InferentialStats, TestResult
 from .computational import ComputationalStats
@@ -45,6 +46,9 @@ __all__ = [
     "Preprocessing",
     "DescriptiveSummary",
     "TestResult",
+    "Backend",
+    "BackendType",
+    "resolve_backend",
     "load_dataset",
     "generate_dataset",
     "HTML",
@@ -73,5 +77,5 @@ def welcome() -> None:
     print("Modules:")
     print("  - datasets           Built-in datasets and generators")
     print()
-    print(f"Docs: https://ghostanalyst30.github.io/StatsLibX/")
-    print(f"Web:  https://ghostanalyst30.github.io/StatsLibX/web/")
+    print(f"Docs: https://github.com/GhostAnalyst30/StatsLibX")
+    print(f"Web:  https://statslibx.vercel.app/")

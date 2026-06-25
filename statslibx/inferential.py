@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 import numpy as np
 import pandas as pd
-from typing import Union, Literal, Dict, Any, Tuple
+from typing import Union, Literal, Dict, Any, Tuple, Optional
 from datetime import datetime
 from scipy import stats
 
@@ -80,17 +80,25 @@ class InferentialStats:
         Display a detailed help guide for the InferentialStats class and its methods.
     """
     
-    def __init__(self, data: Union[pd.DataFrame, np.ndarray],
-                lang: Literal['es-ES', 'en-US'] = 'es-ES'):
+    def __init__(
+        self,
+        data: Union[pd.DataFrame, np.ndarray],
+        backend: Optional[Literal["pandas", "polars"]] = None,
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ):
         """
-        Initialize DataFrame
+        Initialize DataFrame.
 
-        Parameters:
-        -----------
-        data : DataFrame o ndarray
-            Data to analyze
+        Parameters
+        ----------
+        data : DataFrame or ndarray
+            Data to analyze.
+        backend : {'pandas', 'polars'}, optional
+            Data engine to use. Auto-detects from input type when None.
+        lang : {'es-ES', 'en-US'}, default 'es-ES'
+            Language for outputs.
         """
-        self._backend = Backend(data)
+        self._backend = Backend(data, backend=backend)
         self.data = self._backend.df
         self.lang = lang
         self._numeric_cols = self._backend.numeric_columns()
@@ -109,11 +117,20 @@ class InferentialStats:
     ) -> "InferentialStats":
         """Load data from a file and return an InferentialStats instance."""
         from .datasets import load_dataset
-        return cls(load_dataset(path, backend=backend, sep=sep), lang=lang)
+        return cls(
+            load_dataset(path, backend=backend, sep=sep),
+            backend=backend,
+            lang=lang,
+        )
 
     @property
     def backend(self):
         return self._backend.type
+
+    @property
+    def backend_engine(self) -> Backend:
+        """Return the internal Backend wrapper."""
+        return self._backend
 
     def numeric_columns(self) -> list:
         """Return list of numeric column names."""

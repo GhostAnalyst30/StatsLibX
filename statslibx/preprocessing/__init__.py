@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
 
 import numpy as np
 import pandas as pd
@@ -19,13 +19,46 @@ logger = logging.getLogger(__name__)
 
 class Preprocessing:
 
-    def __init__(self, data):
-        self._backend = Backend(data)
+    def __init__(
+        self,
+        data,
+        backend: Optional[Literal["pandas", "polars"]] = None,
+    ):
+        """
+        Initialize Preprocessing pipeline.
+
+        Parameters
+        ----------
+        data : pandas DataFrame, polars DataFrame, or array-like
+            Input dataset.
+        backend : {'pandas', 'polars'}, optional
+            Data engine to use. Auto-detects from input type when None.
+        """
+        self._backend = Backend(data, backend=backend)
         self.data = self._backend.df
         self.columns = list(self._backend.columns)
 
+    @classmethod
+    def from_file(
+        cls,
+        path: str,
+        backend: str = "pandas",
+        sep: str = ",",
+    ) -> "Preprocessing":
+        """Load data from a file and return a Preprocessing instance."""
+        from ..datasets import load_dataset
+        return cls(
+            load_dataset(path, backend=backend, sep=sep),
+            backend=backend,
+        )
+
     @property
     def backend(self):
+        return self._backend.type
+
+    @property
+    def backend_engine(self) -> Backend:
+        """Return the internal Backend wrapper."""
         return self._backend
 
     # ------------------------------------------------------------------
@@ -353,8 +386,11 @@ class Preprocessing:
 
         if drop_duplicates:
             before = self._backend.shape[0]
-            df = self._backend.df.drop_duplicates()
-            self._backend = Backend(df)
+            if self._backend.is_pandas():
+                df = self._backend.df.drop_duplicates()
+            else:
+                df = self._backend.df.unique()
+            self._backend = Backend(df, backend=self._backend.type)
             after = self._backend.shape[0]
             removed = before - after
             if removed:
@@ -378,7 +414,7 @@ class Preprocessing:
                 else:
                     df = self._backend.df
 
-                self._backend = Backend(df)
+                self._backend = Backend(df, backend=self._backend.type)
                 logger.info("Dropped rows with >50% missing values")
 
             if handle_missing in ("auto", "fill") or missing_strategy in ("mean", "median", "mode", "constant", "drop"):

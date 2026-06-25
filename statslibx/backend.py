@@ -22,23 +22,71 @@ logger = logging.getLogger(__name__)
 
 BackendType = Literal["pandas", "polars"]
 
+_POLARS_IMPORT_ERROR = (
+    "Backend 'polars' requires the polars package. "
+    "Install with: pip install polars"
+)
+
+
+def _require_polars() -> None:
+    if not _POLARS_AVAILABLE:
+        raise ImportError(_POLARS_IMPORT_ERROR)
+
+
+def _detect_source(data: Any) -> tuple[Any, BackendType]:
+    """Return raw dataframe and detected backend type from arbitrary input."""
+    if isinstance(data, Backend):
+        return data._data, data._type
+    if isinstance(data, pd.DataFrame):
+        return data, "pandas"
+    if _POLARS_AVAILABLE and isinstance(data, pl.DataFrame):
+        return data, "polars"
+    return pd.DataFrame(data), "pandas"
+
+
+def _convert_to_backend(raw_data: Any, target: BackendType) -> Any:
+    """Convert raw data to the requested backend dataframe type."""
+    if target == "pandas":
+        if isinstance(raw_data, pd.DataFrame):
+            return raw_data
+        if _POLARS_AVAILABLE and isinstance(raw_data, pl.DataFrame):
+            return raw_data.to_pandas()
+        return pd.DataFrame(raw_data)
+
+    _require_polars()
+    if _POLARS_AVAILABLE and isinstance(raw_data, pl.DataFrame):
+        return raw_data
+    if isinstance(raw_data, pd.DataFrame):
+        return pl.from_pandas(raw_data)
+    return pl.from_pandas(pd.DataFrame(raw_data))
+
+
+def resolve_backend(data: Any, backend: BackendType | None = None) -> "Backend":
+    """
+    Resolve input data to a Backend instance.
+
+    When ``backend`` is None, auto-detect from input type.
+    When explicit, convert to the requested engine.
+    """
+    raw_data, detected = _detect_source(data)
+    target: BackendType = backend if backend is not None else detected
+
+    if target == "polars":
+        _require_polars()
+
+    inst = Backend.__new__(Backend)
+    inst._type = target
+    inst._data = _convert_to_backend(raw_data, target)
+    return inst
+
 
 class Backend:
     """Unified wrapper for pandas and polars DataFrames."""
 
-    def __init__(self, data: Any):
-        if isinstance(data, Backend):
-            self._type = data._type
-            self._data = data._data
-        elif isinstance(data, pd.DataFrame):
-            self._type = "pandas"
-            self._data = data
-        elif _POLARS_AVAILABLE and isinstance(data, pl.DataFrame):
-            self._type = "polars"
-            self._data = data
-        else:
-            self._type = "pandas"
-            self._data = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
+    def __init__(self, data: Any, backend: BackendType | None = None):
+        resolved = resolve_backend(data, backend)
+        self._type = resolved._type
+        self._data = resolved._data
 
     @property
     def type(self) -> BackendType:
@@ -48,10 +96,25 @@ class Backend:
     def df(self):
         return self._data
 
+    @df.setter
+    def df(self, value) -> None:
+        self._data = value
+
     def to_pandas(self) -> pd.DataFrame:
         if self._type == "polars":
             return self._data.to_pandas()
         return self._data
+
+    def to_polars(self):
+        """Return data as a polars DataFrame."""
+        if self._type == "polars":
+            return self._data
+        _require_polars()
+        return pl.from_pandas(self._data)
+
+    def convert_to(self, backend: BackendType) -> "Backend":
+        """Return a new Backend using the requested engine."""
+        return resolve_backend(self, backend=backend)
 
     def is_pandas(self) -> bool:
         return self._type == "pandas"
@@ -67,7 +130,7 @@ class Backend:
 
     @property
     def columns(self) -> list[str]:
-        return self._data.columns.tolist()
+        return self._data.columns
 
     # ── column dtypes ──────────────────────────────────────────────────
 
@@ -256,7 +319,9 @@ class Backend:
     # ── copy ───────────────────────────────────────────────────────────
 
     def copy(self) -> Backend:
-        return Backend(self._data.copy())
+        if self._type == "polars":
+            return Backend(self._data.clone(), backend=self._type)
+        return Backend(self._data.copy(), backend=self._type)
 
     def __repr__(self) -> str:
         return f"Backend(type={self._type}, shape={self.shape})"

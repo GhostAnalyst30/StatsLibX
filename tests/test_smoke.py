@@ -1,12 +1,26 @@
 """Smoke tests for statslibx v0.2.9."""
 
+import importlib.util
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from statslibx import DescriptiveStats, InferentialStats, ComputationalStats, __version__
-from statslibx.backend import Backend
+from statslibx import (
+    ComputationalStats,
+    DescriptiveStats,
+    InferentialStats,
+    Preprocessing,
+    __version__,
+)
+from statslibx.backend import Backend, resolve_backend
 from statslibx.datasets import load_iris, generate_dataset
+
+POLARS_INSTALLED = importlib.util.find_spec("polars") is not None
+requires_polars = pytest.mark.skipif(
+    not POLARS_INSTALLED,
+    reason="polars not installed",
+)
 
 
 def test_version():
@@ -20,10 +34,7 @@ def test_backend_pandas():
     assert backend.mean("x") == 2.0
 
 
-@pytest.mark.skipif(
-    not __import__("importlib").util.find_spec("polars"),
-    reason="polars not installed",
-)
+@requires_polars
 def test_backend_polars():
     import polars as pl
 
@@ -31,6 +42,42 @@ def test_backend_polars():
     backend = Backend(df)
     assert backend.type == "polars"
     assert backend.mean("x") == 2.0
+
+
+@requires_polars
+def test_backend_force_pandas_from_polars():
+    import polars as pl
+
+    df = pl.DataFrame({"x": [1, 2, 3]})
+    backend = Backend(df, backend="pandas")
+    assert backend.type == "pandas"
+    assert isinstance(backend.df, pd.DataFrame)
+
+
+@requires_polars
+def test_backend_force_polars_from_pandas():
+    df = pd.DataFrame({"x": [1, 2, 3]})
+    backend = Backend(df, backend="polars")
+    assert backend.type == "polars"
+    import polars as pl
+
+    assert isinstance(backend.df, pl.DataFrame)
+
+
+@requires_polars
+def test_backend_copy_preserves_type():
+    df = pd.DataFrame({"x": [1, 2, 3]})
+    backend = Backend(df, backend="polars")
+    copied = backend.copy()
+    assert copied.type == "polars"
+    assert copied.mean("x") == 2.0
+
+
+@requires_polars
+def test_resolve_backend_override():
+    df = pd.DataFrame({"x": [1, 2, 3]})
+    backend = resolve_backend(df, backend="polars")
+    assert backend.type == "polars"
 
 
 def test_load_iris_pandas():
@@ -44,6 +91,50 @@ def test_descriptive_stats_from_file(tmp_path):
     pd.DataFrame({"value": [1, 2, 3, 4, 5]}).to_csv(csv_path, index=False)
     stats = DescriptiveStats.from_file(str(csv_path))
     assert stats.mean("value") == 3.0
+
+
+@requires_polars
+def test_descriptive_stats_backend_override():
+    df = pd.DataFrame({"value": [1, 2, 3, 4, 5]})
+    stats = DescriptiveStats(df, backend="polars")
+    assert stats.backend == "polars"
+    assert stats.mean("value") == 3.0
+
+
+@requires_polars
+def test_inferential_stats_backend_override():
+    df = pd.DataFrame({"value": [1.0, 2.0, 3.0, 4.0, 5.0]})
+    stats = InferentialStats(df, backend="polars")
+    assert stats.backend == "polars"
+    result = stats.t_test_1sample("value", popmean=3.0)
+    assert result.pvalue is not None
+
+
+@requires_polars
+def test_computational_stats_backend_override():
+    df = pd.DataFrame({"x": [1.0, 2.0, 3.0, 4.0, 5.0], "y": [2.0, 4.0, 5.0, 4.0, 5.0]})
+    stats = ComputationalStats(df, backend="polars")
+    assert stats.backend == "polars"
+    model = stats.regression("x", "y")
+    assert model.summary()["metrics"]["R2"] >= 0
+
+
+@requires_polars
+def test_preprocessing_backend_override():
+    import polars as pl
+
+    df = pd.DataFrame({"x": [1, 2, None, 4], "group": ["A", "A", "B", "B"]})
+    prep = Preprocessing(df, backend="polars")
+    assert prep.backend == "polars"
+    assert isinstance(prep.data, pl.DataFrame)
+
+
+@requires_polars
+def test_preprocessing_preserves_backend_after_clean():
+    df = pd.DataFrame({"x": [1, 2, None, 4], "group": ["A", "A", "B", "B"]})
+    prep = Preprocessing(df, backend="polars")
+    prep.clean_data(handle_missing="fill", missing_strategy="mean")
+    assert prep.backend == "polars"
 
 
 def test_generate_dataset():

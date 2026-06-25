@@ -208,8 +208,9 @@ class DescriptiveStats:
         Decimal separator for file input.
     thousand : str, optional
         Thousand separator for file input.
-    backend : str, optional
-        Backend to use for processing ('pandas' or 'polars'). Default is 'pandas'.
+    backend : str
+        Active data engine ('pandas' or 'polars'). Set via ``backend=`` at init;
+        auto-detected from input type when not specified.
     lang : str, optional
         Language for output ('es-ES' or 'en-US'). Default is 'es-ES'.
     
@@ -261,23 +262,31 @@ class DescriptiveStats:
         Display the complete help documentation for the DescriptiveStats class.
     """
     
-    def __init__(self, data: Union[pd.DataFrame, np.ndarray],
-                lang: Literal['es-ES', 'en-US'] = 'es-ES'):
+    def __init__(
+        self,
+        data: Union[pd.DataFrame, np.ndarray],
+        backend: Optional[Literal["pandas", "polars"]] = None,
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ):
         """
-        # Initialize DataFrame
-        
-        ## **Parameters:**
+        Initialize DataFrame.
 
-        - **data** : pandas DataFrame, polars DataFrame, or numpy.ndarray
-        - Polars is supported for I/O and preprocessing; statistics use numpy internally.
+        Parameters
+        ----------
+        data : pandas DataFrame, polars DataFrame, or numpy.ndarray
+            Dataset to analyze.
+        backend : {'pandas', 'polars'}, optional
+            Data engine to use. Auto-detects from input type when None.
+            Explicit values convert the data to the requested engine.
+        lang : {'es-ES', 'en-US'}, default 'es-ES'
+            Language for outputs.
 
-        **Examples:**
-
-        ``Example 1:
-        stats = DescriptiveStats(data)
-        ``
+        Examples
+        --------
+        >>> stats = DescriptiveStats(df)  # auto-detect
+        >>> stats = DescriptiveStats(df, backend="polars")  # force polars
         """
-        self._backend = Backend(data)
+        self._backend = Backend(data, backend=backend)
         self.data = self._backend.df
         
         self._numeric_cols = self._backend.numeric_columns()
@@ -294,11 +303,20 @@ class DescriptiveStats:
     ) -> "DescriptiveStats":
         """Load data from a file and return a DescriptiveStats instance."""
         from .datasets import load_dataset
-        return cls(load_dataset(path, backend=backend, sep=sep), lang=lang)
+        return cls(
+            load_dataset(path, backend=backend, sep=sep),
+            backend=backend,
+            lang=lang,
+        )
 
     @property
     def backend(self):
         return self._backend.type
+
+    @property
+    def backend_engine(self) -> Backend:
+        """Return the internal Backend wrapper."""
+        return self._backend
 
     # ── Validation helpers ────────────────────────────────────────────
 

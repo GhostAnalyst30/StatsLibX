@@ -53,9 +53,6 @@ pip install statslibx
 ### Extras opcionales
 
 ```bash
-# Polars (big data I/O)
-pip install statslibx[polars]
-
 # ViewX (reportes HTML, slides, matrices)
 pip install statslibx[viewx]
 
@@ -69,7 +66,6 @@ pip install statslibx[all]
 
 | Extra | Paquetes |
 |-------|----------|
-| `polars` | polars ≥ 0.20 |
 | `viewx` | viewx ≥ 0.2.3 |
 | `statsmodels` | statsmodels ≥ 0.13 |
 | `sklearn` | scikit-learn ≥ 1.0 |
@@ -113,14 +109,49 @@ schema = {
 df = generate_dataset(n_rows=500, schema=schema, seed=42)
 ```
 
-### Polars
+### Motores de datos (pandas / polars)
+
+Todas las clases que reciben DataFrames soportan el parámetro `backend`:
+
+```python
+from statslibx import DescriptiveStats, InferentialStats, ComputationalStats, Preprocessing
+
+df = load_iris()
+
+# Auto-detecta: pandas DataFrame → pandas, polars DataFrame → polars
+DescriptiveStats(df)
+InferentialStats(df)
+ComputationalStats(df)
+Preprocessing(df)
+
+# Forzar motor polars (convierte pandas → polars internamente)
+DescriptiveStats(df, backend="polars")
+InferentialStats(df, backend="polars")
+ComputationalStats(df, backend="polars")
+Preprocessing(df, backend="polars")
+
+# Forzar motor pandas (convierte polars → pandas)
+# InferentialStats(pl_df, backend="pandas")
+
+# Desde archivo
+DescriptiveStats.from_file("datos.csv", backend="polars")
+InferentialStats.from_file("datos.csv", backend="polars")
+ComputationalStats.from_file("datos.csv", backend="polars")
+Preprocessing.from_file("datos.csv", backend="polars")
+
+# Inspeccionar motor activo
+stats = DescriptiveStats(df, backend="polars")
+print(stats.backend)  # "polars"
+```
+
+Carga directa con polars:
 
 ```python
 from statslibx.datasets import load_dataset
 
 df = load_dataset("iris.csv", backend="polars")  # requiere pip install polars
 stats = DescriptiveStats(df)
-print(stats.backend)  # "polars"
+print(stats.backend)  # "polars" (auto-detectado)
 ```
 
 ---
@@ -149,12 +180,6 @@ from statslibx import DescriptiveStats, Report, to_report_data
 
 df = load_iris()
 summary = DescriptiveStats(df).summary()
-
-payload = to_report_data(summary)
-# payload → {"title", "sections", "tables"} listo para ViewX Report / HTML
-
-report = Report(format="html")
-# report.add_section(payload["title"]) ...
 ```
 
 <p align="center">
@@ -232,7 +257,7 @@ pp.preview_data(n=5)
 | Documentación estática | [GitHub Pages](https://statslibx.vercel.app/) |
 | Notebook completo (181 celdas) | [how_use_statslibx.ipynb](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb) |
 | Repositorio | [github.com/GhostAnalyst30/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX) |
-| ViewX | [ghostanalyst30.github.io/ViewX](https://ghostanalyst30.github.io/ViewX/) |
+| ViewX | [ViewX Page](https://viewx.vercel.app/) |
 
 ---
 
@@ -251,18 +276,6 @@ statslibx/
 ├── cli.py              # statslibx CLI
 └── py.typed            # PEP 561 typed package
 ```
-
----
-
-## Desarrollo
-
-```bash
-git clone https://github.com/GhostAnalyst30/StatsLibX.git
-cd StatsLibX
-pip install -e ".[all]"
-python -m pytest tests/test_smoke.py -v
-```
-
 ---
 
 ## Contribuciones

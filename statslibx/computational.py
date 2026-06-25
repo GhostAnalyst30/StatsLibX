@@ -223,7 +223,7 @@ class RegressionResult(BaseResult):
             'coefficients': coef_table,
             'metrics': {
                 'R2': self.r2,
-                'Adjusted R²': self.r2_adj,
+                'Adjusted R2': self.r2_adj,
                 'MSE': self.mse,
                 'RMSE': self.rmse,
                 'MAE': self.mae,
@@ -672,22 +672,28 @@ class ComputationalStats:
     Enhanced class for computational statistics with improved functionality
     """
     
-    def __init__(self, data: Union[pd.DataFrame, np.ndarray],
-                 seed: Optional[int] = None, 
-                 lang: Literal['es-ES', 'en-US'] = 'es-ES'):
+    def __init__(
+        self,
+        data: Union[pd.DataFrame, np.ndarray],
+        backend: Optional[Literal["pandas", "polars"]] = None,
+        seed: Optional[int] = None,
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ):
         """
-        Initialize ComputationalStats object
-        
-        Parameters:
-        -----------
+        Initialize ComputationalStats object.
+
+        Parameters
+        ----------
         data : pd.DataFrame or np.ndarray
-            Input data
+            Input data.
+        backend : {'pandas', 'polars'}, optional
+            Data engine to use. Auto-detects from input type when None.
         seed : int, optional
-            Random seed for reproducibility
-        lang : str
-            Language for outputs ('es-ES' or 'en-US')
+            Random seed for reproducibility.
+        lang : {'es-ES', 'en-US'}, default 'es-ES'
+            Language for outputs.
         """
-        self._backend = Backend(data)
+        self._backend = Backend(data, backend=backend)
         self.data = self._backend.df
         
         self.seed = seed
@@ -712,10 +718,33 @@ class ComputationalStats:
                 'bootstrapping': 'Bootstrapping'
             }
         }
+
+    @classmethod
+    def from_file(
+        cls,
+        path: str,
+        backend: str = "pandas",
+        sep: str = ",",
+        seed: Optional[int] = None,
+        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+    ) -> "ComputationalStats":
+        """Load data from a file and return a ComputationalStats instance."""
+        from .datasets import load_dataset
+        return cls(
+            load_dataset(path, backend=backend, sep=sep),
+            backend=backend,
+            seed=seed,
+            lang=lang,
+        )
     
     @property
     def backend(self):
-        """Return the Backend instance."""
+        """Return the active data engine ('pandas' or 'polars')."""
+        return self._backend.type
+
+    @property
+    def backend_engine(self) -> Backend:
+        """Return the internal Backend wrapper."""
         return self._backend
     
     def regression(self, X: Union[List[str], str], y: str, 
@@ -782,7 +811,7 @@ class ComputationalStats:
             results.append({
                 'degree': degree,
                 'r2': metrics['R2'],
-                'adj_r2': metrics['Adjusted R²'],
+                'adj_r2': metrics['Adjusted R2'],
                 'aic': metrics['AIC'],
                 'bic': metrics['BIC'],
                 'rmse': metrics['RMSE'],
@@ -914,7 +943,7 @@ class ComputationalStats:
             'centroids': centroids,
             'labels': labels,
             'inertia': inertia,
-            'silhouette_score': silhouette,
+            'silhouette': silhouette,
             'n_iterations': iteration + 1
         }
     
@@ -937,7 +966,7 @@ class ComputationalStats:
         for k in range(2, max_k + 1):
             result = self.k_means(k)
             inertias.append(result['inertia'])
-            silhouettes.append(result['silhouette_score'])
+            silhouettes.append(result['silhouette'])
         
         return {
             'k_values': list(range(2, max_k + 1)),
