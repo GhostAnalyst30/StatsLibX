@@ -5,7 +5,7 @@
 <h1 align="center">StatsLibX</h1>
 
 <p align="center">
-  <strong>Estadística descriptiva, inferencial y computacional para Python — con pandas, polars y ViewX.</strong>
+  <strong>Descriptive, inferential and computational statistics for Python — with pandas, polars and ViewX.</strong>
 </p>
 
 <p align="center">
@@ -16,67 +16,90 @@
 </p>
 
 <p align="center">
-  <a href="https://ghostanalyst30.github.io/StatsLibX/">Documentación</a> ·
-  <a href="https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb">Notebook API</a> ·
+  <a href="https://statslibx.vercel.app/">Documentation</a> ·
+  <a href="https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb">API Notebook</a> ·
   <a href="https://github.com/GhostAnalyst30/StatsLibX/issues">Issues</a> ·
-  <a href="https://ghostanalyst30.github.io/ViewX/">ViewX</a>
+  <a href="https://viewx.vercel.app/">ViewX</a>
 </p>
 
 ---
 
-**StatsLibX** es una librería de Python moderna para análisis estadístico y ciencia de datos. Ofrece una API clara basada en clases, soporte dual **pandas / polars**, datasets embebidos, preprocesamiento, estadística computacional y un puente de reportes con **ViewX**.
+**StatsLibX** is a modern Python library for statistical analysis and data science, built for statisticians, analysts and data scientists. It offers a clear class-based API, dual **pandas / polars** support, structured result objects, bundled datasets, preprocessing, computational statistics and an optional **ViewX** reporting bridge.
 
-> **Versión actual:** `0.3.0` · **Autor:** Emmanuel Ascendra
-
----
-
-## Novedades en v0.3.0
-
-| Área | Cambio |
-|------|--------|
-| **Arquitectura** | Capa `Backend` unificada en todos los módulos de dominio |
-| **Polars** | `load_dataset(backend="polars")` y constructores compatibles con `pl.DataFrame` |
-| **API** | `DescriptiveStats.from_file()`, `InferentialStats.from_file()`, `ComputationalStats.help()` |
-| **Preprocessing** | `clean_data()` ampliado (escalado, outliers, transforms) y `change_dtypes()` con polars |
-| **ViewX** | `to_report_data()` — serializa resultados statslibx para `Report` / `HTML` |
-| **Packaging** | `pyproject.toml`, extras opcionales, CLI `statslibx`, marcador `py.typed` |
-| **Docs web** | Sitio Next.js v0.3.0, playground Pyodide alineado con la API real |
+> **Current version:** `0.3.1` · **Author:** Emmanuel Ascendra
 
 ---
 
-## Instalación
+## What's new in v0.3.1
+
+This release focuses on **statistical correctness, reproducibility and documentation**.
+
+### Correctness fixes
+
+| Area | Fix |
+|------|-----|
+| **Games–Howell** | Now uses the studentized range distribution (previously pairwise Welch t-tests, which produced anti-conservative p-values) |
+| **OLS inference** | Coefficient standard errors use the unbiased residual variance `SSE/(n-p-1)`; both engines now match `statsmodels` exactly |
+| **Proportion CIs** | Wilson score interval by default (never outside [0, 1]); Wald available as an option |
+| **Normality (KS)** | `method='ks'` now applies a Lilliefors Monte Carlo correction — the classical KS p-value is invalid with estimated parameters |
+| **NaN handling** | All univariate statistics drop NaN consistently; `mean()` and `summary()` always agree; `n_missing` reported |
+| **ddof** | Sample convention (`ddof=1`) everywhere by default, including bootstrap SE |
+| **Permutation tests** | p-values use the `(count + 1) / (B + 1)` convention (never exactly zero) |
+| **Reproducibility** | One `numpy.random.Generator` per instance: the constructor `seed` now controls bootstrap, Monte Carlo, CV, k-means and permutations |
+
+### New statistical functionality
+
+| Module | Additions |
+|--------|-----------|
+| **DescriptiveStats** | Robust statistics (`mad`, `trimmed_mean`, `winsorized_mean`), weighted statistics (`weighted_mean/var/std/quantile`), `sem`, `cv`, `iqr`, `data_range`, `count`, `n_missing`, `freq_table`, `cramers_v`, grouped `summary_by` |
+| **InferentialStats** | `tukey_hsd`, corrected `games_howell`, `dunn_test`, `mcnemar_test`, `chi_square_gof`, dedicated `wilcoxon_test`, `adjust_pvalues` (Bonferroni / Holm / Benjamini-Hochberg), full effect sizes (one-sample and paired d, rank-biserial r, epsilon² for Kruskal, omega² for ANOVA, Cramér's V for chi-square), Welch df reporting |
+| **ComputationalStats** | **BCa bootstrap intervals** (recommended default), `bootstrap_regression` (coefficient CIs), delete-d jackknife, stratified k-fold CV, `loo_cv`, MAE metrics, `find_best_degree` by cross-validation |
+
+### API and documentation
+
+- All docstrings rewritten in **English**, NumPy style, with assumptions and references.
+- `bootstrapping()` renamed to **`bootstrap()`** (old name kept as a deprecated alias).
+- `confidence_interval()` returns a structured `ConfidenceIntervalResult` (still unpacks as a tuple).
+- Post-hoc tests return a `PairwiseResult` table with `to_dataframe()` / `to_markdown()` / `to_json()`.
+- Dead code removed (unused `lang` translations, duplicate `__repr__` definitions).
+
+See the [Migration notes](#migration-notes) below.
+
+---
+
+## Installation
 
 ```bash
 pip install statslibx
 ```
 
-### Extras opcionales
+### Optional extras
 
 ```bash
-# ViewX (reportes HTML, slides, matrices)
+# ViewX (HTML reports, slides, matrices)
 pip install statslibx[viewx]
 
-# Regresión avanzada (statsmodels / sklearn)
+# Advanced regression (statsmodels / sklearn)
 pip install statslibx[statsmodels,sklearn]
 
-# Excel + todo incluido
+# Excel + everything
 pip install statslibx[excel]
 pip install statslibx[all]
 ```
 
-| Extra | Paquetes |
+| Extra | Packages |
 |-------|----------|
 | `viewx` | viewx ≥ 0.2.3 |
 | `statsmodels` | statsmodels ≥ 0.13 |
 | `sklearn` | scikit-learn ≥ 1.0 |
 | `excel` | openpyxl ≥ 3.0 |
-| `all` | Todos los anteriores |
+| `all` | All of the above |
 
-**Requisitos:** Python ≥ 3.9 · numpy · pandas · scipy · matplotlib · seaborn · plotly · sympy
+**Requirements:** Python ≥ 3.9 · numpy · pandas · scipy · matplotlib · seaborn · plotly · sympy
 
 ---
 
-## Inicio rápido
+## Quick start
 
 ```python
 import statslibx as slx
@@ -85,23 +108,42 @@ from statslibx.datasets import load_iris, generate_dataset
 
 print(f"StatsLibX v{slx.__version__}")
 
-# Cargar dataset embebido (iris, penguins, titanic)
+# Load a bundled dataset (iris, penguins, titanic)
 iris = load_iris()
-print(iris.head())
 
-# Estadística descriptiva
+# Descriptive statistics (all NaN-aware, sample conventions)
 ds = DescriptiveStats(iris)
-print(ds.mean("sepal_length"))
-print(ds.summary())
+ds.mean("sepal_length")
+ds.mad("sepal_length", scale="normal")     # robust scale estimate
+ds.trimmed_mean("sepal_length", 0.1)       # robust location
+ds.summary(percentiles=[0.05, 0.95])       # rich summary with n_missing
 
-# Prueba inferencial
+# Grouped summaries and frequency tables
+ds.summary_by("species", ["sepal_length"])
+ds.freq_table("species")
+
+# Inferential statistics (structured results with effect sizes)
 inf = InferentialStats(iris)
-print(inf.t_test_1sample("sepal_length", popmean=5.8))
+t = inf.t_test_1sample("sepal_length", popmean=5.8)   # cohens_d in t.params
+anova = inf.anova_oneway("sepal_length", "species")   # eta² and omega²
+posthoc = inf.tukey_hsd("sepal_length", "species")    # or games_howell
+posthoc.to_dataframe()
 
-# Desde archivo
-stats = DescriptiveStats.from_file("mi_datos.csv")
+# Power analysis and multiple comparisons
+inf.power_ttest(effect_size=0.5, n=30, test="1sample")
+inf.adjust_pvalues([0.01, 0.04, 0.03], method="holm")
 
-# Datos sintéticos
+# Computational statistics — fully reproducible with a seed
+comp = ComputationalStats(iris[["sepal_length", "sepal_width"]], seed=42)
+boot = comp.bootstrap("sepal_length", n_samples=2000)
+boot.bca_ci                                # BCa interval (recommended)
+comp.jackknife("sepal_length")
+comp.k_fold_cv("sepal_width", "sepal_length", n_folds=5)
+
+# From a file
+stats = DescriptiveStats.from_file("my_data.csv")
+
+# Synthetic data
 schema = {
     "age": {"dist": "normal", "mean": 35, "std": 10, "type": "int"},
     "group": {"dist": "categorical", "choices": ["A", "B", "C"]},
@@ -109,120 +151,123 @@ schema = {
 df = generate_dataset(n_rows=500, schema=schema, seed=42)
 ```
 
-### Motores de datos (pandas / polars)
+### Data engines (pandas / polars)
 
-Todas las clases que reciben DataFrames soportan el parámetro `backend`:
+Every class that receives DataFrames supports the `backend` parameter:
 
 ```python
 from statslibx import DescriptiveStats, InferentialStats, ComputationalStats, Preprocessing
 
 df = load_iris()
 
-# Auto-detecta: pandas DataFrame → pandas, polars DataFrame → polars
+# Auto-detect: pandas DataFrame -> pandas, polars DataFrame -> polars
 DescriptiveStats(df)
-InferentialStats(df)
-ComputationalStats(df)
-Preprocessing(df)
 
-# Forzar motor polars (convierte pandas → polars internamente)
+# Force the polars engine (converts pandas -> polars internally)
 DescriptiveStats(df, backend="polars")
-InferentialStats(df, backend="polars")
-ComputationalStats(df, backend="polars")
-Preprocessing(df, backend="polars")
 
-# Forzar motor pandas (convierte polars → pandas)
-# InferentialStats(pl_df, backend="pandas")
+# From file
+DescriptiveStats.from_file("data.csv", backend="polars")
 
-# Desde archivo
-DescriptiveStats.from_file("datos.csv", backend="polars")
-InferentialStats.from_file("datos.csv", backend="polars")
-ComputationalStats.from_file("datos.csv", backend="polars")
-Preprocessing.from_file("datos.csv", backend="polars")
-
-# Inspeccionar motor activo
+# Inspect the active engine
 stats = DescriptiveStats(df, backend="polars")
 print(stats.backend)  # "polars"
 ```
 
-Carga directa con polars:
-
-```python
-from statslibx.datasets import load_dataset
-
-df = load_dataset("iris.csv", backend="polars")  # requiere pip install polars
-stats = DescriptiveStats(df)
-print(stats.backend)  # "polars" (auto-detectado)
-```
-
 ---
 
-## Módulos
+## Modules
 
-| Clase / Módulo | Descripción |
+| Class / Module | Description |
 |----------------|-------------|
-| **`DescriptiveStats`** | Media, mediana, varianza, correlación, regresión lineal, outliers, resúmenes |
-| **`InferentialStats`** | t-tests, ANOVA, chi-cuadrado, intervalos de confianza, normalidad |
-| **`ComputationalStats`** | Regresión polinomial, bootstrap, k-means, interpolación, correlación |
-| **`Preprocessing`** | Limpieza, nulos, escalado, outliers, calidad de datos, dtypes |
-| **`UtilsStats`** | Carga de archivos, visualización (matplotlib / seaborn / plotly), effect size |
+| **`DescriptiveStats`** | Central tendency, dispersion, robust and weighted statistics, frequency tables, correlation, Cramér's V, grouped summaries, OLS regression |
+| **`InferentialStats`** | t-tests, ANOVA (classic / Welch / permutation), post-hoc (Tukey, Games-Howell, Dunn), non-parametric tests, categorical tests (chi-square, Fisher, McNemar), normality, power analysis, p-value adjustment |
+| **`ComputationalStats`** | Regression, bootstrap (with BCa), jackknife, Monte Carlo, permutation, cross-validation (k-fold / stratified / LOO), k-means, interpolation |
+| **`Preprocessing`** | Cleaning, missing values, scaling, outliers, data quality, dtypes |
+| **`UtilsStats`** | File loading, standalone visualization (matplotlib / seaborn / plotly), quick checks |
 | **`datasets`** | `load_dataset`, `load_iris`, `load_penguins`, `generate_dataset` |
-| **`Backend`** | Abstracción pandas / polars (`statslibx.backend`) |
-| **`viewx`** | `HTML`, `Slides`, `Report`, `DataMatrix`, `to_report_data` |
+| **`Backend`** | pandas / polars abstraction (`statslibx.backend`) |
+| **`viewx`** | `HTML`, `Presentation`, `Slide`, `Report`, `DataMatrix`, `to_report_data`, `render_html` (optional) |
 
 ---
 
-## Integración ViewX
+## Migration notes
 
-StatsLibX se conecta con [ViewX](https://ghostanalyst30.github.io/ViewX/) para generar reportes y visualizaciones a partir de resultados estadísticos.
+Upgrading from v0.3.0:
+
+| Before | Now |
+|--------|-----|
+| `cs.bootstrapping(...)` | `cs.bootstrap(...)` — old name still works with a `DeprecationWarning` |
+| `games_howell()` returned a plain DataFrame | Returns a `PairwiseResult` (supports `len()`, `.columns`, indexing, plus `.to_dataframe()`) with **corrected p-values** |
+| `confidence_interval()` returned a tuple | Returns `ConfidenceIntervalResult`; `lower, upper, point = result` still works |
+| Proportion CI (Wald) | Wilson score by default; pass `method="wald"` for the old behavior |
+| `normality_test(method='ks')` | Lilliefors-corrected p-value (the old p-value was systematically too large); `test_statistic` parameter deprecated |
+| `lang='es-ES'` parameters | Deprecated and ignored; all output is in English |
+| `std()` / `var()` on `Backend` | Default changed from `ddof=0` to `ddof=1` (sample convention) |
+| Statistics with NaN present | Now dropped consistently everywhere (previously `mean()` could return NaN while `summary()` ignored them) |
+
+Every result object keeps the standard exporters: `to_dict()`, `to_dataframe()`, `to_markdown()`, `to_json()`.
+
+---
+
+## ViewX integration
+
+StatsLibX performs **all the analysis**. ViewX enters **only when exporting** results (HTML, PDF, presentation).
+
+> **Without ViewX installed:** analysis works normally. The `.to_html()` / `.to_presentation()` methods raise a clear error with the install instruction.
 
 ```python
-from statslibx import DescriptiveStats, Report, to_report_data
+from statslibx import DescriptiveStats, InferentialStats, load_iris
 
 df = load_iris()
-summary = DescriptiveStats(df).summary()
-```
+summary = DescriptiveStats(df).summary()   # always works
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/GhostAnalyst30/ViewX/main/images_for_git/DashBoard_Example.png" alt="ViewX example" width="600"/>
-</p>
-
-```bash
-pip install statslibx[viewx]
+# Requires: pip install statslibx[viewx]
+summary.to_html("iris.html", theme="dark_enterprise", include_figures=True, data=df)
+test = InferentialStats(df).t_test_1sample("sepal_length", popmean=5.0)
+test.to_presentation("test.html", theme="dark")
 ```
 
 ---
 
-## CLI — Terminal
+## CLI
 
-StatsLibX incluye una interfaz de línea de comandos para explorar CSV sin escribir código.
+StatsLibX ships a command-line interface to explore CSVs without writing code.
 
 ```bash
 statslibx data iris.csv --summary --types --missing
 statslibx describe iris.csv --numeric
 statslibx describe iris.csv --categorical
 statslibx quality iris.csv --verbose
-statslibx preview iris.csv -n 10
+statslibx preview iris.csv -n 10 --sample --seed 42
 statslibx info iris.csv --detailed
 statslibx --help
 ```
 
 ---
 
-## Estadística computacional
+## Computational statistics
 
 ```python
 from statslibx import ComputationalStats
 
-cs = ComputationalStats(df, seed=42)
+cs = ComputationalStats(df, seed=42)   # seed controls every stochastic method
 
-# Regresión con términos de interacción
+# Regression with interaction terms and correct classical inference
 model = cs.regression(X=["age", "score"], y="income", interaction_terms=True)
 print(model.get_formula())
 print(model.summary())
 
-# Bootstrap
-boot = cs.bootstrapping("income", n_samples=1000, statistic="mean")
-print(boot.summary())
+# Bootstrap with BCa intervals
+boot = cs.bootstrap("income", n_samples=2000, statistic="mean")
+print(boot.bca_ci)          # recommended
+print(boot.percentile_ci)   # also available: basic_ci, normal_ci
+
+# Bootstrap the regression coefficients
+cs.bootstrap_regression(["age"], "income", n_samples=1000)
+
+# Model selection by cross-validation
+cs.find_best_degree("age", "income", max_degree=5, metric="cv_rmse")
 
 # Clustering
 kmeans = cs.k_means(k=3)
@@ -231,7 +276,7 @@ elbow = cs.elbow_method(max_k=10)
 
 ---
 
-## Preprocesamiento
+## Preprocessing
 
 ```python
 pp = Preprocessing(df)
@@ -250,44 +295,47 @@ pp.preview_data(n=5)
 
 ---
 
-## Documentación
+## Documentation
 
-| Recurso | Enlace |
-|---------|--------|
-| Documentación estática | [GitHub Pages](https://statslibx.vercel.app/) |
-| Notebook completo (181 celdas) | [how_use_statslibx.ipynb](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb) |
-| Repositorio | [github.com/GhostAnalyst30/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX) |
-| ViewX | [ViewX Page](https://viewx.vercel.app/) |
+| Resource | Link |
+|----------|------|
+| Website | [statslibx.vercel.app](https://statslibx.vercel.app/) |
+| Full notebook | [how_use_statslibx.ipynb](https://github.com/GhostAnalyst30/StatsLibX/blob/main/how_use_statslibx.ipynb) |
+| Repository | [github.com/GhostAnalyst30/StatsLibX](https://github.com/GhostAnalyst30/StatsLibX) |
+| ViewX | [viewx.vercel.app](https://viewx.vercel.app/) |
+
+Every class also ships an interactive quick reference: `DescriptiveStats(df).help()`.
 
 ---
 
-## Estructura del paquete
+## Package structure
 
 ```
 statslibx/
 ├── descriptive.py      # DescriptiveStats, DescriptiveSummary, LinearRegressionResult
-├── inferential.py      # InferentialStats, TestResult
+├── inferential.py      # InferentialStats, TestResult, PairwiseResult, adjust_pvalues
 ├── computational.py    # ComputationalStats, RegressionResult, BootstrappingResult
 ├── preprocessing/      # Preprocessing
 ├── datasets/           # iris, penguins, titanic + generate_dataset
-├── utils.py            # UtilsStats (I/O, plots, outliers)
-├── backend.py          # Backend pandas / polars
-├── viewx/              # Puente ViewX + to_report_data
+├── utils.py            # UtilsStats (I/O, plots, quick checks)
+├── backend.py          # pandas / polars Backend
+├── viewx/              # ViewX bridge: adapters, renderers, export (optional)
 ├── cli.py              # statslibx CLI
 └── py.typed            # PEP 561 typed package
 ```
+
 ---
 
-## Contribuciones
+## Contributing
 
-¡Todas las mejoras e ideas son bienvenidas!
+All improvements and ideas are welcome!
 
-Abre un [issue](https://github.com/GhostAnalyst30/StatsLibX/issues) o un pull request en GitHub.
+Open an [issue](https://github.com/GhostAnalyst30/StatsLibX/issues) or a pull request on GitHub.
 
-**Contacto:** [ascendraemmanuel@gmail.com](mailto:ascendraemmanuel@gmail.com)
+**Contact:** [ascendraemmanuel@gmail.com](mailto:ascendraemmanuel@gmail.com)
 
 ---
 
 <p align="center">
-  Desarrollado por <strong>Emmanuel Ascendra</strong> · StatsLibX v0.3.0 · MIT License
+  Developed by <strong>Emmanuel Ascendra</strong> · StatsLibX v0.3.1 · MIT License
 </p>

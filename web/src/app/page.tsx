@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { ClassCard } from "@/components/ClassCard";
 import { CodeBlock } from "@/components/CodeBlock";
 import Image from "next/image";
+import { STATSLIBX_VERSION } from "@/lib/version";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -49,23 +50,23 @@ const modules = [
     description:
       "Summary statistics, measures of central tendency, dispersion, skewness, kurtosis, and more.",
     tags: ["describe", "correlation", "skew"],
-    href: "/docs/descriptivestats",
+    href: "/docs/descriptive",
   },
   {
     icon: <FlaskConical className="w-6 h-6" />,
     title: "InferentialStats",
     description:
-      "Confidence intervals, hypothesis testing, z-tests, t-tests, ANOVA, and chi-square tests.",
-    tags: ["ttest", "anova", "chi2"],
-    href: "/docs/inferentialstats",
+      "Confidence intervals, t-tests, ANOVA, power analysis, permutation tests, and Fisher exact.",
+    tags: ["ttest", "anova", "power"],
+    href: "/docs/inferential",
   },
   {
     icon: <Cpu className="w-6 h-6" />,
     title: "ComputationalStats",
     description:
-      "Bootstrap resampling, permutation tests, Monte Carlo simulations, and MCMC methods.",
-    tags: ["bootstrap", "permutation", "mcmc"],
-    href: "/docs/computationalstats",
+      "Bootstrap, Monte Carlo, jackknife, k-fold CV, regression, and k-means clustering.",
+    tags: ["bootstrap", "montecarlo", "cv"],
+    href: "/docs/computational",
   },
   {
     icon: <Wrench className="w-6 h-6" />,
@@ -73,7 +74,7 @@ const modules = [
     description:
       "Validation helpers, encoding detection, data transformation, and statistical utilities.",
     tags: ["validate", "encode", "transform"],
-    href: "/docs/utilsstats",
+    href: "/docs/utils",
   },
   {
     icon: <Filter className="w-6 h-6" />,
@@ -107,9 +108,9 @@ const datasets = [
 
 const stats = [
   { icon: Layers, value: "6+", label: "Modules", color: "text-accent" },
-  { icon: Hash, value: "40+", label: "Methods", color: "text-accent2" },
+  { icon: Hash, value: "55+", label: "Methods", color: "text-accent2" },
   { icon: Database, value: "6", label: "Built-in Datasets", color: "text-accent3" },
-  { icon: Package, value: "v0.3.0", label: "Version", color: "text-accent" },
+  { icon: Package, value: `v${STATSLIBX_VERSION}`, label: "Version", color: "text-accent" },
   { icon: Eye, value: "ViewX", label: "Integration", color: "text-accent2" },
 ];
 
@@ -162,7 +163,7 @@ export default function HomePage() {
           <motion.div variants={fadeUp} className="flex justify-center mb-4">
             <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
               <Package className="w-3 h-3" />
-              v0.3.0
+              v0.3.1
             </span>
           </motion.div>
 

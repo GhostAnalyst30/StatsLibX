@@ -8,154 +8,183 @@ export default function ViewXDocs() {
     <>
       <DocHeader
         title="ViewX"
-        description="Visualization and reporting integration layer. ViewX provides HTML report generation, slide deck creation, comprehensive reporting, and data matrix visualization — all integrated with StatsLibX."
+        description="Optional visualization module. StatsLibX performs all analysis; ViewX exports results to HTML dashboards, PDF reports, or Presentation slide decks. Core statslibx works without viewx installed."
         icon={<Eye className="w-6 h-6" />}
-        version="0.3.0"
+        version="0.3.1"
       />
 
       <section className="mb-12">
         <h2 className="section-title">Overview</h2>
         <p className="text-sm text-muted leading-relaxed">
-          <code className="code-inline">viewx</code> is an external visualization engine integrated with StatsLibX
-          through <code className="code-inline">statslibx.viewx</code>. Use{" "}
-          <code className="code-inline">to_report_data()</code> to convert StatsLibX result objects into a
-          report payload compatible with ViewX components.
+          Install ViewX only when you need to export results:{" "}
+          <code className="code-inline">pip install statslibx[viewx]</code>.
+          Analysis classes work without ViewX. Export methods (
+          <code className="code-inline">.to_html()</code>,{" "}
+          <code className="code-inline">.to_presentation()</code>,{" "}
+          <code className="code-inline">.to_report()</code>) raise{" "}
+          <code className="code-inline">ImportError</code> with install instructions if ViewX is missing.
         </p>
       </section>
 
       <section className="mb-12">
-        <h2 className="section-title">StatsLibX → ViewX flow</h2>
+        <h2 className="section-title">Canonical flow — analyze then visualize</h2>
         <CodeBlock
-          code={`import pandas as pd
-from statslibx import DescriptiveStats, Report, to_report_data
+          code={`from statslibx import DescriptiveStats, load_iris
 
-df = pd.read_csv("iris.csv")
-stats = DescriptiveStats(df)
-summary = stats.summary()
+df = load_iris()
+summary = DescriptiveStats(df).summary()   # works without viewx
 
-payload = to_report_data(summary)
-report = Report(format="html")
-# Use payload sections/tables with ViewX Report API
-print(payload["title"])`}
-          title="Canonical integration"
+summary.to_html(
+    "iris_descriptive.html",
+    theme="dark_enterprise",
+    include_figures=True,
+    data=df,
+)`}
+          title="DescriptiveSummary.to_html()"
         />
       </section>
 
       <section className="mb-12">
-        <h2 className="section-title">Components</h2>
+        <h2 className="section-title">Result export methods</h2>
         <div className="method-list">
           <MethodCard
-            name="HTML"
-            signature="HTML(template: str = 'default') -> HTMLReport"
-            description="Generate full HTML reports from statistical results."
-            parameters={[
-              { name: "template", type: "str", description: "Template name or path for the report layout.", default: "'default'" },
-            ]}
-            returns="HTMLReport"
-            example={`from statslibx import DescriptiveStats, HTML
-import pandas as pd
-
-df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
-ds = DescriptiveStats(df)
-
-report = HTML()
-report.add_title("Descriptive Analysis")
-report.add_table(ds.summary().to_dataframe())
-report.save("report.html")`}
-          />
-
-          <MethodCard
-            name="Slides"
-            signature="Slides(theme: str = 'light') -> SlideDeck"
-            description="Create presentation slide decks from data analysis results."
-            parameters={[
-              { name: "theme", type: "str", description: "Visual theme for the slide deck.", default: "'light'" },
-            ]}
-            returns="SlideDeck"
-            example={`from statslibx import InferentialStats, Slides
-import pandas as pd
-
-df = pd.DataFrame({"score": [85, 92, 78, 95, 88]})
-inf = InferentialStats(df)
-
-deck = Slides(theme="dark")
-deck.add_title_slide("Hypothesis Test Results")
-result = inf.t_test_1sample("score", popmean=80)
-deck.add_text(str(result))
-deck.save("analysis.pptx")`}
-          />
-
-          <MethodCard
-            name="Report"
-            signature="Report(format: Literal['html', 'pdf'] = 'html') -> ReportDocument"
-            description="Generate comprehensive statistical reports combining multiple analysis outputs."
-            parameters={[
-              { name: "format", type: "'html' | 'pdf'", description: "Output format for the report.", default: "'html'" },
-            ]}
-            returns="ReportDocument"
-            example={`from statslibx import DescriptiveStats, InferentialStats, Report, to_report_data
-import pandas as pd
-
-df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
-ds = DescriptiveStats(df)
-payload = to_report_data(ds.summary())
-
-report = Report(format="html")
-report.add_section(payload["title"])
-report.save("full_report.html")`}
-          />
-
-          <MethodCard
-            name="DataMatrix"
-            signature="DataMatrix(data: pd.DataFrame, style: str = 'default') -> MatrixVisualization"
-            description="Display data matrix visualizations for exploratory analysis."
-            parameters={[
-              { name: "data", type: "pd.DataFrame", description: "Input data to visualize as a matrix." },
-              { name: "style", type: "str", description: "Visualization style or theme.", default: "'default'" },
-            ]}
-            returns="MatrixVisualization"
-            example={`from statslibx import DescriptiveStats, DataMatrix
-import pandas as pd
-
-df = pd.DataFrame({"A": [1, 2, 3], "B": [2, 4, 6], "C": [5, 4, 3]})
-ds = DescriptiveStats(df)
-matrix = DataMatrix(ds.correlation("pearson"))
-matrix.show()`}
-          />
-
-          <MethodCard
             name="to_report_data"
-            signature="to_report_data(result) -> dict"
-            description="Serialize DescriptiveSummary, TestResult, or RegressionResult into a ViewX-friendly dict with title, sections, and tables."
+            signature="to_report_data(result, include_figures: bool = False, data: pd.DataFrame | None = None) -> dict"
+            description="Serialize a result to a ViewX payload. Always available — does not require viewx."
             parameters={[
-              { name: "result", type: "DescriptiveSummary | TestResult | RegressionResult | dict", description: "StatsLibX result object." },
+              { name: "result", type: "DescriptiveSummary | TestResult | LinearRegressionResult | RegressionResult | dict", description: "StatsLibX result object." },
+              { name: "include_figures", type: "bool", description: "Attach Plotly figures to payload.", default: "False" },
+              { name: "data", type: "pd.DataFrame | None", description: "Source data for descriptive charts.", default: "None" },
             ]}
-            returns="dict with keys: title, sections, tables"
+            returns="dict — title, sections, tables, valueboxes?, figures?, metadata?"
             example={`from statslibx import DescriptiveStats, to_report_data
 from statslibx.datasets import load_iris
 
 df = load_iris()
-summary = DescriptiveStats(df).summary()
-payload = to_report_data(summary)
+payload = to_report_data(DescriptiveStats(df).summary())
 print(payload["title"])`}
+          />
+
+          <MethodCard
+            name="DescriptiveSummary.to_html"
+            signature="to_html(filename: str = 'report.html', theme: Literal['corporate_blue','dark_enterprise','modern_green','void_indigo','glass_ocean','cyberpunk_neon'] = 'dark_enterprise', include_figures: bool = True, data: pd.DataFrame | None = None, show: bool = False) -> str"
+            description="Export descriptive summary to an interactive HTML dashboard."
+            parameters={[
+              { name: "filename", type: "str", description: "Output HTML path.", default: "'report.html'" },
+              { name: "theme", type: "HTMLTheme", description: "ViewX dashboard theme.", default: "'dark_enterprise'" },
+              { name: "include_figures", type: "bool", description: "Include distribution/correlation charts.", default: "True" },
+              { name: "data", type: "pd.DataFrame | None", description: "Source dataset for charts.", default: "None" },
+            ]}
+            returns="str — path to generated HTML"
+            example={`summary = DescriptiveStats(df).summary()
+summary.to_html("report.html", data=df)`}
+          />
+
+          <MethodCard
+            name="TestResult.to_presentation"
+            signature="to_presentation(filename: str = 'presentation.html', theme: Literal['dark','light','neon','ocean','sunset','corporate'] = 'dark', include_figures: bool = True, open_browser: bool = False) -> str"
+            description="Export inferential test results to a ViewX Presentation (container of Slide units)."
+            parameters={[
+              { name: "filename", type: "str", description: "Output HTML deck path.", default: "'presentation.html'" },
+              { name: "theme", type: "PresentationTheme", description: "Slide deck theme.", default: "'dark'" },
+            ]}
+            returns="str — path to generated presentation"
+            example={`result = InferentialStats(df).t_test_1sample("score", popmean=80)
+result.to_presentation("test_results.html")`}
+          />
+
+          <MethodCard
+            name="render_html"
+            signature="render_html(result, filename: str = 'report.html', theme: HTMLTheme = 'dark_enterprise', ...) -> str"
+            description="Functional API — same as .to_html() on result objects."
+            parameters={[
+              { name: "result", type: "Any supported result", description: "StatsLibX result to export." },
+            ]}
+            returns="str"
+            example={`from statslibx import render_html
+render_html(summary, filename="out.html", data=df)`}
+          />
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <h2 className="section-title">ViewX components (re-exported when installed)</h2>
+        <div className="method-list">
+          <MethodCard
+            name="HTML"
+            signature="HTML(title: str = 'ViewX Dashboard', theme: ThemeName = 'corporate_blue', cols: int = 12, rows: int = 12) -> HTML"
+            description="Manual dashboard builder. Use add_chart, add_table, add_valuebox, add_text, then generate()."
+            parameters={[
+              { name: "theme", type: "Literal['corporate_blue','dark_enterprise','modern_green','void_indigo','glass_ocean','cyberpunk_neon']", description: "Dashboard theme.", default: "'corporate_blue'" },
+            ]}
+            returns="HTML"
+            example={`from statslibx import HTML
+dash = HTML(title="Report", theme="dark_enterprise")
+dash.add_chart(fig=my_fig, title="Trend", row=1, col=1, height=4, width=6)
+dash.generate("dashboard.html")`}
+          />
+
+          <MethodCard
+            name="Presentation"
+            signature="Presentation(title: str = 'Presentación', theme: Literal['dark','light','neon','ocean','sunset','corporate'] = 'dark') -> Presentation"
+            description="Container for multiple Slide objects. Export with .export()."
+            parameters={[
+              { name: "theme", type: "PresentationTheme", description: "Deck theme.", default: "'dark'" },
+            ]}
+            returns="Presentation"
+            example={`from statslibx import Presentation, Slide
+from viewx.Slides.components import Title, Text
+
+pres = Presentation(title="Analysis", theme="dark")
+with Slide() as s:
+    Title("Results")
+    Text("Summary text")
+pres.export("deck.html")`}
+          />
+
+          <MethodCard
+            name="Slide"
+            signature="Slide(title: str = '', notes: str = '') -> Slide"
+            description="Single slide unit inside a Presentation context manager."
+            parameters={[
+              { name: "title", type: "str", description: "Slide title metadata.", default: "''" },
+            ]}
+            returns="Slide"
+            example={`with Slide(title="Intro") as slide:
+    Title("Hello")`}
+          />
+
+          <MethodCard
+            name="from_report_payload"
+            signature="from_report_payload(payload: dict, target: Literal['html','report','presentation'] = 'html', ...) -> str"
+            description="ViewX function — converts to_report_data() payload into HTML, PDF, or Presentation."
+            parameters={[
+              { name: "target", type: "'html' | 'report' | 'presentation'", description: "ViewX engine.", default: "'html'" },
+            ]}
+            returns="str — generated file path"
+            example={`from viewx import from_report_payload
+from statslibx import to_report_data
+
+payload = to_report_data(summary, include_figures=True, data=df)
+from_report_payload(payload, target="html", filename="out.html")`}
           />
         </div>
       </section>
 
       <section className="mb-12">
         <h2 className="section-title">Installation</h2>
-        <CodeBlock code={"pip install statslibx[viewx]"} title="With ViewX extra" />
-        <CodeBlock code={"pip install viewx"} title="Standalone ViewX" />
+        <CodeBlock code={"pip install statslibx\n# core analysis only"} title="Base install" />
+        <CodeBlock code={"pip install statslibx[viewx]"} title="With ViewX export" />
       </section>
 
       <section className="mb-12">
         <h2 className="section-title">Import paths</h2>
         <div className="border border-border rounded-lg p-4 bg-black/20 mt-3 space-y-2">
           <p className="text-sm font-mono text-muted">
-            <span className="text-accent">from</span> statslibx <span className="text-accent">import</span> HTML, Slides, Report, DataMatrix, to_report_data
+            <span className="text-accent">from</span> statslibx <span className="text-accent">import</span> to_report_data, Presentation, Slide, HTML
           </p>
           <p className="text-sm font-mono text-muted">
-            <span className="text-accent">from</span> statslibx.viewx <span className="text-accent">import</span> HTML, to_report_data
+            <span className="text-accent">from</span> statslibx.viewx.adapters <span className="text-accent">import</span> to_report_data
           </p>
         </div>
       </section>

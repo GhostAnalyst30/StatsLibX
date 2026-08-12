@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import Any, Dict, List, Optional, Union, Literal
 
 import numpy as np
@@ -18,6 +19,14 @@ logger = logging.getLogger(__name__)
 
 
 class Preprocessing:
+    """
+    Data preparation pipeline over a pandas or polars DataFrame.
+
+    Provides inspection (nulls, uniqueness, quality report), cleaning
+    (duplicates, missing values, outliers), scaling, dtype conversion
+    and column filtering. Most methods mutate the instance in place and
+    return ``self`` for fluent chaining.
+    """
 
     def __init__(
         self,
@@ -277,13 +286,16 @@ class Preprocessing:
         if to_type and to_type not in TYPE_MAP:
             raise ValueError(f"Unsupported to_type: {to_type}")
 
+        missing_cols = [c for c in columns if c not in self._backend.columns]
+        if missing_cols:
+            raise ValueError(
+                f"Column(s) {missing_cols} do not exist in the DataFrame. "
+                f"Available columns: {list(self._backend.columns)}"
+            )
+
         if self._backend.is_pandas():
 
             for col in columns:
-
-                if col not in data.columns:
-                    print(f"Column '{col}' does not exist in the DataFrame")
-                    return data
 
                 if from_type is not None:
                     current_type = str(data[col].dtype)
@@ -306,7 +318,11 @@ class Preprocessing:
                         self._backend.set_col(col, data[col])
 
                     except Exception:
-                        print(f"Cannot convert column '{col}' to {to_type}")
+                        warnings.warn(
+                            f"Cannot convert column '{col}' to {to_type}; leaving unchanged.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
 
         elif _POLARS_AVAILABLE:
             polars_type_map = {
@@ -319,10 +335,6 @@ class Preprocessing:
                 "object": pl.Utf8,
             }
             for col in columns:
-                if col not in self._backend.columns:
-                    print(f"Column '{col}' does not exist in the DataFrame")
-                    return data
-
                 if from_type is not None:
                     current_type = str(self._backend.df.schema[col])
                     if from_type not in current_type:
@@ -340,7 +352,11 @@ class Preprocessing:
                                 pl.col(col).cast(target)
                             )
                     except Exception:
-                        print(f"Cannot convert column '{col}' to {to_type}")
+                        warnings.warn(
+                            f"Cannot convert column '{col}' to {to_type}; leaving unchanged.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
 
         self.data = self._backend.df
         return self._backend.df if not self._backend.is_pandas() else data
@@ -365,11 +381,43 @@ class Preprocessing:
         scaling_method: str = "standard",
         log_transform: bool = False,
         sqrt_transform: bool = False,
+        parse_dates: bool = False,
         drop_columns: Optional[List[str]] = None,
         keep_columns: Optional[List[str]] = None,
         **kwargs,
     ) -> "Preprocessing":
-        """Comprehensive data cleaning pipeline."""
+        """
+        Comprehensive data cleaning pipeline.
+
+        Parameters
+        ----------
+        drop_duplicates : bool, default True
+            Remove duplicate rows.
+        handle_missing : {'auto', 'drop', 'fill', 'skip'} or bool, default 'auto'
+            Missing-value handling. 'auto' drops rows with more than
+            50% missing values and fills the rest.
+        missing_strategy : {'mean', 'median', 'mode', 'constant', 'drop'}, default 'mean'
+            Fill strategy for numeric columns (categoricals use the mode).
+        fill_value : Any, optional
+            Value for ``missing_strategy='constant'``.
+        remove_outliers, detect_outliers : bool, default False
+            Outlier handling using ``outlier_method`` ('iqr' or 'zscore').
+        scale : bool, default False
+            Scale numeric columns with ``scaling_method``
+            ('standard', 'minmax' or 'robust').
+        log_transform, sqrt_transform : bool, default False
+            Apply log1p / sqrt to numeric columns (negatives clipped to 0).
+        parse_dates : bool, default False
+            Try to convert string columns to datetime. Off by default
+            because it can misinterpret categorical text columns.
+        drop_columns, keep_columns : list of str, optional
+            Column filtering applied before everything else.
+
+        Returns
+        -------
+        Preprocessing
+            self, for fluent chaining.
+        """
 
         if remove_duplicates is not None:
             drop_duplicates = remove_duplicates
@@ -460,24 +508,25 @@ class Preprocessing:
         if convert_dtypes:
             self.change_dtypes()
 
-        for col in self._backend.columns:
-            if self._backend.is_pandas():
-                if self._backend.df[col].dtype == 'object':
-                    try:
-                        converted = pd.to_datetime(self._backend.df[col])
-                        self._backend.df[col] = converted
-                        logger.info(f"Converted column '{col}' to datetime")
-                    except (ValueError, TypeError):
-                        pass
-            elif _POLARS_AVAILABLE:
-                if self._backend.df[col].dtype == pl.Utf8:
-                    try:
-                        self._backend.df = self._backend.df.with_columns(
-                            pl.col(col).str.strptime(pl.Datetime, strict=False)
-                        )
-                        logger.info(f"Converted column '{col}' to datetime")
-                    except Exception:
-                        pass
+        if parse_dates:
+            for col in self._backend.columns:
+                if self._backend.is_pandas():
+                    if self._backend.df[col].dtype == 'object':
+                        try:
+                            converted = pd.to_datetime(self._backend.df[col])
+                            self._backend.df[col] = converted
+                            logger.info(f"Converted column '{col}' to datetime")
+                        except (ValueError, TypeError):
+                            pass
+                elif _POLARS_AVAILABLE:
+                    if self._backend.df[col].dtype == pl.Utf8:
+                        try:
+                            self._backend.df = self._backend.df.with_columns(
+                                pl.col(col).str.strptime(pl.Datetime, strict=False)
+                            )
+                            logger.info(f"Converted column '{col}' to datetime")
+                        except Exception:
+                            pass
 
         if detect_outliers or remove_outliers:
             for col in self._backend.numeric_columns():

@@ -12,6 +12,7 @@ import {
   Terminal,
   Eye,
   Shell,
+  FileText,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -35,6 +36,7 @@ const sections = [
     items: [
       { href: "/docs/utils", label: "UtilsStats", icon: Wrench },
       { href: "/docs/preprocessing", label: "Preprocessing", icon: Filter },
+      { href: "/docs/formatting", label: "Formatted Output", icon: FileText },
     ],
   },
   {

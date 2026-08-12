@@ -31,7 +31,7 @@ def _validate_columns(
     columns = set(df.columns)
     missing = set(X_columns + [y_column]) - columns
     if missing:
-        raise ValueError(f"Columnas no encontradas en el dataset: {missing}")
+        raise ValueError(f"Columns not found in dataset: {missing}")
 
 
 def _X_y(
@@ -77,7 +77,7 @@ def _read_file(
         if ext == ".json":
             return pl.read_json(buffer_or_path)
 
-    raise ValueError(f"Extensión '{ext}' no soportada para backend '{backend}'.")
+    raise ValueError(f"Extension '{ext}' not supported for backend '{backend}'.")
 
 
 def load_dataset(
@@ -87,37 +87,35 @@ def load_dataset(
     sep: str = ",",
 ) -> Union[pd.DataFrame, Any, Tuple[NDArray, NDArray]]:
     """
-    Carga un dataset interno del paquete o desde una ruta local.
+    Load a bundled dataset or a local file.
 
-    Datasets empaquetados:
-    - iris.csv
-    - penguins.csv
-    - titanic.csv
+    Bundled datasets: ``iris.csv``, ``penguins.csv``, ``titanic.csv``.
 
-    Parámetros
+    Parameters
     ----------
     name : str
-        Nombre del archivo (p. ej. ``iris.csv``) o ruta local.
-    backend : {'pandas', 'polars'}, default='pandas'
-        Backend de DataFrame a utilizar.
-    return_X_y : tuple[list[str], str], optional
-        Si se especifica, devuelve (X, y) como arrays numpy.
-    sep : str, default=','
-        Separador para archivos CSV.
+        File name (e.g. ``iris.csv``) or a local path.
+    backend : {'pandas', 'polars'}, default 'pandas'
+        DataFrame engine.
+    return_X_y : tuple of (list of str, str), optional
+        When given, returns (X, y) numpy arrays for the listed feature
+        columns and target column.
+    sep : str, default ','
+        Separator for CSV files.
 
-    Retorna
+    Returns
     -------
-    DataFrame o (X, y)
+    DataFrame or (X, y)
     """
     if backend not in _SUPPORTED_BACKENDS:
         if backend == "polars" and not _POLARS_AVAILABLE:
             raise ImportError(
-                "Backend 'polars' requiere el paquete polars. "
-                "Instale con: pip install polars"
+                "Backend 'polars' requires the polars package. "
+                "Install with: pip install polars"
             )
         raise ValueError(
-            f"Backend '{backend}' no soportado. "
-            f"Use uno de {_SUPPORTED_BACKENDS}."
+            f"Backend '{backend}' not supported. "
+            f"Use one of {_SUPPORTED_BACKENDS}."
         )
 
     path = Path(name)
@@ -130,8 +128,8 @@ def load_dataset(
 
     if ext not in _SUPPORTED_EXTENSIONS:
         raise ValueError(
-            f"Extensión '{ext}' no soportada. "
-            f"Soportadas: {_SUPPORTED_EXTENSIONS}"
+            f"Extension '{ext}' not supported. "
+            f"Supported: {_SUPPORTED_EXTENSIONS}"
         )
 
     df = None
@@ -148,8 +146,8 @@ def load_dataset(
     if df is None:
         if not path.exists():
             raise FileNotFoundError(
-                f"Dataset '{name}' no encontrado "
-                f"ni en statslibx.datasets ni en la ruta local."
+                f"Dataset '{name}' not found in statslibx.datasets "
+                f"nor as a local path."
             )
         df = _read_file(path, ext, backend, sep)
 
@@ -197,7 +195,8 @@ def generate_dataset(
         - Distribution-specific parameters (e.g. ``mean``, ``std``, ``low``, ``high``,
           ``lam``, ``n``, ``p``, ``choices``)
     seed : int, optional
-        Random seed for reproducibility. If ``None``, uses 42.
+        Random seed for reproducibility. If ``None``, the output is
+        non-deterministic.
     save : bool, default False
         Whether to save the dataset to CSV.
     filename : str, optional
@@ -208,16 +207,16 @@ def generate_dataset(
     pd.DataFrame
         Generated synthetic dataset.
     """
-    rng = np.random.default_rng(seed if seed is not None else 42)
+    rng = np.random.default_rng(seed)
 
     if not isinstance(schema, dict):
-        raise TypeError("schema debe ser un diccionario")
+        raise TypeError("schema must be a dictionary")
 
     data: dict[str, Any] = {}
 
     for col, config in schema.items():
         if "dist" not in config:
-            raise ValueError(f"La columna '{col}' no tiene 'dist' definido")
+            raise ValueError(f"Column '{col}' has no 'dist' defined")
 
         dist = config["dist"]
         dtype = config.get("type", "float")
@@ -237,19 +236,19 @@ def generate_dataset(
             values = rng.binomial(n=config.get("n", 1), p=config.get("p", 0.5), size=n_rows)
         elif dist == "categorical":
             if "choices" not in config:
-                raise ValueError(f"'choices' es requerido para categorical ({col})")
+                raise ValueError(f"'choices' is required for categorical ({col})")
             values = rng.choice(config["choices"], size=n_rows)
             data[col] = values
             continue
         else:
-            raise ValueError(f"Distribución no soportada: {dist}")
+            raise ValueError(f"Unsupported distribution: {dist}")
 
         if dtype == "int":
             values = np.round(values).astype(int)
         elif dtype == "float":
             values = values.astype(float)
         else:
-            raise ValueError(f"Tipo no soportado: {dtype}")
+            raise ValueError(f"Unsupported type: {dtype}")
 
         if nround > 0:
             values = np.round(values, nround)

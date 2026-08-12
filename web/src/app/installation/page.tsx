@@ -3,16 +3,17 @@ import { DocHeader } from "@/components/DocHeader";
 import { CodeBlock } from "@/components/CodeBlock";
 
 const requirements = [
-  { package: "Python", version: ">= 3.8" },
-  { package: "pandas", version: ">= 1.5" },
-  { package: "numpy", version: ">= 1.23" },
-  { package: "scipy", version: ">= 1.9" },
-  { package: "matplotlib", version: ">= 3.5" },
+  { package: "Python", version: ">= 3.9" },
+  { package: "pandas", version: ">= 1.3" },
+  { package: "numpy", version: ">= 1.21" },
+  { package: "scipy", version: ">= 1.7" },
+  { package: "matplotlib", version: ">= 3.4" },
   { package: "seaborn", version: ">= 0.11" },
   { package: "plotly", version: ">= 5.0" },
-  { package: "scikit-learn", version: ">= 1.0" },
-  { package: "statsmodels", version: ">= 0.13" },
-  { package: "viewx", version: ">= 0.2.3" },
+  { package: "polars", version: ">= 0.20" },
+  { package: "scikit-learn", version: ">= 1.0 (optional extra)" },
+  { package: "statsmodels", version: ">= 0.13 (optional extra)" },
+  { package: "viewx", version: ">= 0.2.3 (optional extra)" },
 ];
 
 const troubleshooting = [
@@ -50,7 +51,7 @@ export default function InstallationPage() {
         title="Installation"
         description="Get started with StatsLibX in minutes"
         icon={<Shell className="w-6 h-6" />}
-        version="0.3.0"
+        version="0.3.1"
       />
 
       <section className="mb-12">
@@ -115,27 +116,27 @@ statslibx.welcome()`}
           <div className="px-4 py-3 rounded-lg bg-white/5 border border-border">
             <div className="flex items-center gap-2 mb-1">
               <Heart className="w-4 h-4 text-accent2" />
-              <span className="font-syne text-sm font-semibold text-white">viz</span>
+              <span className="font-syne text-sm font-semibold text-white">viewx</span>
             </div>
             <p className="text-xs text-muted">
-              Adds seaborn and plotly for enhanced visualization capabilities.
+              Export results to HTML, PDF, or Presentation. Core analysis works without this extra.
             </p>
           </div>
           <div className="px-4 py-3 rounded-lg bg-white/5 border border-border">
             <div className="flex items-center gap-2 mb-1">
               <Cpu className="w-4 h-4 text-accent2" />
-              <span className="font-syne text-sm font-semibold text-white">advanced</span>
+              <span className="font-syne text-sm font-semibold text-white">all</span>
             </div>
             <p className="text-xs text-muted">
-              Adds scikit-learn and statsmodels for machine learning integration.
+              viewx + statsmodels + scikit-learn + openpyxl + polars.
             </p>
           </div>
         </div>
         <p className="text-sm text-muted leading-relaxed mb-4">Install with extras:</p>
         <div className="space-y-3">
-          <CodeBlock title="bash" code="pip install statslibx[viz]" />
-          <CodeBlock title="bash" code="pip install statslibx[advanced]" />
-          <CodeBlock title="bash" code="pip install statslibx[viz,advanced]  # All extras" />
+          <CodeBlock title="bash" code="pip install statslibx[viewx]" />
+          <CodeBlock title="bash" code="pip install statslibx[statsmodels,sklearn]" />
+          <CodeBlock title="bash" code="pip install statslibx[all]" />
         </div>
       </section>
 

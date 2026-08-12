@@ -61,7 +61,7 @@ export default function ComputationalStatsPage() {
         title="ComputationalStats"
         description="Computational statistical methods including regression, interpolation, bootstrapping, and clustering algorithms for advanced data analysis."
         icon={<Cpu className="w-6 h-6" />}
-        version="0.3.0"
+        version="0.3.1"
       />
 
       <section className="mb-12">
@@ -133,18 +133,18 @@ print(result.get_formula())`}
 
           <MethodCard
             name="find_best_degree"
-            signature="find_best_degree(X, y, max_degree=5, metric='r2')"
-            description="Evaluate polynomial models from degree 1 to max_degree and return the best degree based on the specified metric. Useful for finding the optimal polynomial complexity without overfitting."
+            signature="find_best_degree(X, y, max_degree=5, metric='cv_rmse', n_folds=5, random_state=None)"
+            description="Evaluate polynomial models from degree 1 to max_degree and select the best degree by k-fold cross-validation (default) or an information criterion. The in-sample 'r2' option is kept for reference only — it systematically overfits and triggers a warning."
             parameters={[
-              { name: "X", type: "str | list of str", description: "Column name(s) for independent variable(s)" },
+              { name: "X", type: "str", description: "Column name for the independent variable" },
               { name: "y", type: "str", description: "Column name for the dependent variable" },
               { name: "max_degree", type: "int", description: "Maximum polynomial degree to evaluate", default: "5" },
-              { name: "metric", type: "'r2' | 'aic' | 'bic'", description: "Metric to select the best degree", default: "'r2'" },
+              { name: "metric", type: "'cv_rmse' | 'cv_r2' | 'aic' | 'bic' | 'r2'", description: "Selection criterion", default: "'cv_rmse'" },
+              { name: "n_folds", type: "int", description: "Folds for the CV metrics", default: "5" },
             ]}
             returns="dict"
-            example={`best = cs.find_best_degree("x", "y", max_degree=5, metric="aic")
-print(f"Best degree: {best['degree']}")
-# {'degree': 3, 'metric': 'aic', 'value': -42.5, 'results': [...]}`}
+            example={`best = cs.find_best_degree("x", "y", max_degree=5)
+print(f"Best degree: {best['degree']} (CV RMSE: {best['cv_rmse']:.3f})")`}
           />
 
           <MethodCard
@@ -166,34 +166,87 @@ values = result.predict([0.5, 1.5, 2.5])`}
           />
 
           <MethodCard
-            name="bootstrapping"
-            signature="bootstrapping(column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None)"
-            description="Perform bootstrap resampling to estimate the sampling distribution of a statistic. Provides bias, standard error, and multiple confidence interval types (percentile, basic, normal)."
+            name="bootstrap"
+            signature="bootstrap(column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None, random_state=None)"
+            description="Vectorized bootstrap resampling to estimate the sampling distribution of a statistic. Provides bias, standard error and four confidence intervals: BCa (bias-corrected and accelerated, recommended), percentile, basic and normal. Renamed from bootstrapping() in v0.3.1 (the old name still works with a DeprecationWarning)."
             parameters={bootstrappingParams}
             returns="BootstrappingResult"
-            example={`# Bootstrap the mean
-result = cs.bootstrapping("salary", n_samples=5000, statistic="mean")
+            example={`# Bootstrap the mean — reproducible via the constructor seed
+cs = ComputationalStats(df, seed=42)
+result = cs.bootstrap("salary", n_samples=5000, statistic="mean")
+print(result.bca_ci)         # recommended interval
+print(result.percentile_ci)  # also: basic_ci, normal_ci
+print(result.to_markdown())`}
+          />
 
-# Custom statistic
-def ratio(data):
-    return data["col1"].sum() / data["col2"].sum()
+          <MethodCard
+            name="bootstrap_regression"
+            signature="bootstrap_regression(X, y, n_samples=1000, degree=1, confidence_level=0.95, random_state=None) -> dict"
+            description="Bootstrap the regression coefficients by resampling rows (case resampling). Returns per-term estimates, bootstrap standard errors and percentile confidence intervals."
+            returns="dict — {'coefficients': DataFrame, 'distributions': ndarray}"
+            example={`out = cs.bootstrap_regression("hours", "score", n_samples=1000)
+print(out["coefficients"])`}
+          />
 
-result = cs.bootstrapping("salary", n_samples=2000, custom_func=ratio)
+          <MethodCard
+            name="monte_carlo_mean"
+            signature="monte_carlo_mean(column: str, n_simulations: int = 10000, sample_size: int | None = None, confidence: float = 0.95, random_state: int | None = None) -> MonteCarloResult"
+            description="Simulate the sampling distribution of the mean via Monte Carlo resampling from the empirical distribution."
+            returns="MonteCarloResult"
+            example={`mc = cs.monte_carlo_mean("salary", n_simulations=5000, random_state=42)
+print(mc)
+print(mc.ci)`}
+          />
 
-print(result.summary())`}
+          <MethodCard
+            name="simulate_distribution"
+            signature="simulate_distribution(dist='normal', n_simulations=10000, size=100, confidence=0.95, random_state=None, **dist_params) -> MonteCarloResult"
+            description="Generate Monte Carlo samples from named distributions (normal, t, chi2, binomial, uniform) and summarize the mean of each draw."
+            returns="MonteCarloResult"
+            example={`mc = cs.simulate_distribution("normal", n_simulations=2000, size=50, loc=0, scale=1, random_state=1)
+print(mc.mean, mc.std)`}
+          />
+
+          <MethodCard
+            name="jackknife"
+            signature="jackknife(column: str, statistic: Literal['mean','median','std']='mean', d: int = 1, n_subsets: int = 1000, random_state: int | None = None) -> JackknifeResult"
+            description="Jackknife estimate of bias and standard error. d=1 is the exact leave-one-out jackknife; d>1 runs a delete-d jackknife over random subsets, recommended for non-smooth statistics such as the median."
+            returns="JackknifeResult"
+            example={`jk = cs.jackknife("salary", statistic="mean")
+jk_med = cs.jackknife("salary", statistic="median", d=3)
+print(jk.std_error, jk_med.std_error)`}
+          />
+
+          <MethodCard
+            name="k_fold_cv"
+            signature="k_fold_cv(X, y, n_folds=5, degree=1, stratify=None, random_state=None) -> dict"
+            description="K-fold cross-validation for linear/polynomial regression with R², RMSE and MAE per fold. Pass stratify='<categorical column>' for stratified folds. Also available via regression(..., cv_folds=5)."
+            returns="dict"
+            example={`cv = cs.k_fold_cv("hours", "score", n_folds=5, random_state=0)
+print(cv["mean_r2"], cv["mean_rmse"], cv["mean_mae"])
+
+# Stratified folds
+cv_s = cs.k_fold_cv("hours", "score", n_folds=5, stratify="group")`}
+          />
+
+          <MethodCard
+            name="loo_cv"
+            signature="loo_cv(X, y, degree=1) -> dict"
+            description="Leave-one-out cross-validation (k-fold with k = n). Deterministic: every observation is the test set exactly once."
+            returns="dict"
+            example={`loo = cs.loo_cv("hours", "score")
+print(loo["mean_rmse"])`}
           />
 
           <MethodCard
             name="k_means"
-            signature="k_means(k, max_iters=100, init_method='kmeans++')"
-            description="Perform K-means clustering on the dataset. Supports both random and K-means++ initialization strategies for centroid placement."
+            signature="k_means(k, max_iters=100, init_method='kmeans++', engine='native')"
+            description="Perform K-means clustering. engine='native' uses the built-in implementation; engine='sklearn' requires scikit-learn."
             parameters={kMeansParams}
             returns="dict"
             example={`result = cs.k_means(k=3, init_method="kmeans++")
-print(f"Centroids: {result['centroids']}")
-print(f"Labels: {result['labels']}")
 print(f"Inertia: {result['inertia']:.2f}")
-print(f"Silhouette Score: {result['silhouette_score']:.3f}")`}
+print(f"Engine: {result['engine']}")`}
           />
 
           <MethodCard
@@ -317,7 +370,7 @@ cs.plot_distribution("income", kind="kde", interactive=True)`}
           <div className="class-card">
             <h3 className="font-syne text-lg font-bold text-white mb-3">BootstrappingResult</h3>
             <p className="text-sm text-muted leading-relaxed mb-4">
-              Returned by <code className="code-inline">bootstrapping()</code>. Contains the bootstrap distribution, bias, standard error, and multiple confidence interval estimates.
+              Returned by <code className="code-inline">bootstrap()</code>. Contains the bootstrap distribution, bias, standard error, and four confidence interval estimates.
             </p>
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div>
@@ -325,7 +378,8 @@ cs.plot_distribution("income", kind="kde", interactive=True)`}
                 <ul className="space-y-1 text-sm text-muted font-mono">
                   <li><span className="text-accent">original_statistic</span> — Statistic on original data</li>
                   <li><span className="text-accent">bias</span> — Bootstrap bias estimate</li>
-                  <li><span className="text-accent">std_error</span> — Bootstrap standard error</li>
+                  <li><span className="text-accent">std_error</span> — Bootstrap standard error (ddof=1)</li>
+                  <li><span className="text-accent">bca_ci</span> — BCa interval (recommended)</li>
                   <li><span className="text-accent">percentile_ci</span> — Percentile confidence interval</li>
                   <li><span className="text-accent">basic_ci</span> — Basic bootstrap CI</li>
                   <li><span className="text-accent">normal_ci</span> — Normal approximation CI</li>

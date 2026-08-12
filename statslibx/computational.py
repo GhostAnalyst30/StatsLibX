@@ -1,25 +1,49 @@
 from itertools import combinations
-from typing import Union, Optional, Literal, List, Tuple, Any, Dict
+from typing import Union, Optional, Literal, List, Tuple, Any, Dict, Callable
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import sympy as sp
 from scipy import stats as scipy_stats
-from scipy.optimize import minimize
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 import warnings
 import logging
 
 from .backend import Backend
-
-warnings.filterwarnings('ignore')
+from ._stats_utils import vectorized_bootstrap
 
 logger = logging.getLogger(__name__)
+
+
+def _viewx_export_mixin():
+    """Lazy import to keep ViewX optional and avoid circular imports."""
+    from statslibx.viewx.export import ViewXExportMixin
+    return ViewXExportMixin
+
+
+def _plt():
+    import matplotlib.pyplot as plt
+    return plt
+
+
+def _sns():
+    import seaborn as sns
+    return sns
+
+
+def _px():
+    import plotly.express as px
+    return px
+
+
+def _go():
+    import plotly.graph_objects as go
+    return go
+
+
+def _make_subplots():
+    from plotly.subplots import make_subplots
+    return make_subplots
 
 
 class BaseResult(ABC):
@@ -44,7 +68,7 @@ class BaseResult(ABC):
 
 
 @dataclass
-class RegressionResult(BaseResult):
+class RegressionResult(_viewx_export_mixin(), BaseResult):
     """Enhanced regression result class"""
     X: Union[pd.Series, pd.DataFrame, np.ndarray]
     y: pd.Series
@@ -128,33 +152,45 @@ class RegressionResult(BaseResult):
         self.residuals = self.y_values - self.y_pred
     
     def _compute_metrics(self):
-        """Compute regression metrics"""
+        """Compute regression metrics and classical OLS inference."""
         n = self.n_samples
         p = len(self.coefficients) - 1
-        
+
         # Basic metrics
         self.mse = np.mean(self.residuals ** 2)
         self.rmse = np.sqrt(self.mse)
         self.mae = np.mean(np.abs(self.residuals))
-        self.mape = np.mean(np.abs(self.residuals / (self.y_values + 1e-8))) * 100
-        
+        with np.errstate(divide="ignore", invalid="ignore"):
+            nonzero = self.y_values != 0
+            self.mape = (
+                float(np.mean(np.abs(self.residuals[nonzero] / self.y_values[nonzero])) * 100)
+                if nonzero.any() else float("nan")
+            )
+
         # R-squared and adjusted R-squared
         ss_res = np.sum(self.residuals ** 2)
         ss_tot = np.sum((self.y_values - np.mean(self.y_values)) ** 2)
-        self.r2 = 1 - (ss_res / (ss_tot + 1e-8))
+        self.r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else float("nan")
         self.r2_adj = 1 - (1 - self.r2) * (n - 1) / (n - p - 1) if n > p + 1 else self.r2
-        
-        # Information criteria
+
+        # Information criteria (Gaussian log-likelihood up to a constant)
         self.aic = n * np.log(self.mse) + 2 * (p + 1)
         self.bic = n * np.log(self.mse) + (p + 1) * np.log(n)
-        
-        # Standard errors and t-statistics
+
+        # Standard errors and t-statistics using the unbiased residual
+        # variance sigma^2 = SSE / (n - p - 1); using SSE/n would bias
+        # the standard errors (and p-values) downward.
+        dof = n - p - 1
         try:
+            if dof <= 0:
+                raise np.linalg.LinAlgError
+            sigma2 = ss_res / dof
             XTX_inv = np.linalg.pinv(self.X_design.T @ self.X_design)
-            self.std_errors = np.sqrt(np.diag(XTX_inv * self.mse))
-            self.t_stats = self.coefficients / (self.std_errors + 1e-8)
-            self.p_values = 2 * (1 - scipy_stats.t.cdf(np.abs(self.t_stats), n - p - 1))
-        except:
+            self.std_errors = np.sqrt(np.clip(np.diag(XTX_inv) * sigma2, 0, None))
+            with np.errstate(divide="ignore", invalid="ignore"):
+                self.t_stats = self.coefficients / self.std_errors
+            self.p_values = 2 * scipy_stats.t.sf(np.abs(self.t_stats), dof)
+        except np.linalg.LinAlgError:
             self.std_errors = np.full_like(self.coefficients, np.nan)
             self.t_stats = np.full_like(self.coefficients, np.nan)
             self.p_values = np.full_like(self.coefficients, np.nan)
@@ -236,10 +272,62 @@ class RegressionResult(BaseResult):
                 'latex': self.latex_expr
             }
         }
+
+    def __repr__(self):
+        from .formatting import format_number, format_pvalue
+        s = self.summary()
+        lines = [
+            "=" * 80,
+            "REGRESSION RESULT".center(80),
+            "=" * 80,
+            f"Formula: {s['model_info']['formula']}",
+            f"n={s['model_info']['n_samples']}  degree={s['model_info']['degree']}  "
+            f"features={s['model_info']['n_features']}",
+            "-" * 80,
+            f"{'R²':<20} {format_number(self.r2)}",
+            f"{'Adj. R²':<20} {format_number(self.r2_adj)}",
+            f"{'RMSE':<20} {format_number(self.rmse)}",
+            f"{'AIC':<20} {format_number(self.aic)}",
+            f"{'BIC':<20} {format_number(self.bic)}",
+            "-" * 80,
+            f"{'Term':<20} {'Coef':>12} {'Std Err':>12} {'t':>10} {'P>|t|':>12}",
+            "-" * 80,
+        ]
+        for name, coef, se, t, p in zip(
+            self.all_feature_names, self.coefficients, self.std_errors, self.t_stats, self.p_values
+        ):
+            lines.append(
+                f"{str(name):<20} {format_number(coef):>12} {format_number(se):>12} "
+                f"{format_number(t, 3):>10} {format_pvalue(p):>12}"
+            )
+        lines.append("=" * 80)
+        return "\n".join(lines)
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown, format_number
+        s = self.summary()
+        coef = s["coefficients"].reset_index().rename(columns={"index": "term"})
+        return records_to_markdown(coef.to_dict(orient="records"))
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        s = self.summary()
+        payload = {
+            "model_info": s["model_info"],
+            "metrics": s["metrics"],
+            "coefficients": s["coefficients"].reset_index().rename(
+                columns={"index": "term"}
+            ).to_dict(orient="records"),
+            "latex": str(s["formula"].get("latex")),
+        }
+        return dumps_json(payload, indent=indent)
     
     def plot(self, plot_type: Literal['scatter', 'residuals', 'qq', 'all'] = 'all', 
              interactive: bool = False, **kwargs):
         """Plot regression results"""
+        plt = _plt()
+        go = _go()
+
         if plot_type == 'all' and not interactive:
             fig, axes = plt.subplots(2, 2, figsize=(12, 10))
             
@@ -353,10 +441,8 @@ class RegressionResult(BaseResult):
                 sign = "+" if coef >= 0 else "-"
                 formula += f" {sign} {abs(coef):.{decimals}f}·{name}"
             return formula
-    
-    def __repr__(self):
-        return f"<RegressionResult degree={self.degree}, R²={self.r2:.4f}, n={self.n_samples}>"
-    
+
+
 @dataclass
 class InterpolationResult(BaseResult):
     """Enhanced interpolation result class"""
@@ -477,6 +563,8 @@ class InterpolationResult(BaseResult):
     
     def plot(self, n_points: int = 1000, interactive: bool = False, **kwargs):
         """Plot interpolation result"""
+        plt = _plt()
+        go = _go()
         x_range = np.linspace(min(self.x_points), max(self.x_points), n_points)
         y_range = self.predict(x_range)
         
@@ -526,83 +614,326 @@ class InterpolationResult(BaseResult):
 
 
 @dataclass
-class BootstrappingResult(BaseResult):
-    """Enhanced bootstrapping result class"""
+class MonteCarloResult(_viewx_export_mixin(), BaseResult):
+    """Result of a Monte Carlo simulation."""
+    name: str = "Monte Carlo"
+    simulations: np.ndarray = field(default_factory=lambda: np.array([]))
+    point_estimate: float = 0.0
+    confidence: float = 0.95
+    params: Optional[Dict] = None
+    extra: Optional[Dict] = None
+
+    def __post_init__(self):
+        BaseResult.__init__(self, self.name)
+        if self.params is None:
+            self.params = {}
+        if self.extra is None:
+            self.extra = {}
+        alpha = (1 - self.confidence) / 2
+        self.ci = (
+            float(np.quantile(self.simulations, alpha)),
+            float(np.quantile(self.simulations, 1 - alpha)),
+        )
+        self.mean = float(np.mean(self.simulations))
+        self.std = float(np.std(self.simulations))
+        self._fitted = True
+
+    def summary(self) -> Dict:
+        return {
+            "name": self.name,
+            "point_estimate": self.point_estimate,
+            "simulation_mean": self.mean,
+            "simulation_std": self.std,
+            "ci": self.ci,
+            "confidence": self.confidence,
+            "n_simulations": len(self.simulations),
+            "params": self.params,
+            "extra": self.extra,
+        }
+
+    def plot(self, **kwargs):
+        plt = _plt()
+        plt.hist(self.simulations, bins=40, alpha=0.75, edgecolor="black")
+        plt.axvline(self.point_estimate, color="red", linestyle="--", label="point estimate")
+        plt.axvline(self.ci[0], color="green", linestyle=":", label="CI")
+        plt.axvline(self.ci[1], color="green", linestyle=":")
+        plt.title(self.name)
+        plt.legend()
+        plt.show()
+
+    def to_dict(self) -> Dict:
+        s = self.summary()
+        s["simulations"] = self.simulations.tolist()
+        return s
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown, format_ci
+        return records_to_markdown([{
+            "name": self.name,
+            "point_estimate": self.point_estimate,
+            "mean": self.mean,
+            "std": self.std,
+            "ci": format_ci(*self.ci, self.confidence),
+        }])
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        return dumps_json(self.to_dict(), indent=indent)
+
+    def __repr__(self):
+        from .formatting import format_number, format_ci
+        return "\n".join([
+            "=" * 60,
+            self.name.center(60),
+            "=" * 60,
+            f"{'Point estimate':<30} {format_number(self.point_estimate)}",
+            f"{'Sim mean':<30} {format_number(self.mean)}",
+            f"{'Sim std':<30} {format_number(self.std)}",
+            f"{'CI':<30} {format_ci(*self.ci, self.confidence)}",
+            f"{'n_simulations':<30} {len(self.simulations)}",
+            "=" * 60,
+        ])
+
+
+@dataclass
+class JackknifeResult(_viewx_export_mixin(), BaseResult):
+    """Jackknife bias / SE estimate."""
+    statistic: str = "mean"
+    point_estimate: float = 0.0
+    bias: float = 0.0
+    std_error: float = 0.0
+    leave_one_out: np.ndarray = field(default_factory=lambda: np.array([]))
+    params: Optional[Dict] = None
+
+    def __post_init__(self):
+        BaseResult.__init__(self, "Jackknife")
+        if self.params is None:
+            self.params = {}
+        self._fitted = True
+
+    def summary(self) -> Dict:
+        return {
+            "statistic": self.statistic,
+            "point_estimate": self.point_estimate,
+            "bias": self.bias,
+            "std_error": self.std_error,
+            "params": self.params,
+        }
+
+    def plot(self, **kwargs):
+        plt = _plt()
+        plt.hist(self.leave_one_out, bins=30, alpha=0.75, edgecolor="black")
+        plt.axvline(self.point_estimate, color="red", linestyle="--")
+        plt.title(f"Jackknife leave-one-out ({self.statistic})")
+        plt.show()
+
+    def to_dict(self) -> Dict:
+        s = self.summary()
+        s["leave_one_out"] = self.leave_one_out.tolist()
+        return s
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown
+        return records_to_markdown([self.summary()])
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        return dumps_json(self.to_dict(), indent=indent)
+
+    def __repr__(self):
+        from .formatting import format_number
+        return "\n".join([
+            "=" * 60,
+            f"JACKKNIFE ({self.statistic})".center(60),
+            "=" * 60,
+            f"{'Point estimate':<30} {format_number(self.point_estimate)}",
+            f"{'Bias':<30} {format_number(self.bias)}",
+            f"{'Std. error':<30} {format_number(self.std_error)}",
+            "=" * 60,
+        ])
+
+
+@dataclass
+class BootstrappingResult(_viewx_export_mixin(), BaseResult):
+    """
+    Bootstrap resampling result.
+
+    Attributes
+    ----------
+    bootstrap_stats : numpy.ndarray
+        Bootstrap replicates of the statistic.
+    original_stat : float
+        Statistic on the original sample.
+    bias : float
+        Bootstrap bias estimate (mean of replicates minus original).
+    std_error : float
+        Bootstrap standard error (sample std of replicates, ddof=1).
+    percentile_ci, basic_ci, normal_ci, bca_ci : tuple of float
+        Confidence intervals. BCa (bias-corrected and accelerated) is
+        the recommended default (Efron, 1987).
+    """
     data: np.ndarray
     n_samples: int = 1000
     statistic: Literal['mean', 'median', 'std', 'custom'] = 'mean'
     confidence_level: float = 0.95
     custom_func: Optional[callable] = None
-    
+    random_state: Optional[int] = None
+
     def __post_init__(self):
         super().__init__("Bootstrapping")
         self._compute_bootstrap()
         self._compute_confidence_intervals()
         self._fitted = True
-    
-    def _compute_bootstrap(self):
-        """Perform bootstrap resampling"""
-        self.bootstrap_stats = []
-        n = len(self.data)
-        
+
+    def _stat_func(self):
         if self.statistic == 'mean':
-            stat_func = np.mean
+            return np.mean
         elif self.statistic == 'median':
-            stat_func = np.median
+            return np.median
         elif self.statistic == 'std':
-            stat_func = np.std
+            return np.std
         elif self.statistic == 'custom' and self.custom_func is not None:
-            stat_func = self.custom_func
-        else:
-            raise ValueError(f"Unknown statistic: {self.statistic}")
-        
-        for _ in range(self.n_samples):
-            sample = np.random.choice(self.data, size=n, replace=True)
-            self.bootstrap_stats.append(stat_func(sample))
-        
-        self.bootstrap_stats = np.array(self.bootstrap_stats)
-        self.original_stat = stat_func(self.data)
-        self.bias = np.mean(self.bootstrap_stats) - self.original_stat
-        self.std_error = np.std(self.bootstrap_stats)
-    
+            return self.custom_func
+        raise ValueError(f"Unknown statistic: {self.statistic}")
+
+    def _compute_bootstrap(self):
+        """Perform vectorized bootstrap resampling."""
+        stat_func = self._stat_func()
+
+        self.bootstrap_stats = vectorized_bootstrap(
+            self.data, stat_func,
+            n_resamples=self.n_samples,
+            random_state=self.random_state,
+        )
+        self.original_stat = float(stat_func(self.data))
+        self.bias = float(np.mean(self.bootstrap_stats) - self.original_stat)
+        self.std_error = float(np.std(self.bootstrap_stats, ddof=1))
+
     def _compute_confidence_intervals(self):
-        """Compute confidence intervals"""
+        """Compute percentile, basic, normal and BCa intervals."""
         alpha = 1 - self.confidence_level
         lower_percentile = alpha / 2 * 100
         upper_percentile = (1 - alpha / 2) * 100
-        
+
         self.percentile_ci = (
-            np.percentile(self.bootstrap_stats, lower_percentile),
-            np.percentile(self.bootstrap_stats, upper_percentile)
+            float(np.percentile(self.bootstrap_stats, lower_percentile)),
+            float(np.percentile(self.bootstrap_stats, upper_percentile))
         )
-        
+
         self.basic_ci = (
             2 * self.original_stat - self.percentile_ci[1],
             2 * self.original_stat - self.percentile_ci[0]
         )
-        
+
         self.normal_ci = (
             self.original_stat - scipy_stats.norm.ppf(1 - alpha/2) * self.std_error,
             self.original_stat + scipy_stats.norm.ppf(1 - alpha/2) * self.std_error
         )
-    
+
+        self.bca_ci = self._compute_bca_ci(alpha)
+
+    def _compute_bca_ci(self, alpha: float):
+        """
+        Bias-corrected and accelerated (BCa) interval.
+
+        The bias correction z0 comes from the fraction of replicates
+        below the original statistic; the acceleration a comes from a
+        jackknife of the statistic (Efron, 1987).
+        """
+        stat_func = self._stat_func()
+        boots = self.bootstrap_stats
+        n = len(self.data)
+
+        prop_less = np.mean(boots < self.original_stat)
+        if prop_less <= 0 or prop_less >= 1:
+            # Degenerate bootstrap distribution; fall back to percentile.
+            return self.percentile_ci
+        z0 = scipy_stats.norm.ppf(prop_less)
+
+        # Jackknife acceleration
+        leave_one = np.empty(n, dtype=float)
+        for i in range(n):
+            leave_one[i] = stat_func(np.delete(self.data, i))
+        jack_mean = leave_one.mean()
+        diffs = jack_mean - leave_one
+        denom = 6.0 * (np.sum(diffs ** 2) ** 1.5)
+        a = float(np.sum(diffs ** 3) / denom) if denom > 0 else 0.0
+
+        z_lo = scipy_stats.norm.ppf(alpha / 2)
+        z_hi = scipy_stats.norm.ppf(1 - alpha / 2)
+
+        def adjusted_quantile(z_alpha):
+            adj = z0 + (z0 + z_alpha) / (1 - a * (z0 + z_alpha))
+            return scipy_stats.norm.cdf(adj)
+
+        q_lo = adjusted_quantile(z_lo)
+        q_hi = adjusted_quantile(z_hi)
+        return (
+            float(np.quantile(boots, q_lo)),
+            float(np.quantile(boots, q_hi)),
+        )
+
     def summary(self) -> Dict:
-        """Return bootstrapping summary"""
+        """Return bootstrapping summary."""
         return {
             'original_statistic': self.original_stat,
-            'bootstrap_mean': np.mean(self.bootstrap_stats),
+            'bootstrap_mean': float(np.mean(self.bootstrap_stats)),
             'bias': self.bias,
             'std_error': self.std_error,
             f'confidence_interval_{self.confidence_level*100:.0f}%': {
                 'percentile': self.percentile_ci,
                 'basic': self.basic_ci,
-                'normal': self.normal_ci
+                'normal': self.normal_ci,
+                'bca': self.bca_ci,
             },
             'distribution': self.bootstrap_stats
         }
+
+    def to_dict(self) -> Dict:
+        s = self.summary()
+        s = dict(s)
+        s['distribution'] = self.bootstrap_stats.tolist()
+        return s
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown, format_ci
+        row = {
+            'statistic': self.statistic,
+            'original': self.original_stat,
+            'bias': self.bias,
+            'std_error': self.std_error,
+            'percentile_ci': format_ci(*self.percentile_ci, self.confidence_level),
+        }
+        return records_to_markdown([row])
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        return dumps_json(self.to_dict(), indent=indent)
+
+    def __repr__(self):
+        from .formatting import format_number, format_ci
+        lines = [
+            "=" * 70,
+            f"BOOTSTRAP ({self.statistic})".center(70),
+            "=" * 70,
+            f"{'Original':<30} {format_number(self.original_stat)}",
+            f"{'Bootstrap mean':<30} {format_number(np.mean(self.bootstrap_stats))}",
+            f"{'Bias':<30} {format_number(self.bias)}",
+            f"{'Std. error':<30} {format_number(self.std_error)}",
+            f"{'BCa CI (recommended)':<30} {format_ci(*self.bca_ci, self.confidence_level)}",
+            f"{'Percentile CI':<30} {format_ci(*self.percentile_ci, self.confidence_level)}",
+            f"{'Basic CI':<30} {format_ci(*self.basic_ci, self.confidence_level)}",
+            f"{'Normal CI':<30} {format_ci(*self.normal_ci, self.confidence_level)}",
+            f"{'n_samples':<30} {self.n_samples}",
+            "=" * 70,
+        ]
+        return "\n".join(lines)
     
     def plot(self, interactive: bool = False, **kwargs):
         """Plot bootstrap distribution"""
+        plt = _plt()
+        go = _go()
+        make_subplots = _make_subplots()
         if interactive:
             fig = make_subplots(
                 rows=1, cols=2,
@@ -628,8 +959,14 @@ class BootstrappingResult(BaseResult):
                 go.Scatter(x=theoretical_quantiles, y=sample_quantiles, mode='markers', name='Q-Q'),
                 row=1, col=2
             )
+            # Reference line: theoretical quantiles mapped through the
+            # bootstrap mean and standard deviation.
+            boot_mean = float(np.mean(self.bootstrap_stats))
+            boot_std = float(np.std(self.bootstrap_stats, ddof=1))
+            line_x = np.array([-3.0, 3.0])
             fig.add_trace(
-                go.Scatter(x=[-3, 3], y=[-3, 3], mode='lines', name='y=x', line=dict(dash='dash')),
+                go.Scatter(x=line_x, y=boot_mean + boot_std * line_x,
+                           mode='lines', name='Normal reference', line=dict(dash='dash')),
                 row=1, col=2
             )
             
@@ -662,62 +999,74 @@ class BootstrappingResult(BaseResult):
             
             plt.tight_layout()
             plt.show()
-    
-    def __repr__(self):
-        return f"<BootstrappingResult statistic={self.statistic}, n_samples={self.n_samples}, original={self.original_stat:.4f}>"
 
 
 class ComputationalStats:
     """
-    Enhanced class for computational statistics with improved functionality
+    Computational statistics: regression, interpolation, resampling
+    (bootstrap, jackknife, Monte Carlo, permutation), cross-validation
+    and clustering, over a pandas or polars DataFrame.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame, polars.DataFrame or numpy.ndarray
+        Dataset to analyze.
+    backend : {'pandas', 'polars'}, optional
+        Data engine. Auto-detected when None.
+    seed : int, optional
+        Seed for all stochastic methods. Every method also accepts a
+        ``random_state`` argument that overrides the instance seed for
+        that single call.
+
+    Examples
+    --------
+    >>> from statslibx import ComputationalStats
+    >>> from statslibx.datasets import load_iris
+    >>> cs = ComputationalStats(load_iris(), seed=42)
+    >>> boot = cs.bootstrap("sepal_length", n_samples=2000)
+    >>> boot.bca_ci  # doctest: +SKIP
     """
-    
+
     def __init__(
         self,
         data: Union[pd.DataFrame, np.ndarray],
         backend: Optional[Literal["pandas", "polars"]] = None,
         seed: Optional[int] = None,
-        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+        lang: Optional[str] = None,
     ):
-        """
-        Initialize ComputationalStats object.
-
-        Parameters
-        ----------
-        data : pd.DataFrame or np.ndarray
-            Input data.
-        backend : {'pandas', 'polars'}, optional
-            Data engine to use. Auto-detects from input type when None.
-        seed : int, optional
-            Random seed for reproducibility.
-        lang : {'es-ES', 'en-US'}, default 'es-ES'
-            Language for outputs.
-        """
+        if lang is not None:
+            warnings.warn(
+                "The 'lang' parameter is deprecated and ignored; "
+                "all output is in English.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self._backend = Backend(data, backend=backend)
         self.data = self._backend.df
-        
+
         self.seed = seed
-        if seed is not None:
-            np.random.seed(seed)
-        
+        self._rng = np.random.default_rng(seed)
+
         self._numeric_cols = self._backend.numeric_columns()
         self._categorical_cols = self._backend.categorical_columns()
-        self.lang = lang
-        
-        self._translations = {
-            'es-ES': {
-                'regression': 'Regresión',
-                'polynomial': 'Polinomial',
-                'interpolation': 'Interpolación',
-                'bootstrapping': 'Remuestreo Bootstrap'
-            },
-            'en-US': {
-                'regression': 'Regression',
-                'polynomial': 'Polynomial',
-                'interpolation': 'Interpolation',
-                'bootstrapping': 'Bootstrapping'
-            }
-        }
+
+    def _rng_for(self, random_state: Optional[int]) -> np.random.Generator:
+        """Per-call RNG: explicit random_state wins, else the instance RNG."""
+        if random_state is not None:
+            return np.random.default_rng(random_state)
+        return self._rng
+
+    def _seed_for(self, random_state: Optional[int]) -> Optional[int]:
+        """
+        Integer seed for APIs that take a seed instead of a Generator.
+        Derives a child seed from the instance RNG so the constructor
+        seed makes results reproducible.
+        """
+        if random_state is not None:
+            return random_state
+        if self.seed is not None:
+            return int(self._rng.integers(0, 2**31 - 1))
+        return None
 
     @classmethod
     def from_file(
@@ -726,7 +1075,7 @@ class ComputationalStats:
         backend: str = "pandas",
         sep: str = ",",
         seed: Optional[int] = None,
-        lang: Literal['es-ES', 'en-US'] = 'es-ES',
+        lang: Optional[str] = None,
     ) -> "ComputationalStats":
         """Load data from a file and return a ComputationalStats instance."""
         from .datasets import load_dataset
@@ -736,100 +1085,202 @@ class ComputationalStats:
             seed=seed,
             lang=lang,
         )
-    
+
     @property
     def backend(self):
-        """Return the active data engine ('pandas' or 'polars')."""
+        """Active data engine ('pandas' or 'polars')."""
         return self._backend.type
 
     @property
     def backend_engine(self) -> Backend:
-        """Return the internal Backend wrapper."""
+        """Internal Backend wrapper."""
         return self._backend
     
-    def regression(self, X: Union[List[str], str], y: str, 
-                   degree: int = 1, interaction_terms: bool = False) -> RegressionResult:
+    def regression(self, X: Union[List[str], str], y: str,
+                   degree: int = 1, interaction_terms: bool = False,
+                   cv_folds: Optional[int] = None,
+                   random_state: Optional[int] = None) -> Union[RegressionResult, Dict]:
         """
-        Perform polynomial regression
-        
-        Parameters:
-        -----------
+        Ordinary least squares regression, optionally polynomial or with
+        pairwise interaction terms.
+
+        Parameters
+        ----------
         X : str or list of str
-            Independent variable(s)
+            Independent variable(s).
         y : str
-            Dependent variable
-        degree : int
-            Polynomial degree (only for single variable)
-        interaction_terms : bool
-            Whether to include interaction terms (for multiple variables)
-        
-        Returns:
-        --------
-        RegressionResult object
+            Dependent variable.
+        degree : int, default 1
+            Polynomial degree (single predictor only; ignored with a
+            warning for multiple predictors).
+        interaction_terms : bool, default False
+            Include pairwise interaction terms (multiple predictors).
+        cv_folds : int, optional
+            When set, also run k-fold cross-validation and return
+            ``{'model': ..., 'cv': ...}``.
+        random_state : int, optional
+            Seed for the CV shuffling.
+
+        Returns
+        -------
+        RegressionResult or dict
         """
         pdf = self._backend.to_pandas()
         x_cols = [X] if isinstance(X, str) else list(X)
+        if degree > 1 and len(x_cols) > 1:
+            warnings.warn(
+                "Polynomial degree > 1 is only applied for a single predictor; "
+                "fitting a linear model in the given predictors instead.",
+                UserWarning,
+                stacklevel=2,
+            )
         X_data = pdf[x_cols]
         y_data = pdf[y]
-        
-        return RegressionResult(X_data, y_data, degree=degree, interaction_terms=interaction_terms)
-    
+
+        model = RegressionResult(X_data, y_data, degree=degree, interaction_terms=interaction_terms)
+        if cv_folds is None:
+            return model
+        cv = self.k_fold_cv(X, y, n_folds=cv_folds, degree=degree, random_state=random_state)
+        return {"model": model, "cv": cv}
+
     def linear_regression(self, X: Union[List[str], str], y: str) -> RegressionResult:
-        """Perform linear regression (wrapper for regression with degree=1)"""
+        """Linear regression (wrapper for :meth:`regression` with degree=1)."""
         return self.regression(X, y, degree=1)
-    
+
     def polynomial_regression(self, X: str, y: str, degree: int = 2) -> RegressionResult:
-        """Perform polynomial regression"""
+        """Polynomial regression on a single predictor."""
         return self.regression(X, y, degree=degree)
-    
-    def find_best_degree(self, X: str, y: str, max_degree: int = 5, 
-                         metric: Literal['r2', 'aic', 'bic'] = 'r2') -> Dict:
+
+    def bootstrap_regression(
+        self,
+        X: Union[List[str], str],
+        y: str,
+        n_samples: int = 1000,
+        degree: int = 1,
+        confidence_level: float = 0.95,
+        random_state: Optional[int] = None,
+    ) -> Dict:
         """
-        Find the best polynomial degree based on specified metric
-        
-        Parameters:
-        -----------
-        X : str
-            Independent variable
+        Bootstrap the regression coefficients by resampling rows
+        (case resampling).
+
+        Parameters
+        ----------
+        X : str or list of str
+            Independent variable(s).
         y : str
-            Dependent variable
-        max_degree : int
-            Maximum degree to test
-        metric : str
-            Metric to optimize ('r2', 'aic', 'bic')
-        
-        Returns:
-        --------
-        Dictionary with results for each degree
+            Dependent variable.
+        n_samples : int, default 1000
+            Number of bootstrap resamples.
+        degree : int, default 1
+            Polynomial degree (single predictor only).
+        confidence_level : float, default 0.95
+            Level for the percentile confidence intervals.
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        dict
+            'coefficients': DataFrame with one row per term (estimate,
+            bootstrap SE and percentile CI); 'distributions': array of
+            shape (n_samples, n_terms) with the replicates.
         """
+        pdf = self._backend.to_pandas()
+        x_cols = [X] if isinstance(X, str) else list(X)
+        data = pdf[x_cols + [y]].dropna()
+        n = len(data)
+        rng = self._rng_for(random_state)
+
+        base_model = RegressionResult(data[x_cols], data[y], degree=degree)
+        n_terms = len(base_model.coefficients)
+        draws = np.empty((n_samples, n_terms), dtype=float)
+        for i in range(n_samples):
+            idx = rng.integers(0, n, size=n)
+            sample = data.iloc[idx]
+            model = RegressionResult(sample[x_cols], sample[y], degree=degree)
+            draws[i] = model.coefficients
+
+        alpha = 1 - confidence_level
+        lower = np.percentile(draws, alpha / 2 * 100, axis=0)
+        upper = np.percentile(draws, (1 - alpha / 2) * 100, axis=0)
+        table = pd.DataFrame({
+            "term": base_model.all_feature_names,
+            "estimate": base_model.coefficients,
+            "boot_se": draws.std(axis=0, ddof=1),
+            "ci_lower": lower,
+            "ci_upper": upper,
+        })
+        return {"coefficients": table, "distributions": draws,
+                "n_samples": n_samples, "confidence_level": confidence_level}
+
+    def find_best_degree(self, X: str, y: str, max_degree: int = 5,
+                         metric: Literal['cv_rmse', 'cv_r2', 'aic', 'bic', 'r2'] = 'cv_rmse',
+                         n_folds: int = 5,
+                         random_state: Optional[int] = None) -> Dict:
+        """
+        Select the polynomial degree by cross-validation (default) or an
+        information criterion.
+
+        Parameters
+        ----------
+        X : str
+            Independent variable.
+        y : str
+            Dependent variable.
+        max_degree : int, default 5
+            Highest degree to evaluate.
+        metric : {'cv_rmse', 'cv_r2', 'aic', 'bic', 'r2'}, default 'cv_rmse'
+            Selection criterion. 'cv_*' use k-fold cross-validation;
+            'r2' is in-sample and systematically favors higher degrees
+            (kept for reference only, a warning is issued).
+        n_folds : int, default 5
+            Folds for the CV metrics.
+        random_state : int, optional
+            Seed for the CV shuffling.
+
+        Returns
+        -------
+        dict
+            Best entry (degree, metrics, fitted model) plus
+            'all_results' with every evaluated degree.
+        """
+        if metric == 'r2':
+            warnings.warn(
+                "metric='r2' is computed in-sample and always favors higher "
+                "degrees (overfitting); prefer 'cv_rmse' or 'cv_r2'.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        seed = self._seed_for(random_state)
         results = []
-        
         for degree in range(1, max_degree + 1):
             model = self.regression(X, y, degree=degree)
             metrics = model.summary()['metrics']
-            
-            results.append({
+            entry = {
                 'degree': degree,
                 'r2': metrics['R2'],
                 'adj_r2': metrics['Adjusted R2'],
                 'aic': metrics['AIC'],
                 'bic': metrics['BIC'],
                 'rmse': metrics['RMSE'],
-                'model': model
-            })
-        
-        # Find best based on metric
-        if metric == 'r2':
-            best_idx = np.argmax([r['r2'] for r in results])
-        elif metric in ['aic', 'bic']:
-            best_idx = np.argmin([r[metric] for r in results])
-        else:
-            best_idx = np.argmax([r[metric] for r in results])
-        
-        best_result = results[best_idx]
+                'model': model,
+            }
+            if metric in ('cv_rmse', 'cv_r2'):
+                cv = self.k_fold_cv(X, y, n_folds=n_folds, degree=degree, random_state=seed)
+                entry['cv_r2'] = cv['mean_r2']
+                entry['cv_rmse'] = cv['mean_rmse']
+            results.append(entry)
+
+        if metric in ('aic', 'bic', 'cv_rmse'):
+            best_idx = int(np.argmin([r[metric] for r in results]))
+        else:  # r2, cv_r2
+            best_idx = int(np.argmax([r[metric] for r in results]))
+
+        best_result = dict(results[best_idx])
         best_result['best_metric'] = metric
         best_result['all_results'] = results
-        
         return best_result
     
     def interpolation(self, points: List[Tuple[float, float]], 
@@ -853,89 +1304,151 @@ class ComputationalStats:
         """
         return InterpolationResult(points, method=method, spline_degree=spline_degree)
     
+    def bootstrap(self, column: str, n_samples: int = 1000,
+                  statistic: Literal['mean', 'median', 'std', 'custom'] = 'mean',
+                  confidence_level: float = 0.95,
+                  custom_func: Optional[callable] = None,
+                  random_state: Optional[int] = None) -> BootstrappingResult:
+        """
+        Bootstrap a statistic of a column.
+
+        Parameters
+        ----------
+        column : str
+            Numeric column to resample (NaN dropped).
+        n_samples : int, default 1000
+            Number of bootstrap resamples.
+        statistic : {'mean', 'median', 'std', 'custom'}, default 'mean'
+            Statistic to bootstrap.
+        confidence_level : float, default 0.95
+            Level for the confidence intervals.
+        custom_func : callable, optional
+            Custom statistic (used with ``statistic='custom'``).
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        BootstrappingResult
+            Includes percentile, basic, normal and BCa intervals; BCa
+            is the recommended interval (Efron, 1987).
+
+        References
+        ----------
+        Efron, B. (1987). Better bootstrap confidence intervals.
+        JASA 82, 171-185.
+        """
+        data = self._backend.col_clean(column)
+        return BootstrappingResult(
+            data, n_samples, statistic, confidence_level, custom_func,
+            random_state=self._seed_for(random_state),
+        )
+
     def bootstrapping(self, column: str, n_samples: int = 1000,
                      statistic: Literal['mean', 'median', 'std', 'custom'] = 'mean',
                      confidence_level: float = 0.95,
-                     custom_func: Optional[callable] = None) -> BootstrappingResult:
+                     custom_func: Optional[callable] = None,
+                     random_state: Optional[int] = None) -> BootstrappingResult:
+        """Deprecated alias of :meth:`bootstrap`."""
+        warnings.warn(
+            "bootstrapping() is deprecated; use bootstrap() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.bootstrap(
+            column, n_samples=n_samples, statistic=statistic,
+            confidence_level=confidence_level, custom_func=custom_func,
+            random_state=random_state,
+        )
+
+    def k_means(self, k: int, max_iters: int = 100,
+                init_method: Literal['random', 'kmeans++'] = 'kmeans++',
+                engine: Literal['native', 'sklearn'] = 'native',
+                random_state: Optional[int] = None) -> Dict:
         """
-        Perform bootstrapping on a column
-        
-        Parameters:
-        -----------
-        column : str
-            Column name to bootstrap
-        n_samples : int
-            Number of bootstrap samples
-        statistic : str
-            Statistic to compute ('mean', 'median', 'std', 'custom')
-        confidence_level : float
-            Confidence level for intervals
-        custom_func : callable, optional
-            Custom function for statistic
-        
-        Returns:
-        --------
-        BootstrappingResult object
-        """
-        data = self._backend.col_numpy(column)
-        data = data[~np.isnan(data)]
-        return BootstrappingResult(data, n_samples, statistic, confidence_level, custom_func)
-    
-    def k_means(self, k: int, max_iters: int = 100, 
-                init_method: Literal['random', 'kmeans++'] = 'kmeans++') -> Dict:
-        """
-        Perform K-means clustering
-        
-        Parameters:
-        -----------
+        K-means clustering on all numeric columns.
+
+        Parameters
+        ----------
         k : int
-            Number of clusters
-        max_iters : int
-            Maximum number of iterations
-        init_method : str
-            Initialization method ('random' or 'kmeans++')
-        
-        Returns:
-        --------
-        Dictionary with clustering results
+            Number of clusters.
+        max_iters : int, default 100
+            Maximum iterations.
+        init_method : {'kmeans++', 'random'}, default 'kmeans++'
+            Centroid initialization.
+        engine : {'native', 'sklearn'}, default 'native'
+            'sklearn' requires scikit-learn and uses 10 restarts.
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        dict
+            Keys: centroids, labels, inertia, silhouette, n_iterations,
+            engine.
         """
         X = np.column_stack([self._backend.col_numpy(c) for c in self._numeric_cols])
-        
-        # K-means++ initialization
+        # Drop rows with NaN
+        mask = ~np.isnan(X).any(axis=1)
+        X = X[mask]
+
+        if engine == 'sklearn':
+            try:
+                from sklearn.cluster import KMeans
+                from sklearn.metrics import silhouette_score
+            except ImportError as e:
+                raise ImportError(
+                    "engine='sklearn' requires scikit-learn. "
+                    "pip install statslibx[sklearn]"
+                ) from e
+            km = KMeans(
+                n_clusters=k,
+                init='k-means++' if init_method == 'kmeans++' else 'random',
+                max_iter=max_iters,
+                n_init=10,
+                random_state=self._seed_for(random_state),
+            )
+            labels = km.fit_predict(X)
+            silhouette = float(silhouette_score(X, labels)) if len(np.unique(labels)) > 1 else -1.0
+            return {
+                'centroids': km.cluster_centers_,
+                'labels': labels,
+                'inertia': float(km.inertia_),
+                'silhouette': silhouette,
+                'n_iterations': int(km.n_iter_),
+                'engine': 'sklearn',
+            }
+
+        # Native implementation
+        rng = self._rng_for(random_state)
         if init_method == 'kmeans++':
-            centroids = [X[np.random.choice(len(X))]]
+            centroids = [X[rng.integers(len(X))]]
             for _ in range(1, k):
                 distances = np.min([np.linalg.norm(X - c, axis=1) for c in centroids], axis=0)
                 probabilities = distances / np.sum(distances)
-                next_centroid = X[np.random.choice(len(X), p=probabilities)]
+                next_centroid = X[rng.choice(len(X), p=probabilities)]
                 centroids.append(next_centroid)
             centroids = np.array(centroids)
         else:  # random
-            np.random.seed(self.seed)
-            centroids = X[np.random.choice(len(X), k, replace=False)]
+            centroids = X[rng.choice(len(X), k, replace=False)]
         
         for iteration in range(max_iters):
-            # Assign clusters
             distances = np.linalg.norm(X[:, None] - centroids, axis=2)
             labels = np.argmin(distances, axis=1)
-            
-            # Update centroids
             new_centroids = np.array([X[labels == i].mean(axis=0) if len(X[labels == i]) > 0 
                                       else centroids[i] for i in range(k)])
-            
-            # Check convergence
             if np.allclose(centroids, new_centroids):
                 break
-            
             centroids = new_centroids
         
-        # Compute inertia (within-cluster sum of squares)
         inertia = np.sum([np.sum((X[labels == i] - centroids[i]) ** 2) for i in range(k)])
         
-        # Compute silhouette score if possible
         if len(np.unique(labels)) > 1:
-            from sklearn.metrics import silhouette_score
-            silhouette = silhouette_score(X, labels)
+            try:
+                from sklearn.metrics import silhouette_score
+                silhouette = silhouette_score(X, labels)
+            except ImportError:
+                silhouette = -1
         else:
             silhouette = -1
         
@@ -944,30 +1457,35 @@ class ComputationalStats:
             'labels': labels,
             'inertia': inertia,
             'silhouette': silhouette,
-            'n_iterations': iteration + 1
+            'n_iterations': iteration + 1,
+            'engine': 'native',
         }
     
-    def elbow_method(self, max_k: int = 10) -> Dict:
+    def elbow_method(self, max_k: int = 10, random_state: Optional[int] = None) -> Dict:
         """
-        Compute elbow method for K-means clustering
-        
-        Parameters:
-        -----------
-        max_k : int
-            Maximum number of clusters to test
-        
-        Returns:
-        --------
-        Dictionary with inertias for each k
+        Elbow diagnostics for choosing the number of K-means clusters.
+
+        Parameters
+        ----------
+        max_k : int, default 10
+            Largest k to evaluate (starts at 2).
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        dict
+            Keys: k_values, inertias, silhouettes.
         """
+        seed = self._seed_for(random_state)
         inertias = []
         silhouettes = []
-        
+
         for k in range(2, max_k + 1):
-            result = self.k_means(k)
+            result = self.k_means(k, random_state=seed)
             inertias.append(result['inertia'])
             silhouettes.append(result['silhouette'])
-        
+
         return {
             'k_values': list(range(2, max_k + 1)),
             'inertias': inertias,
@@ -977,32 +1495,27 @@ class ComputationalStats:
     def correlation_analysis(self, method: Literal['pearson', 'spearman', 'kendall'] = 'pearson') -> Dict:
         """
         Perform correlation analysis on numeric columns
-        
-        Parameters:
-        -----------
-        method : str
-            Correlation method ('pearson', 'spearman', 'kendall')
-        
-        Returns:
-        --------
-        Dictionary with correlation matrix and p-values
         """
         corr_matrix = self._backend.corr(method=method)
         
-        # Compute p-values for Pearson correlation
         p_values = None
         if method == 'pearson':
-            n = self._backend.shape[0]
-            p_values = pd.DataFrame(index=self._numeric_cols, columns=self._numeric_cols)
-            for i in range(len(self._numeric_cols)):
-                for j in range(len(self._numeric_cols)):
-                    if i <= j:
-                        corr, p = scipy_stats.pearsonr(
-                            self._backend.col_numpy(self._numeric_cols[i]),
-                            self._backend.col_numpy(self._numeric_cols[j])
-                        )
-                        p_values.iloc[i, j] = p
-                        p_values.iloc[j, i] = p
+            cols = self._numeric_cols
+            n_cols = len(cols)
+            # Build numeric matrix once
+            mat = np.column_stack([self._backend.col_numpy(c) for c in cols]).astype(float)
+            # Pairwise complete: use scipy on matrix via loop but cached columns
+            p_values = pd.DataFrame(np.ones((n_cols, n_cols)), index=cols, columns=cols)
+            for i in range(n_cols):
+                for j in range(i, n_cols):
+                    a, b = mat[:, i], mat[:, j]
+                    mask = ~(np.isnan(a) | np.isnan(b))
+                    if mask.sum() < 3:
+                        p = 1.0
+                    else:
+                        _, p = scipy_stats.pearsonr(a[mask], b[mask])
+                    p_values.iloc[i, j] = p
+                    p_values.iloc[j, i] = p
         
         return {
             'correlation_matrix': corr_matrix,
@@ -1014,16 +1527,10 @@ class ComputationalStats:
                                  annot: bool = True, interactive: bool = False, **kwargs):
         """
         Plot correlation heatmap
-        
-        Parameters:
-        -----------
-        method : str
-            Correlation method
-        annot : bool
-            Whether to show correlation values
-        interactive : bool
-            Whether to use interactive plot
         """
+        plt = _plt()
+        sns = _sns()
+        px = _px()
         corr_result = self.correlation_analysis(method)
         corr_matrix = corr_result['correlation_matrix']
         
@@ -1043,17 +1550,15 @@ class ComputationalStats:
     
     def descriptive_statistics(self, by: Optional[str] = None) -> pd.DataFrame:
         """
-        Compute descriptive statistics
-        
-        Parameters:
-        -----------
-        by : str, optional
-            Column to group by
-        
-        Returns:
-        --------
-        DataFrame with descriptive statistics
+        Deprecated: use :class:`statslibx.DescriptiveStats` (``summary()``
+        and ``summary_by()``) instead.
         """
+        warnings.warn(
+            "ComputationalStats.descriptive_statistics() is deprecated; "
+            "use DescriptiveStats.summary() / DescriptiveStats.summary_by() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         pdf = self._backend.to_pandas()
         if by is None or by not in self._categorical_cols:
             return pdf[self._numeric_cols].describe()
@@ -1062,20 +1567,10 @@ class ComputationalStats:
     def plot_distribution(self, column: str, by: Optional[str] = None, 
                           kind: Literal['hist', 'box', 'violin'] = 'hist',
                           interactive: bool = False, **kwargs):
-        """
-        Plot distribution of a column
-        
-        Parameters:
-        -----------
-        column : str
-            Column name
-        by : str, optional
-            Column to group by
-        kind : str
-            Type of plot ('hist', 'box', 'violin')
-        interactive : bool
-            Whether to use interactive plot
-        """
+        """Plot distribution of a column"""
+        plt = _plt()
+        sns = _sns()
+        px = _px()
         pdf = self._backend.to_pandas()
         if interactive:
             if kind == 'hist':
@@ -1111,25 +1606,443 @@ class ComputationalStats:
             plt.tight_layout()
             plt.show()
 
+    # ============= MONTE CARLO / JACKKNIFE / CV =============
+
+    def monte_carlo_mean(
+        self,
+        column: str,
+        n_simulations: int = 10000,
+        sample_size: Optional[int] = None,
+        confidence: float = 0.95,
+        random_state: Optional[int] = None,
+    ) -> 'MonteCarloResult':
+        """
+        Simulate the sampling distribution of the mean by resampling the
+        empirical distribution (a bootstrap of the mean).
+
+        Parameters
+        ----------
+        column : str
+            Numeric column (NaN dropped).
+        n_simulations : int, default 10000
+            Number of simulated samples.
+        sample_size : int, optional
+            Size of each simulated sample (defaults to the data size).
+        confidence : float, default 0.95
+            Level for the percentile interval.
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        MonteCarloResult
+        """
+        vals = self._backend.col_clean(column)
+        n = sample_size or len(vals)
+        rng = self._rng_for(random_state)
+        # Resample from empirical distribution
+        draws = rng.choice(vals, size=(n_simulations, n), replace=True)
+        sim = draws.mean(axis=1)
+        return MonteCarloResult(
+            name="Monte Carlo Mean",
+            simulations=sim,
+            point_estimate=float(np.mean(vals)),
+            confidence=confidence,
+            params={"column": column, "n": n, "n_simulations": n_simulations},
+        )
+
+    def monte_carlo_regression(
+        self,
+        X: Union[List[str], str],
+        y: str,
+        n_simulations: int = 1000,
+        confidence: float = 0.95,
+        random_state: Optional[int] = None,
+    ) -> 'MonteCarloResult':
+        """
+        Monte Carlo prediction bands by resampling regression residuals.
+
+        Fits an OLS model and simulates new responses as
+        ``fitted + resampled residual``; the ``extra['prediction_bands']``
+        entry holds pointwise percentile bands.
+        """
+        model = self.regression(X, y, degree=1)
+        resid = model.residuals
+        rng = self._rng_for(random_state)
+        # Simulate new responses = fitted + resampled residual
+        preds = []
+        fitted = model.y_pred
+        for _ in range(n_simulations):
+            noise = rng.choice(resid, size=len(resid), replace=True)
+            preds.append(fitted + noise)
+        sims = np.asarray(preds)
+        # Store mean predicted path distribution at each point — use overall mean of sims
+        return MonteCarloResult(
+            name="Monte Carlo Regression",
+            simulations=sims.mean(axis=1),
+            point_estimate=float(np.mean(fitted)),
+            confidence=confidence,
+            params={
+                "X": X, "y": y,
+                "n_simulations": n_simulations,
+                "rmse": float(model.rmse),
+            },
+            extra={"prediction_bands": np.percentile(
+                sims, [(1 - confidence) / 2 * 100, (1 + confidence) / 2 * 100], axis=0
+            ).tolist()},
+        )
+
+    def simulate_distribution(
+        self,
+        dist: Literal['normal', 't', 'chi2', 'binomial', 'uniform'] = 'normal',
+        n_simulations: int = 10000,
+        size: int = 100,
+        confidence: float = 0.95,
+        random_state: Optional[int] = None,
+        **dist_params,
+    ) -> 'MonteCarloResult':
+        """
+        Simulate the sampling distribution of the mean of a named
+        distribution.
+
+        Parameters
+        ----------
+        dist : {'normal', 't', 'chi2', 'binomial', 'uniform'}, default 'normal'
+            Distribution to sample from.
+        n_simulations : int, default 10000
+            Number of simulated samples.
+        size : int, default 100
+            Size of each simulated sample.
+        confidence : float, default 0.95
+            Level for the percentile interval.
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+        **dist_params
+            Distribution parameters (loc/scale, df, n/p, low/high).
+
+        Returns
+        -------
+        MonteCarloResult
+        """
+        rng = self._rng_for(random_state)
+        if dist == 'normal':
+            loc = dist_params.get('loc', 0.0)
+            scale = dist_params.get('scale', 1.0)
+            samples = rng.normal(loc, scale, size=(n_simulations, size))
+        elif dist == 't':
+            df = dist_params.get('df', 10)
+            samples = rng.standard_t(df, size=(n_simulations, size))
+        elif dist == 'chi2':
+            df = dist_params.get('df', 5)
+            samples = rng.chisquare(df, size=(n_simulations, size))
+        elif dist == 'binomial':
+            n = dist_params.get('n', 10)
+            p = dist_params.get('p', 0.5)
+            samples = rng.binomial(n, p, size=(n_simulations, size))
+        elif dist == 'uniform':
+            low = dist_params.get('low', 0.0)
+            high = dist_params.get('high', 1.0)
+            samples = rng.uniform(low, high, size=(n_simulations, size))
+        else:
+            raise ValueError(f"Unknown dist: {dist}")
+        sim_means = samples.mean(axis=1)
+        return MonteCarloResult(
+            name=f"Simulate {dist}",
+            simulations=sim_means,
+            point_estimate=float(np.mean(sim_means)),
+            confidence=confidence,
+            params={"dist": dist, "size": size, "n_simulations": n_simulations, **dist_params},
+        )
+
+    def jackknife(
+        self,
+        column: str,
+        statistic: Literal['mean', 'median', 'std'] = 'mean',
+        d: int = 1,
+        n_subsets: int = 1000,
+        random_state: Optional[int] = None,
+    ) -> 'JackknifeResult':
+        """
+        Jackknife estimate of bias and standard error.
+
+        Parameters
+        ----------
+        column : str
+            Numeric column (NaN dropped).
+        statistic : {'mean', 'median', 'std'}, default 'mean'
+            Statistic to jackknife.
+        d : int, default 1
+            Number of observations to delete per replicate. ``d=1`` is
+            the exact leave-one-out jackknife; ``d>1`` (delete-d) uses
+            random subsets and is recommended for non-smooth statistics
+            such as the median.
+        n_subsets : int, default 1000
+            Number of random subsets for the delete-d jackknife.
+        random_state : int, optional
+            Seed for the delete-d subsets.
+
+        Returns
+        -------
+        JackknifeResult
+
+        References
+        ----------
+        Efron, B. & Tibshirani, R. (1993). An Introduction to the
+        Bootstrap. Chapman & Hall. (Ch. 11 for delete-d.)
+        """
+        vals = self._backend.col_clean(column)
+        n = len(vals)
+        stat_fn = getattr(np, statistic)
+        theta = float(stat_fn(vals))
+
+        if d <= 1:
+            leave_one = np.empty(n, dtype=float)
+            for i in range(n):
+                leave_one[i] = stat_fn(np.delete(vals, i))
+            theta_bar = float(np.mean(leave_one))
+            bias = (n - 1) * (theta_bar - theta)
+            se = float(np.sqrt(((n - 1) / n) * np.sum((leave_one - theta_bar) ** 2)))
+            replicates = leave_one
+            params = {"column": column, "n": n, "d": 1}
+        else:
+            if d >= n:
+                raise ValueError("d must be smaller than the sample size")
+            rng = self._rng_for(random_state)
+            replicates = np.empty(n_subsets, dtype=float)
+            for i in range(n_subsets):
+                keep = rng.choice(n, size=n - d, replace=False)
+                replicates[i] = stat_fn(vals[keep])
+            theta_bar = float(np.mean(replicates))
+            bias = (n - d) / d * (theta_bar - theta) * d / (n - d)  # first-order
+            se = float(np.sqrt((n - d) / (d * n_subsets) * np.sum((replicates - theta_bar) ** 2)))
+            params = {"column": column, "n": n, "d": d, "n_subsets": n_subsets}
+
+        return JackknifeResult(
+            statistic=statistic,
+            point_estimate=theta,
+            bias=float(bias),
+            std_error=se,
+            leave_one_out=replicates,
+            params=params,
+        )
+
+    def k_fold_cv(
+        self,
+        X: Union[List[str], str],
+        y: str,
+        n_folds: int = 5,
+        degree: int = 1,
+        stratify: Optional[str] = None,
+        random_state: Optional[int] = None,
+    ) -> Dict:
+        """
+        K-fold cross-validation for polynomial/linear regression.
+
+        Parameters
+        ----------
+        X : str or list of str
+            Independent variable(s).
+        y : str
+            Dependent variable.
+        n_folds : int, default 5
+            Number of folds.
+        degree : int, default 1
+            Polynomial degree (single predictor only).
+        stratify : str, optional
+            Categorical column; folds preserve its class proportions
+            (stratified CV).
+        random_state : int, optional
+            Seed (overrides the instance seed for this call).
+
+        Returns
+        -------
+        dict
+            Keys: folds (per-fold r2/rmse/mae), mean_r2, mean_rmse,
+            mean_mae, n_folds.
+        """
+        pdf = self._backend.to_pandas()
+        x_cols = [X] if isinstance(X, str) else list(X)
+        n = len(pdf)
+        rng = self._rng_for(random_state)
+
+        if stratify is not None:
+            if stratify not in pdf.columns:
+                raise ValueError(f"Stratification column '{stratify}' not found.")
+            # Assign fold ids round-robin within each class after shuffling.
+            fold_ids = np.empty(n, dtype=int)
+            for _, idx in pdf.groupby(stratify).indices.items():
+                idx = np.asarray(idx)
+                shuffled = rng.permutation(idx)
+                fold_ids[shuffled] = np.arange(len(shuffled)) % n_folds
+            folds = [np.where(fold_ids == i)[0] for i in range(n_folds)]
+        else:
+            indices = rng.permutation(n)
+            folds = np.array_split(indices, n_folds)
+
+        scores = []
+        for i in range(n_folds):
+            test_idx = folds[i]
+            if len(test_idx) == 0:
+                continue
+            train_idx = np.concatenate([folds[j] for j in range(n_folds) if j != i])
+            train = pdf.iloc[train_idx]
+            test = pdf.iloc[test_idx]
+            model = RegressionResult(train[x_cols], train[y], degree=degree)
+            y_hat = model.predict(test[x_cols].values)
+            y_true = test[y].values
+            ss_res = np.sum((y_true - y_hat) ** 2)
+            ss_tot = np.sum((y_true - y_true.mean()) ** 2)
+            r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+            rmse = float(np.sqrt(np.mean((y_true - y_hat) ** 2)))
+            mae = float(np.mean(np.abs(y_true - y_hat)))
+            scores.append({
+                "fold": i + 1, "r2": float(r2), "rmse": rmse,
+                "mae": mae, "n_test": len(test_idx),
+            })
+        return {
+            "folds": scores,
+            "mean_r2": float(np.mean([s["r2"] for s in scores])),
+            "mean_rmse": float(np.mean([s["rmse"] for s in scores])),
+            "mean_mae": float(np.mean([s["mae"] for s in scores])),
+            "n_folds": n_folds,
+        }
+
+    def loo_cv(
+        self,
+        X: Union[List[str], str],
+        y: str,
+        degree: int = 1,
+    ) -> Dict:
+        """
+        Leave-one-out cross-validation (k-fold with k = n).
+
+        Deterministic: every observation is the test set exactly once.
+
+        Returns
+        -------
+        dict
+            Same structure as :meth:`k_fold_cv`.
+        """
+        n = len(self._backend.to_pandas())
+        return self.k_fold_cv(X, y, n_folds=n, degree=degree, random_state=0)
+
+    def bootstrap_validation(
+        self,
+        X: Union[List[str], str],
+        y: str,
+        n_bootstrap: int = 200,
+        degree: int = 1,
+        random_state: Optional[int] = None,
+    ) -> Dict:
+        """
+        Out-of-bag bootstrap validation for regression.
+
+        Fits on bootstrap resamples and evaluates on the out-of-bag
+        rows; reports mean OOB R-squared and RMSE.
+        """
+        pdf = self._backend.to_pandas()
+        x_cols = [X] if isinstance(X, str) else list(X)
+        n = len(pdf)
+        rng = self._rng_for(random_state)
+        oob_r2, oob_rmse = [], []
+        for _ in range(n_bootstrap):
+            boot_idx = rng.integers(0, n, size=n)
+            oob_mask = np.ones(n, dtype=bool)
+            oob_mask[np.unique(boot_idx)] = False
+            if oob_mask.sum() < 2:
+                continue
+            train = pdf.iloc[boot_idx]
+            test = pdf.iloc[oob_mask]
+            model = RegressionResult(train[x_cols], train[y], degree=degree)
+            y_hat = model.predict(test[x_cols].values)
+            y_true = test[y].values
+            ss_res = np.sum((y_true - y_hat) ** 2)
+            ss_tot = np.sum((y_true - y_true.mean()) ** 2)
+            oob_r2.append(1 - ss_res / ss_tot if ss_tot > 0 else 0.0)
+            oob_rmse.append(float(np.sqrt(np.mean((y_true - y_hat) ** 2))))
+        return {
+            "mean_oob_r2": float(np.mean(oob_r2)) if oob_r2 else None,
+            "mean_oob_rmse": float(np.mean(oob_rmse)) if oob_rmse else None,
+            "n_bootstrap": n_bootstrap,
+            "n_valid": len(oob_r2),
+        }
+
+    # ============= PERMUTATION / POWER (facade over InferentialStats) =============
+
+    def permutation_test(
+        self,
+        column1: str,
+        column2: str,
+        statistic: Literal['mean', 'median'] = 'mean',
+        alternative: Literal['two-sided', 'less', 'greater'] = 'two-sided',
+        alpha: float = 0.05,
+        n_permutations: int = 10000,
+        random_state: Optional[int] = None,
+    ):
+        """
+        Permutation test for the difference of means/medians.
+
+        Thin facade over
+        :meth:`statslibx.InferentialStats.permutation_test` using this
+        instance's data and seed.
+        """
+        from .inferential import InferentialStats
+        return InferentialStats(self.data, backend=self.backend).permutation_test(
+            column1, column2, statistic=statistic, alternative=alternative,
+            alpha=alpha, n_permutations=n_permutations,
+            random_state=self._seed_for(random_state),
+        )
+
+    def power_ttest(self, *args, **kwargs):
+        """
+        Analytical t-test power. Facade over
+        :meth:`statslibx.InferentialStats.power_ttest`.
+        """
+        from .inferential import InferentialStats
+        return InferentialStats(self.data, backend=self.backend).power_ttest(*args, **kwargs)
+
     def help(self) -> None:
-        """Display help for ComputationalStats methods."""
+        """Print a quick reference of the ComputationalStats API."""
         text = """
-ComputationalStats — regression, interpolation, bootstrapping, clustering.
+================================================================================
+ComputationalStats - quick reference
+================================================================================
+All stochastic methods honor the constructor seed; pass random_state to
+override for a single call.
 
-Methods:
-  .regression(X, y, degree=1, interaction_terms=False)
-  .linear_regression(X, y)
-  .polynomial_regression(X, y, degree=2)
-  .find_best_degree(X, y, max_degree=5, metric='r2')
-  .interpolation(points, method='lagrange', spline_degree=3)
-  .bootstrapping(column, n_samples=1000, statistic='mean', confidence_level=0.95)
-  .k_means(k, max_iters=100, init_method='kmeans++')
+Regression:
+  .regression(X, y, degree=1, interaction_terms=False, cv_folds=None)
+  .linear_regression(X, y) / .polynomial_regression(X, y, degree=2)
+  .bootstrap_regression(X, y, n_samples=1000)   Coefficient bootstrap CIs
+  .find_best_degree(X, y, max_degree=5, metric='cv_rmse')
+
+Resampling and simulation:
+  .bootstrap(column, n_samples=1000, statistic='mean')
+      -> BootstrappingResult (.bca_ci recommended, .percentile_ci,
+         .basic_ci, .normal_ci, .std_error, .bias)
+  .jackknife(column, statistic='mean', d=1)     Delete-1 or delete-d
+  .monte_carlo_mean(column, n_simulations=10000)
+  .monte_carlo_regression(X, y, n_simulations=1000)
+  .simulate_distribution(dist='normal', n_simulations=10000, size=100)
+  .permutation_test(col1, col2, statistic='mean')
+
+Validation:
+  .k_fold_cv(X, y, n_folds=5, stratify=None)    R2 / RMSE / MAE per fold
+  .loo_cv(X, y)                                 Leave-one-out
+  .bootstrap_validation(X, y, n_bootstrap=200)  Out-of-bag metrics
+
+Clustering:
+  .k_means(k, init_method='kmeans++', engine='native'|'sklearn')
   .elbow_method(max_k=10)
-  .correlation_analysis(method='pearson')
-  .plot_correlation_heatmap(method='pearson')
-  .descriptive_statistics(by=None)
-  .plot_distribution(column, by=None, kind='hist')
 
-Accepts pandas or polars DataFrames via Backend.
+Other:
+  .interpolation(points, method='lagrange'|'newton'|'spline')
+  .correlation_analysis(method='pearson')       Matrix + p-values
+  .power_ttest(effect_size, n=...)              Facade to InferentialStats
+
+Loading:
+  ComputationalStats.from_file(path, backend='pandas'|'polars', seed=...)
+================================================================================
+For details: help(ComputationalStats.<method>)
 """
         print(text)

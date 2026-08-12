@@ -1,4 +1,4 @@
-"""Smoke tests for statslibx v0.3.0."""
+"""Smoke tests for statslibx."""
 
 import importlib.util
 
@@ -11,6 +11,7 @@ from statslibx import (
     DescriptiveStats,
     InferentialStats,
     Preprocessing,
+    VIEWX_AVAILABLE,
     __version__,
 )
 from statslibx.backend import Backend, resolve_backend
@@ -21,10 +22,22 @@ requires_polars = pytest.mark.skipif(
     not POLARS_INSTALLED,
     reason="polars not installed",
 )
+requires_viewx = pytest.mark.skipif(
+    not VIEWX_AVAILABLE,
+    reason="viewx not installed",
+)
 
 
 def test_version():
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.3.1"
+
+
+def test_import_without_viewx_classes():
+    """Core import works; ViewX classes may be None when viewx is missing."""
+    from statslibx.viewx.adapters import to_report_data as trd
+    df = load_iris()
+    payload = trd(DescriptiveStats(df).summary())
+    assert "title" in payload
 
 
 def test_backend_pandas():
@@ -168,3 +181,40 @@ def test_to_report_data():
     assert "title" in payload
     assert "sections" in payload
     assert "tables" in payload
+
+
+@requires_viewx
+def test_to_report_data_regression():
+    from statslibx.viewx.adapters import to_report_data
+
+    df = load_iris()
+    model = ComputationalStats(df).regression("sepal_length", "sepal_width")
+    payload = to_report_data(model, include_figures=True)
+    assert payload["metadata"]["result_type"] == "RegressionResult"
+    assert len(payload.get("figures", [])) >= 1
+
+
+@requires_viewx
+def test_summary_to_html(tmp_path):
+    df = load_iris()
+    summary = DescriptiveStats(df).summary()
+    out = summary.to_html(
+        filename=str(tmp_path / "test.html"),
+        include_figures=True,
+        data=df,
+        show=False,
+    )
+    assert out.endswith(".html")
+    assert (tmp_path / "test.html").exists()
+
+
+@requires_viewx
+def test_presentation_export(tmp_path):
+    df = load_iris()
+    result = InferentialStats(df).t_test_1sample("sepal_length", popmean=5.0)
+    out = result.to_presentation(
+        filename=str(tmp_path / "deck.html"),
+        show=False,
+        open_browser=False,
+    )
+    assert (tmp_path / "deck.html").exists()

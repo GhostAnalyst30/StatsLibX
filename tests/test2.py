@@ -1,39 +1,18 @@
-from statslibx.viewx import HTML
-from statslibx.datasets import load_iris
-import plotly.express as px
+"""ViewX integration pipeline demo — statslibx analysis then ViewX export."""
+
+from statslibx import DescriptiveStats, load_iris
 
 data = load_iris()
+summary = DescriptiveStats(data).summary()
 
-page = HTML(
-    data=data,
-    title="Iris DashBoard",
-    num_cols=2,
-    num_rows=2,
-    theme="dark"
-)
-
-page.add_text(
-    content="""Este dashboard fue hecho con el fin
-    de poner a prueba la herramienta de Viewx\n
-    \t\t\t- Emmanuel Ascendra""",
-    slot_grid=(1, 1, 1, 1)
-)
-
-page.add_table(
-    df=data.head(10),
-    title="Dataset de Iris",
-    slot_grid=(1, 2, 1, 1)
-)
-
-scatter_plot = px.scatter(
-    data_frame=data,
-    x="sepal_length",
-    y="petal_length"
-)
-
-page.add_plot(
-    fig=scatter_plot,
-    slot_grid=(2, 1, 1, 4)
-)
-
-page.generate(filename="Dashboard_Iris.html")
+try:
+    path = summary.to_html(
+        filename="Dashboard_Iris.html",
+        theme="dark_enterprise",
+        include_figures=True,
+        data=data,
+        show=False,
+    )
+    print(f"Dashboard exported: {path}")
+except ImportError as exc:
+    print(exc)

@@ -234,15 +234,19 @@ class _ComputationalStats:
     def correlation_analysis(self, method='pearson'):
         return {'correlation_matrix': self._df.select_dtypes(include='number').corr(method=method)}
 
-    def bootstrapping(self, column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None):
+    def bootstrap(self, column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None, random_state=None):
         col = self._df[column].dropna().values
+        rng = np.random.default_rng(random_state)
         stats = []
         for _ in range(n_samples):
-            sample = np.random.choice(col, size=len(col), replace=True)
+            sample = rng.choice(col, size=len(col), replace=True)
             stats.append(np.mean(sample) if statistic == 'mean' else np.median(sample))
         lo = np.percentile(stats, (1 - confidence_level) / 2 * 100)
         hi = np.percentile(stats, (1 + confidence_level) / 2 * 100)
         return type('B', (), {'summary': lambda: {'ci': (lo, hi), 'original': float(np.mean(col))}})()
+
+    # Deprecated alias kept for compatibility with older examples.
+    bootstrapping = bootstrap
 
 class _Preprocessing:
     def __init__(self, data):
@@ -298,7 +302,7 @@ stub_module.InferentialStats = _InferentialStats
 stub_module.ComputationalStats = _ComputationalStats
 stub_module.Preprocessing = _Preprocessing
 stub_module.datasets = _Datasets
-stub_module.__version__ = '0.3.0-stub'
+stub_module.__version__ = '0.3.1-stub'
 sys.modules['statslibx'] = stub_module
 datasets_mod = type(sys)('statslibx.datasets')
 datasets_mod.load_iris = _Datasets.load_iris

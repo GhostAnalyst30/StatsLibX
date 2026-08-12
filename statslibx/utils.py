@@ -100,7 +100,7 @@ class UtilsStats:
     
     
     def __init__(self) -> None:
-        """Inicializar la clase utilitaria"""
+        """Initialize the utility class."""
         self._plot_backend: str = 'seaborn'
         self._default_figsize: Tuple[int, int] = (12, 5)
         self._save_fig: bool = False
@@ -112,7 +112,7 @@ class UtilsStats:
         self._setup_plotting_style()
     
     def _setup_plotting_style(self) -> None:
-        """Configurar estilos de plotting por defecto"""
+        """Configure default plotting styles."""
         plt.rcParams['figure.figsize'] = [self._default_figsize[0], self._default_figsize[1]]
         plt.rcParams['figure.dpi'] = self._fig_dpi
         plt.rcParams['savefig.dpi'] = self._fig_dpi
@@ -122,11 +122,11 @@ class UtilsStats:
         plt.rcParams['lines.linewidth'] = 2
     
     def set_plot_backend(self, backend: Literal['matplotlib', 'seaborn', 'plotly']) -> None:
-        """Establecer el backend de visualización por defecto"""
+        """Set the default visualization backend."""
         self._plot_backend = backend
     
     def set_default_figsize(self, figsize: Tuple[int, int]) -> None:
-        """Establecer el tamaño de figura por defecto"""
+        """Set the default figure size."""
         self._default_figsize = figsize
         plt.rcParams['figure.figsize'] = [figsize[0], figsize[1]]
     
@@ -134,14 +134,14 @@ class UtilsStats:
                             fig_format: str = 'png', 
                             fig_dpi: int = 300,
                             figures_dir: str = 'figures') -> None:
-        """Configurar opciones para guardar figuras"""
+        """Configure figure saving options."""
         self._save_fig = save_fig
         self._fig_format = fig_format
         self._fig_dpi = fig_dpi
         self._figures_dir = figures_dir
     
     def _save_figure(self, fig, filename: str, **kwargs) -> None:
-        """Guardar figura si save_fig está activado"""
+        """Save the figure when save_fig is enabled."""
         if self._save_fig:
             try:
                 os.makedirs(self._figures_dir, exist_ok=True)
@@ -155,50 +155,40 @@ class UtilsStats:
                     facecolor='white',
                     **kwargs
                 )
-                print(f"✓ Figura guardada: {filepath}")
-                
-            except Exception as e:
-                print(f"✗ Error guardando figura: {e}")
+                logger.info("Figure saved: %s", filepath)
 
-    # ============= NUEVO: MÉTODOS DE CARGA DE DATOS =============
+            except Exception as e:
+                logger.warning("Error saving figure: %s", e)
+
+    # ============= DATA LOADING =============
 
     def load_data(self, path: Union[str, Path], **kwargs) -> pd.DataFrame:
         """
-        Carga datos desde archivo en múltiples formatos
-        
-        Parameters:
-        -----------
-        path : str o Path
-            Ruta al archivo de datos
-        **kwargs : dict
-            Argumentos adicionales para la función de lectura de pandas
-            
-        Returns:
+        Load data from a file in multiple formats.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to the data file. Supported formats: CSV, Excel
+            (.xlsx/.xls), text/TSV, JSON, Parquet, Feather.
+        **kwargs
+            Extra arguments forwarded to the pandas reader.
+
+        Returns
+        -------
+        pandas.DataFrame
+
+        Examples
         --------
-        pd.DataFrame
-            DataFrame con los datos cargados
-            
-        Supported formats:
-        ------------------
-        - CSV (.csv)
-        - Excel (.xlsx, .xls)
-        - Text/TSV (.txt, .tsv)
-        - JSON (.json)
-        - Parquet (.parquet)
-        - Feather (.feather)
-        
-        Examples:
-        ---------
         >>> utils = UtilsStats()
-        >>> df = utils.load_data("datos.csv")
-        >>> df = utils.load_data("datos.xlsx", sheet_name="Hoja1")
-        >>> df = utils.load_data("datos.json")
+        >>> df = utils.load_data("data.csv")
+        >>> df = utils.load_data("data.xlsx", sheet_name="Sheet1")
         """
         logger.info(f"Loading data from path: {path}")
         path = Path(path)
         
         if not path.exists():
-            raise FileNotFoundError(f"El archivo no existe: {path}")
+            raise FileNotFoundError(f"File does not exist: {path}")
         
         ext = path.suffix.lower()
         
@@ -222,16 +212,13 @@ class UtilsStats:
                 df = pd.read_feather(path, **kwargs)
                 
             else:
-                raise ValueError(f"Formato de archivo no soportado: {ext}")
-            
-            print(f"✓ Datos cargados exitosamente desde: {path}")
-            print(f"  Shape: {df.shape}")
-            print(f"  Columnas: {list(df.columns)}")
-            
+                raise ValueError(f"Unsupported file format: {ext}")
+
+            logger.info("Data loaded from %s (shape=%s)", path, df.shape)
             return df
-            
+
         except Exception as e:
-            raise Exception(f"Error al cargar el archivo {path}: {str(e)}")
+            raise Exception(f"Error loading file {path}: {str(e)}")
 
     def _resolve_data(self, data: Union[pd.DataFrame, pd.Series, np.ndarray, list, str, Path],
                         column: Optional[str] = None) -> Tuple[Union[pd.DataFrame, pd.Series, np.ndarray], str]:
@@ -252,17 +239,16 @@ class UtilsStats:
                     return df[column], 'file'
                 return df, 'file'
             else:
-                raise FileNotFoundError(f"El archivo no existe: {path}")
+                raise FileNotFoundError(f"File does not exist: {path}")
         
         return data, 'memory'
 
-    # ============= MÉTODOS DE ANÁLISIS ESTADÍSTICO (ACTUALIZADOS) =============
+    # ============= STATISTICAL ANALYSIS HELPERS =============
 
     def validate_dataframe(self, data: Union[pd.DataFrame, np.ndarray, list, str, Path]) -> pd.DataFrame:
         """
-        Valida y convierte datos a DataFrame
-        
-        Ahora acepta también rutas de archivos
+        Validate and coerce input (arrays, lists, file paths) to a
+        pandas DataFrame.
         """
         data, source = self._resolve_data(data)
         
@@ -274,14 +260,14 @@ class UtilsStats:
             elif data.ndim == 2:
                 return pd.DataFrame(data, columns=[f'var_{i}' for i in range(data.shape[1])])
             else:
-                raise ValueError("Solo se soportan arrays 1D y 2D")
+                raise ValueError("Only 1D and 2D arrays are supported")
         elif isinstance(data, list):
             return pd.DataFrame(data)
         else:
-            raise TypeError(f"Tipo de dato no soportado: {type(data)}")
+            raise TypeError(f"Unsupported data type: {type(data)}")
 
     def format_number(self, num: float, decimals: int = 6, scientific: bool = False) -> str:
-        """Formatea un número con decimales especificados"""
+        """Format a number with the given number of decimals."""
         if scientific and abs(num) < 0.001:
             return f"{num:.{decimals}e}"
         return f"{num:.{decimals}f}"
@@ -291,20 +277,26 @@ class UtilsStats:
                         column: Optional[str] = None,
                         alpha: float = 0.05) -> dict:
         """
-        Verifica si los datos siguen distribución normal usando Shapiro-Wilk
-        
-        Parameters:
-        -----------
-        data : Series, ndarray, DataFrame, str o Path
-            Datos a analizar o ruta al archivo
+        Test whether the data are normally distributed (Shapiro-Wilk).
+
+        Parameters
+        ----------
+        data : Series, ndarray, DataFrame, str or Path
+            Data to analyze, or a path to a data file.
         column : str, optional
-            Columna a analizar (si data es DataFrame o archivo)
-        alpha : float
-            Nivel de significancia
-            
-        Examples:
-        ---------
-        >>> utils.check_normality("datos.csv", column="edad")
+            Column to analyze when data is a DataFrame or a file.
+        alpha : float, default 0.05
+            Significance level.
+
+        Returns
+        -------
+        dict
+            Keys: is_normal, shapiro_statistic, shapiro_pvalue, alpha,
+            interpretation.
+
+        Examples
+        --------
+        >>> utils.check_normality("data.csv", column="age")
         >>> utils.check_normality(np.random.normal(0, 1, 100))
         """
         logger.info("Checking normality with Shapiro-Wilk test")
@@ -312,7 +304,7 @@ class UtilsStats:
         
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("You must specify 'column' when data is a DataFrame")
             data = data[column]
         
         if isinstance(data, pd.Series):
@@ -324,7 +316,7 @@ class UtilsStats:
         result = _check_normality(data_array, method='shapiro')
         
         is_normal = result['p_value'] > alpha
-        interpretation = 'Normal' if is_normal else 'No Normal'
+        interpretation = 'Normal' if is_normal else 'Not normal'
         
         return {
             'is_normal': is_normal,
@@ -340,25 +332,32 @@ class UtilsStats:
                                         confidence_level: float = 0.95,
                                         method: str = 'parametric') -> dict:
         """
-        Calcula intervalos de confianza para la media
-        
-        Parameters:
-        -----------
-        data : Series, ndarray, DataFrame, str o Path
-            Datos a analizar o ruta al archivo
+        Confidence interval for the mean.
+
+        Parameters
+        ----------
+        data : Series, ndarray, DataFrame, str or Path
+            Data to analyze, or a path to a data file.
         column : str, optional
-            Columna a analizar
-        confidence_level : float
-            Nivel de confianza (default: 0.95)
-        method : str
-            'parametric' o 'bootstrap'
+            Column to analyze.
+        confidence_level : float, default 0.95
+            Confidence level.
+        method : {'parametric', 'bootstrap'}, default 'parametric'
+            'parametric' uses the Student t interval; 'bootstrap' uses
+            percentile resampling.
+
+        Returns
+        -------
+        dict
+            Keys: mean, std, n, confidence_level, ci_lower, ci_upper,
+            margin_error, method.
         """
         logger.info(f"Calculating confidence intervals (method={method}, level={confidence_level})")
         data, source = self._resolve_data(data, column)
         
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("You must specify 'column' when data is a DataFrame")
             data = data[column]
         
         if isinstance(data, pd.Series):
@@ -395,28 +394,31 @@ class UtilsStats:
                         method: Literal['iqr', 'zscore', 'isolation_forest'] = 'iqr',
                         **kwargs) -> np.ndarray:
         """
-        Detecta outliers usando diferentes métodos
-        
-        Parameters:
-        -----------
-        data : Series, ndarray, DataFrame, str o Path
-            Datos a analizar o ruta al archivo
+        Detect outliers using different methods.
+
+        Parameters
+        ----------
+        data : Series, ndarray, DataFrame, str or Path
+            Data to analyze, or a path to a data file.
         column : str, optional
-            Columna a analizar
-        method : str
-            'iqr', 'zscore', o 'isolation_forest'
-        
-        Returns:
-        --------
-        np.ndarray
-            Array booleano indicando outliers
+            Column to analyze.
+        method : {'iqr', 'zscore', 'isolation_forest'}, default 'iqr'
+            Detection method ('isolation_forest' requires scikit-learn).
+        **kwargs
+            'threshold' (iqr/zscore) or 'contamination'
+            (isolation_forest).
+
+        Returns
+        -------
+        numpy.ndarray of bool
+            Mask over the NaN-free values; True marks an outlier.
         """
         logger.info(f"Detecting outliers (method={method})")
         data, source = self._resolve_data(data, column)
         
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("You must specify 'column' when data is a DataFrame")
             data = data[column]
         
         if isinstance(data, pd.Series):
@@ -434,7 +436,7 @@ class UtilsStats:
             threshold = kwargs.get('threshold', 3) if method == 'zscore' else 1.5
             outliers = _detect_outliers(data_clean, method=method, threshold=threshold)
         else:
-            raise ValueError("Método debe ser 'iqr', 'zscore', o 'isolation_forest'")
+            raise ValueError("Method must be 'iqr', 'zscore', or 'isolation_forest'")
         
         return outliers
 
@@ -444,7 +446,8 @@ class UtilsStats:
                             group2: Union[str, pd.Series, np.ndarray] = None,
                             method: Literal['cohen', 'hedges'] = 'cohen') -> dict:
         """
-        Calcula el tamaño del efecto entre dos grupos
+        Effect size between two groups (Cohen's d or Hedges' g), with a
+        conventional magnitude interpretation.
         """
         logger.info(f"Calculating effect size (method={method})")
 
@@ -474,13 +477,13 @@ class UtilsStats:
 
         abs_effect = abs(effect_size)
         if abs_effect < 0.2:
-            interpretation = "Muy pequeño"
+            interpretation = "Negligible"
         elif abs_effect < 0.5:
-            interpretation = "Pequeño"
+            interpretation = "Small"
         elif abs_effect < 0.8:
-            interpretation = "Mediano"
+            interpretation = "Medium"
         else:
-            interpretation = "Grande"
+            interpretation = "Large"
         
         return {
             'effect_size': effect_size,
@@ -491,15 +494,15 @@ class UtilsStats:
         }
 
 
-    # ============= MÉTODOS DE VISUALIZACIÓN COMPLETOS =============
+    # ============= VISUALIZATION =============
 
     def _plot_distribution_seaborn(self, data, plot_type: str, bins: int, figsize, title: str, **kwargs):
-        """Implementación con seaborn"""
+        """Seaborn implementation."""
         if plot_type == 'all':
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
             
             sns.histplot(data, bins=bins, kde=True, ax=axes[0, 0])
-            axes[0, 0].set_title('Histograma con KDE')
+            axes[0, 0].set_title('Histogram with KDE')
             
             sns.boxplot(y=data, ax=axes[0, 1])
             axes[0, 1].set_title('Box Plot')
@@ -531,13 +534,13 @@ class UtilsStats:
         return fig
 
     def _plot_distribution_matplotlib(self, data, plot_type: str, bins: int, figsize, title: str, **kwargs):
-        """Implementación con matplotlib puro"""
+        """Pure matplotlib implementation."""
         if plot_type == 'all':
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
             
             axes[0, 0].hist(data, bins=bins, alpha=0.7, edgecolor='black', density=True)
-            axes[0, 0].set_title('Histograma')
-            axes[0, 0].set_ylabel('Densidad')
+            axes[0, 0].set_title('Histogram')
+            axes[0, 0].set_ylabel('Density')
             
             axes[0, 1].boxplot(data)
             axes[0, 1].set_title('Box Plot')
@@ -548,7 +551,7 @@ class UtilsStats:
             axes[1, 0].plot(x_range, kde(x_range))
             axes[1, 0].fill_between(x_range, kde(x_range), alpha=0.3)
             axes[1, 0].set_title('KDE')
-            axes[1, 0].set_ylabel('Densidad')
+            axes[1, 0].set_ylabel('Density')
             
             stats.probplot(data, dist="norm", plot=axes[1, 1])
             axes[1, 1].set_title('Q-Q Plot')
@@ -561,7 +564,7 @@ class UtilsStats:
             
             if plot_type == 'hist':
                 ax.hist(data, bins=bins, edgecolor='black', alpha=0.7, **kwargs)
-                ax.set_ylabel('Frecuencia')
+                ax.set_ylabel('Frequency')
             elif plot_type == 'box':
                 ax.boxplot(data, vert=True)
             elif plot_type == 'kde':
@@ -570,7 +573,7 @@ class UtilsStats:
                 x_range = np.linspace(data.min(), data.max(), 100)
                 ax.plot(x_range, kde(x_range), **kwargs)
                 ax.fill_between(x_range, kde(x_range), alpha=0.3)
-                ax.set_ylabel('Densidad')
+                ax.set_ylabel('Density')
         
             ax.set_title(title)
             ax.grid(True, alpha=0.3)
@@ -579,21 +582,21 @@ class UtilsStats:
         return fig
     
     def _plot_distribution_plotly(self, data, plot_type: str, bins: int, title: str, **kwargs):
-        """Implementación con plotly"""
+        """Plotly implementation."""
         try:
             import plotly.graph_objects as go
             import plotly.express as px
             from plotly.subplots import make_subplots
         except ImportError:
-            raise ImportError("Plotly no está instalado. Instale con: pip install plotly")
+            raise ImportError("Plotly is not installed. Install with: pip install plotly")
         
         if plot_type == 'all':
             fig = make_subplots(
                 rows=2, cols=2,
-                subplot_titles=('Histograma', 'Box Plot', 'Violin Plot', 'Distribución Acumulada')
+                subplot_titles=('Histogram', 'Box Plot', 'Violin Plot', 'Cumulative distribution')
             )
             
-            fig.add_trace(go.Histogram(x=data, nbinsx=bins, name='Histograma'), row=1, col=1)
+            fig.add_trace(go.Histogram(x=data, nbinsx=bins, name='Histogram'), row=1, col=1)
             
             fig.add_trace(go.Box(y=data, name='Box Plot'), row=1, col=2)
             
@@ -626,31 +629,31 @@ class UtilsStats:
                             filename: Optional[str] = None,
                             **kwargs):
         """
-        Graficar distribución de una variable
-        
-        Parameters:
-        -----------
-        data : DataFrame, Series, ndarray, str o Path
-            Datos a graficar o ruta al archivo
+        Plot the distribution of a variable.
+
+        Parameters
+        ----------
+        data : DataFrame, Series, ndarray, str or Path
+            Data to plot, or a path to a data file.
         column : str, optional
-            Columna a graficar (si data es DataFrame o archivo)
-        plot_type : str
-            Tipo de gráfico
-        backend : str, optional
-            Backend de visualización
-        bins : int
-            Número de bins para histograma
+            Column to plot when data is a DataFrame or a file.
+        plot_type : {'hist', 'kde', 'box', 'violin', 'all'}, default 'hist'
+            Plot type ('all' shows a 2x2 diagnostic panel).
+        backend : {'matplotlib', 'seaborn', 'plotly'}, default 'seaborn'
+            Visualization backend.
+        bins : int, default 30
+            Histogram bins.
         figsize : tuple, optional
-            Tamaño de la figura
+            Figure size.
         save_fig : bool, optional
-            Si guardar la figura
+            Save the figure to disk.
         filename : str, optional
-            Nombre del archivo
-            
-        Examples:
-        ---------
-        >>> utils.plot_distribution("datos.csv", column="edad")
-        >>> utils.plot_distribution(df, column="salario", plot_type="all")
+            Output file name.
+
+        Examples
+        --------
+        >>> utils.plot_distribution("data.csv", column="age")
+        >>> utils.plot_distribution(df, column="salary", plot_type="all")
         """
         logger.info(f"Plotting distribution (type={plot_type}, backend={backend})")
         backend = backend or self._plot_backend
@@ -661,18 +664,18 @@ class UtilsStats:
         
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("You must specify 'column' when data is a DataFrame")
             plot_data = data[column].dropna()
-            title = f"Distribución de {column}"
-            default_filename = f"distribucion_{column}"
+            title = f"Distribution of {column}"
+            default_filename = f"distribution_{column}"
         elif isinstance(data, pd.Series):
             plot_data = data.dropna()
-            title = f"Distribución de {data.name if data.name else 'Variable'}"
-            default_filename = f"distribucion_{data.name if data.name else 'variable'}"
+            title = f"Distribution of {data.name if data.name else 'Variable'}"
+            default_filename = f"distribution_{data.name if data.name else 'variable'}"
         else:
             plot_data = pd.Series(data).dropna()
-            title = "Distribución"
-            default_filename = "distribucion"
+            title = "Distribution"
+            default_filename = "distribution"
         
         filename = filename or default_filename
         
@@ -684,7 +687,7 @@ class UtilsStats:
             elif backend == 'plotly':
                 fig = self._plot_distribution_plotly(plot_data, plot_type, bins, title, **kwargs)
             else:
-                raise ValueError(f"Backend '{backend}' no soportado")
+                raise ValueError(f"Backend '{backend}' not supported")
             
             if save_fig and backend != 'plotly':
                 self._save_figure(fig, filename)
@@ -706,27 +709,29 @@ class UtilsStats:
                                 filename: Optional[str] = None,
                                 **kwargs):
         """
-        Visualizar matriz de correlación
-        
-        Parameters:
-        -----------
-        data : DataFrame, str o Path
-            Datos para calcular correlación o ruta al archivo
-        method : str
-            'pearson', 'spearman' o 'kendall'
-        backend : str, optional
-            Backend de visualización
+        Plot a correlation matrix heatmap.
+
+        Parameters
+        ----------
+        data : DataFrame, str or Path
+            Data, or a path to a data file.
+        method : {'pearson', 'spearman', 'kendall'}, default 'pearson'
+            Correlation coefficient.
+        backend : {'seaborn', 'plotly'}, default 'seaborn'
+            Visualization backend.
+        triangular : bool, default False
+            Show only the lower triangle (seaborn backend).
         """
         logger.info(f"Plotting correlation matrix (method={method}, backend={backend})")
         backend = backend or self._plot_backend
         figsize = figsize or self._default_figsize
         self.save_fig = save_fig 
-        filename = filename or "matriz_correlacion"
+        filename = filename or "correlation_matrix"
 
         data, source = self._resolve_data(data)
         
         if not isinstance(data, pd.DataFrame):
-            raise ValueError("Se requiere un DataFrame para calcular matriz de correlación")
+            raise ValueError("A DataFrame is required to compute the correlation matrix")
         else:
             data = data.select_dtypes(include=['float64', 'int64'])
         
@@ -744,7 +749,7 @@ class UtilsStats:
                 sns.heatmap(corr_matrix, annot=True, fmt='.2f', 
                             cmap='coolwarm', center=0, ax=ax,
                             square=True, linewidths=0.5, **kwargs)
-            ax.set_title(f'Matriz de Correlación ({method})', fontsize=14, pad=20)
+            ax.set_title(f'Correlation matrix ({method})', fontsize=14, pad=20)
             plt.tight_layout()
             
         elif backend == 'plotly':
@@ -763,7 +768,7 @@ class UtilsStats:
             ))
             
             fig.update_layout(
-                title=f'Matriz de Correlación ({method})',
+                title=f'Correlation matrix ({method})',
                 xaxis_title='Variables',
                 yaxis_title='Variables',
                 width=figsize[0]*100,
@@ -778,9 +783,9 @@ class UtilsStats:
                     os.makedirs(self._figures_dir, exist_ok=True)
                     filepath = os.path.join(self._figures_dir, f"{filename}.{self._fig_format}")
                     fig.write_image(filepath)
-                    print(f"✓ Figura Plotly guardada: {filepath}")
+                    logger.info("Plotly figure saved: %s", filepath)
                 except Exception as e:
-                    print(f"✗ Error guardando figura Plotly: {e}")
+                    logger.warning("Error saving Plotly figure: %s", e)
         if backend == 'plotly':
             return fig
 
@@ -793,12 +798,16 @@ class UtilsStats:
                             filename: Optional[str] = None,
                             **kwargs):
         """
-        Matriz de gráficos de dispersión (pairplot)
-        
-        Parameters:
-        -----------
-        data : DataFrame, str o Path
-            Datos o ruta al archivo
+        Scatter matrix (pairplot) of the numeric columns.
+
+        Parameters
+        ----------
+        data : DataFrame, str or Path
+            Data, or a path to a data file.
+        columns : list of str, optional
+            Subset of columns to include.
+        backend : {'seaborn', 'plotly', 'pandas'}, optional
+            Visualization backend.
         """
         logger.info(f"Plotting scatter matrix (backend={backend})")
         backend = backend or self._plot_backend
@@ -809,19 +818,19 @@ class UtilsStats:
         data, source = self._resolve_data(data)
         
         if not isinstance(data, pd.DataFrame):
-            raise ValueError("Se requiere un DataFrame para matriz de dispersión")
+            raise ValueError("A DataFrame is required for the scatter matrix")
         
         if columns:
             data = data[columns]
         
         if backend == 'seaborn':
             fig = sns.pairplot(data, **kwargs)
-            fig.fig.suptitle('Matriz de Dispersión', y=1.02)
+            fig.fig.suptitle('Scatter matrix', y=1.02)
             
         elif backend == 'plotly':
             import plotly.express as px
             fig = px.scatter_matrix(data, **kwargs)
-            fig.update_layout(title='Matriz de Dispersión')
+            fig.update_layout(title='Scatter matrix')
             
         elif backend == 'pandas':
             from pandas.plotting import scatter_matrix
@@ -836,14 +845,14 @@ class UtilsStats:
                     os.makedirs(self._figures_dir, exist_ok=True)
                     filepath = os.path.join(self._figures_dir, f"{filename}.{self._fig_format}")
                     fig.write_image(filepath)
-                    print(f"✓ Figura Plotly guardada: {filepath}")
+                    logger.info("Plotly figure saved: %s", filepath)
                 except Exception as e:
-                    print(f"✗ Error guardando figura Plotly: {e}")
+                    logger.warning("Error saving Plotly figure: %s", e)
         
         if backend == 'plotly':
             return fig
 
-    # ============= GRÁFICOS CON INTERVALOS DE CONFIANZA =============
+    # ============= PLOTS WITH CONFIDENCE INTERVALS =============
 
     def plot_distribution_with_ci(self,
                                 data: Union[pd.DataFrame, pd.Series, np.ndarray, str, Path],
@@ -856,16 +865,15 @@ class UtilsStats:
                                 filename: Optional[str] = None,
                                 **kwargs) -> plt.Figure:
         """
-        Distribución con intervalos de confianza
-        
-        Ahora acepta rutas de archivos
+        Plot a distribution with the confidence interval of the mean
+        highlighted. Accepts DataFrames, arrays or file paths.
         """
         logger.info(f"Plotting distribution with CI (method={ci_method}, level={confidence_level})")
         data, source = self._resolve_data(data, column)
         
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificar 'column' cuando data es DataFrame")
+                raise ValueError("You must specify 'column' when data is a DataFrame")
             plot_data = data[column].dropna()
             data_name = column
         elif isinstance(data, pd.Series):
@@ -876,7 +884,7 @@ class UtilsStats:
             data_name = 'Variable'
 
         data_array = plot_data.values
-        filename = filename or f"distribucion_ci_{data_name.lower().replace(' ', '_')}"
+        filename = filename or f"distribution_ci_{data_name.lower().replace(' ', '_')}"
 
         ci_result = self.calculate_confidence_intervals(data_array, confidence_level=confidence_level, method=ci_method)
         normality_result = self.check_normality(data_array)
@@ -892,11 +900,11 @@ class UtilsStats:
         ax1.plot(x_range, kde(x_range), 'r-', linewidth=2, label='KDE')
 
         ax1.axvline(ci_result['mean'], color='red', linestyle='--', linewidth=2,
-                    label=f"Media: {ci_result['mean']:.2f}")
+                    label=f"Mean: {ci_result['mean']:.2f}")
 
-        ax1.set_title(f"Distribución de {data_name}")
-        ax1.set_xlabel("Valores")
-        ax1.set_ylabel("Densidad")
+        ax1.set_title(f"Distribution of {data_name}")
+        ax1.set_xlabel("Values")
+        ax1.set_ylabel("Density")
         ax1.legend()
         ax1.grid(alpha=0.3)
 
@@ -904,30 +912,30 @@ class UtilsStats:
 
         ax2.axvspan(ci_result["ci_lower"], ci_result["ci_upper"],
                     color='orange', alpha=0.3,
-                    label=f"IC {confidence_level*100:.0f}%")
+                    label=f"CI {confidence_level*100:.0f}%")
 
         ax2.axvline(ci_result["mean"], color='red', linewidth=2)
 
         if normality_result["is_normal"]:
             normal_y = stats.norm.pdf(x_range, ci_result['mean'], ci_result['std'])
             ax2.plot(x_range, normal_y, 'g--', linewidth=2, alpha=0.7,
-                    label="Normal Teórica")
+                    label="Theoretical normal")
 
-        ax2.set_title(f"IC con método '{ci_method}'")
-        ax2.set_xlabel("Valores")
-        ax2.set_ylabel("Densidad")
+        ax2.set_title(f"CI with method '{ci_method}'")
+        ax2.set_xlabel("Values")
+        ax2.set_ylabel("Density")
         ax2.legend()
         ax2.grid(alpha=0.3)
 
         info = (
-            f"Estadísticas de {data_name}:\n"
-            f"• n = {ci_result['n']}\n"
-            f"• Media = {ci_result['mean']:.3f}\n"
-            f"• Desv. Est. = {ci_result['std']:.3f}\n"
-            f"• IC {confidence_level*100:.0f}% = [{ci_result['ci_lower']:.3f}, {ci_result['ci_upper']:.3f}]\n"
-            f"• Margen Error = ±{ci_result['margin_error']:.3f}\n"
-            f"• Normalidad = {normality_result['interpretation']}\n"
-            f"• p-value Shapiro = {normality_result['shapiro_pvalue']:.4f}"
+            f"Statistics for {data_name}:\n"
+            f"- n = {ci_result['n']}\n"
+            f"- Mean = {ci_result['mean']:.3f}\n"
+            f"- Std dev = {ci_result['std']:.3f}\n"
+            f"- CI {confidence_level*100:.0f}% = [{ci_result['ci_lower']:.3f}, {ci_result['ci_upper']:.3f}]\n"
+            f"- Margin of error = +/-{ci_result['margin_error']:.3f}\n"
+            f"- Normality = {normality_result['interpretation']}\n"
+            f"- Shapiro p-value = {normality_result['shapiro_pvalue']:.4f}"
         )
 
         fig.text(0.01, 0.01, info, fontsize=9,
@@ -941,30 +949,34 @@ class UtilsStats:
             self._save_figure(fig, filename)
 
 
-    # ============= MÉTODOS UTILITARIOS ADICIONALES =============
+    # ============= ADDITIONAL UTILITIES =============
 
     def get_descriptive_stats(self, data: Union[pd.DataFrame, pd.Series, np.ndarray, list], column: Optional[str] = None, columns: Optional[List[str]] = None) -> dict:
         """
-        Estadísticas descriptivas completas
+        Descriptive statistics for arbitrary array-like data.
 
-        Parameters:
-        -----------
-        data : DataFrame, Series, ndarray o list
-            Datos a analizar
+        Prefer :meth:`statslibx.DescriptiveStats.summary` when working
+        with DataFrames; this helper exists for quick checks on raw
+        arrays.
+
+        Parameters
+        ----------
+        data : DataFrame, Series, ndarray or list
+            Data to analyze.
         column : str, optional
-            Nombre de la columna a analizar (si data es DataFrame)
+            Column name (when data is a DataFrame).
         columns : list of str, optional
-            Lista de columnas a analizar (si data es DataFrame). Si se especifica,
-            retorna un dict con las estadísticas para cada columna.
+            Multiple columns; returns a dict keyed by column.
 
-        Returns:
-        --------
+        Returns
+        -------
         dict
-            Diccionario con las estadísticas descriptivas
+            Descriptive statistics (count, mean, median, mode, std,
+            variance, min, max, q1, q3, iqr, skewness, kurtosis, range).
         """
         if columns is not None:
             if not isinstance(data, pd.DataFrame):
-                raise ValueError("El parámetro 'columns' requiere un DataFrame")
+                raise ValueError("The 'columns' parameter requires a DataFrame")
             result: Dict[str, dict] = {}
             for col in columns:
                 result[col] = self.get_descriptive_stats(data, column=col)
@@ -972,7 +984,7 @@ class UtilsStats:
 
         if isinstance(data, pd.DataFrame):
             if column is None:
-                raise ValueError("Debe especificarse una columna")
+                raise ValueError("A column must be specified")
             data_series = data[column]
         else:
             data_series = pd.Series(data)
@@ -1004,368 +1016,41 @@ class UtilsStats:
             'range': float(np.max(data_clean) - np.min(data_clean))
         }
     def help(self) -> None:
-        """
-        Muestra ayuda completa de la clase DescriptiveStats
-        """
+        """Print a quick reference of the UtilsStats API."""
         help_text = """
-╔════════════════════════════════════════════════════════════════════════════╗
-║                    📊 CLASE UtilsStats - AYUDA COMPLETA                    ║
-╚════════════════════════════════════════════════════════════════════════════╝
+================================================================================
+UtilsStats - quick reference
+================================================================================
+General-purpose utilities: file loading, quick statistical checks and
+standalone visualization. All methods accept DataFrames, Series, arrays
+or file paths.
 
-📝 DESCRIPCIÓN:
-   Clase para análisis estadístico descriptivo univariado y multivariado.
-   Proporciona herramientas para análisis exploratorio de datos, medidas de
-   tendencia central, dispersión, forma de distribución y regresión lineal.
+Statistical checks:
+  .check_normality(data, column=None, alpha=0.05)      Shapiro-Wilk
+  .calculate_confidence_intervals(data, confidence_level=0.95,
+                                  method='parametric'|'bootstrap')
+  .detect_outliers(data, method='iqr'|'zscore'|'isolation_forest')
+  .calculate_effect_size(data, group1, group2, method='cohen'|'hedges')
+  .get_descriptive_stats(data, column=None)   (prefer DescriptiveStats.summary())
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Visualization:
+  .plot_distribution(data, column=None, plot_type='hist'|'kde'|'box'|'violin'|'all',
+                     backend='matplotlib'|'seaborn'|'plotly')
+  .plot_distribution_with_ci(data, column=None, confidence_level=0.95)
+  .plot_correlation_matrix(data, method='pearson'|'spearman'|'kendall')
+  .plot_scatter_matrix(data, columns=None)
 
-📋 MÉTODOS PRINCIPALES:
+Configuration:
+  .set_plot_backend(backend) / .set_default_figsize(figsize)
+  .set_save_fig_options(save_fig, fig_format='png', fig_dpi=300, figures_dir='figures')
 
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 1. 📊 ANÁLISIS ESTADÍSTICO                                                 │
-└────────────────────────────────────────────────────────────────────────────┘
+I/O:
+  .load_data(path)             CSV / Excel / JSON / Parquet / Feather / TSV
+  .validate_dataframe(data)    Coerce arrays / lists / paths to DataFrame
 
-  • .check_normality(data, alpha=0.05)
-    Verifica normalidad usando test Shapiro-Wilk
-    Retorna: dict con estadístico, p-value e interpretación
-
-  • .calculate_confidence_intervals(data, confidence_level=0.95, 
-                                   method='parametric')
-    Calcula intervalos de confianza para la media
-    Métodos: 'parametric' o 'bootstrap'
-
-  • .detect_outliers(data, method='iqr', **kwargs)
-    Detecta valores atípicos
-    Métodos: 'iqr', 'zscore', 'isolation_forest'
-
-  • .calculate_effect_size(group1, group2, method='cohen')
-    Calcula tamaño del efecto entre grupos
-    Métodos: 'cohen' (Cohen's d) o 'hedges' (Hedges' g)
-
-  • .get_descriptive_stats(data, column=None)
-    Estadísticas descriptivas completas en un dict
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 2. 🎨 VISUALIZACIÓN DE DISTRIBUCIONES                                      │
-└────────────────────────────────────────────────────────────────────────────┘
-
-  • .plot_distribution(data, column=None, plot_type='hist', 
-                      backend='seaborn', bins=30, figsize=None, 
-                      save_fig=None, filename=None)
-    
-    Grafica distribución de una variable
-    
-    plot_type: 'hist', 'kde', 'box', 'violin', 'all'
-    backend: 'matplotlib', 'seaborn', 'plotly'
-
-  • .plot_distribution_with_ci(data, column=None, confidence_level=0.95,
-                               ci_method='parametric', bins=30, figsize=None,
-                               save_fig=None, filename=None)
-    
-    Distribución con intervalos de confianza visualizados
-
-  • .plot_multiple_distributions_with_ci(data_dict, confidence_level=0.95)
-    
-    Compara múltiples distribuciones con sus IC
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 3. 🎨 VISUALIZACIÓN MULTIVARIADA                                           │
-└────────────────────────────────────────────────────────────────────────────┘
-
-  • .plot_correlation_matrix(data, method='pearson', backend='seaborn',
-                            figsize=None, save_fig=None)
-    
-    Matriz de correlación con heatmap
-    Métodos: 'pearson', 'spearman', 'kendall'
-
-  • .plot_scatter_matrix(data, columns=None, backend='seaborn',
-                        figsize=None, save_fig=None)
-    
-    Matriz de gráficos de dispersión (pairplot)
-    Backends: 'seaborn', 'plotly', 'pandas'
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 4. ⚙️  CONFIGURACIÓN                                                       │
-└────────────────────────────────────────────────────────────────────────────┘
-
-  • .set_plot_backend(backend)
-    Establece backend por defecto: 'matplotlib', 'seaborn', 'plotly'
-
-  • .set_default_figsize(figsize)
-    Establece tamaño de figura por defecto: (ancho, alto)
-
-  • .set_save_fig_options(save_fig=False, fig_format='png', 
-                         fig_dpi=300, figures_dir='figures')
-    
-    Configura guardado automático de figuras
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│ 5. 🛠️  UTILIDADES                                                          │
-└────────────────────────────────────────────────────────────────────────────┘
-
-  • .validate_dataframe(data)
-    Valida y convierte datos a DataFrame
-
-  • .format_number(num, decimals=6, scientific=False)
-    Formatea números con precisión específica
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💡 EJEMPLOS DE USO:
-
-  ┌─ Ejemplo 1: Configuración Inicial ──────────────────────────────────────┐
-  │ from utils import UtilsStats                                            │
-  │ import pandas as pd                                                      │
-  │ import numpy as np                                                       │
-  │                                                                          │
-  │ # Inicializar                                                            │
-  │ utils = UtilsStats()                                                    │
-  │                                                                          │
-  │ # Configurar visualización                                               │
-  │ utils.set_plot_backend('seaborn')                                       │
-  │ utils.set_default_figsize((12, 6))                                      │
-  │                                                                          │
-  │ # Configurar guardado automático                                         │
-  │ utils.set_save_fig_options(                                             │
-  │     save_fig=True,                                                      │
-  │     fig_format='png',                                                   │
-  │     fig_dpi=300,                                                        │
-  │     figures_dir='mis_graficos'                                          │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 2: Análisis de Normalidad ─────────────────────────────────────┐
-  │ # Generar datos                                                          │
-  │ datos_normales = np.random.normal(0, 1, 1000)                           │
-  │ datos_no_normales = np.random.exponential(2, 1000)                      │
-  │                                                                          │
-  │ # Test de normalidad                                                     │
-  │ resultado1 = utils.check_normality(datos_normales)                      │
-  │ print(f"Normales: {resultado1['interpretation']}")                      │
-  │ print(f"p-value: {resultado1['shapiro_pvalue']:.4f}")                   │
-  │                                                                          │
-  │ resultado2 = utils.check_normality(datos_no_normales)                   │
-  │ print(f"No normales: {resultado2['interpretation']}")                   │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 3: Intervalos de Confianza ────────────────────────────────────┐
-  │ # Método paramétrico                                                     │
-  │ ci_param = utils.calculate_confidence_intervals(                        │
-  │     datos_normales,                                                     │
-  │     confidence_level=0.95,                                              │
-  │     method='parametric'                                                 │
-  │ )                                                                        │
-  │                                                                          │
-  │ print(f"Media: {ci_param['mean']:.3f}")                                 │
-  │ print(f"IC 95%: [{ci_param['ci_lower']:.3f}, "                          │
-  │       f"{ci_param['ci_upper']:.3f}]")                                   │
-  │                                                                          │
-  │ # Método bootstrap (para datos no normales)                              │
-  │ ci_boot = utils.calculate_confidence_intervals(                         │
-  │     datos_no_normales,                                                  │
-  │     confidence_level=0.95,                                              │
-  │     method='bootstrap'                                                  │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 4: Detección de Outliers ──────────────────────────────────────┐
-  │ # Método IQR (rango intercuartílico)                                     │
-  │ datos = np.random.normal(100, 15, 1000)                                 │
-  │ datos = np.append(datos, [200, 210, -50])  # Agregar outliers           │
-  │                                                                          │
-  │ outliers_iqr = utils.detect_outliers(datos, method='iqr')               │
-  │ print(f"Outliers IQR: {outliers_iqr.sum()}")                            │
-  │                                                                          │
-  │ # Método Z-score                                                         │
-  │ outliers_z = utils.detect_outliers(                                     │
-  │     datos,                                                              │
-  │     method='zscore',                                                    │
-  │     threshold=3                                                         │
-  │ )                                                                        │
-  │ print(f"Outliers Z-score: {outliers_z.sum()}")                          │
-  │                                                                          │
-  │ # Isolation Forest (machine learning)                                    │
-  │ outliers_if = utils.detect_outliers(                                    │
-  │     datos,                                                              │
-  │     method='isolation_forest',                                          │
-  │     contamination=0.05                                                  │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 5: Tamaño del Efecto ──────────────────────────────────────────┐
-  │ # Comparar dos grupos                                                    │
-  │ grupo_control = np.random.normal(100, 15, 100)                          │
-  │ grupo_tratamiento = np.random.normal(110, 15, 100)                      │
-  │                                                                          │
-  │ efecto = utils.calculate_effect_size(                                   │
-  │     grupo_control,                                                      │
-  │     grupo_tratamiento,                                                  │
-  │     method='cohen'                                                      │
-  │ )                                                                        │
-  │                                                                          │
-  │ print(f"Cohen's d: {efecto['effect_size']:.3f}")                        │
-  │ print(f"Interpretación: {efecto['interpretation']}")                    │
-  │ print(f"Diferencia de medias: {efecto['mean_diff']:.2f}")               │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 6: Gráficos de Distribución ───────────────────────────────────┐
-  │ df = pd.DataFrame({                                                      │
-  │     'edad': np.random.normal(35, 10, 500),                              │
-  │     'salario': np.random.lognormal(10.5, 0.5, 500)                      │
-  │ })                                                                       │
-  │                                                                          │
-  │ # Histograma simple                                                      │
-  │ fig1 = utils.plot_distribution(                                         │
-  │     df,                                                                 │
-  │     column='edad',                                                      │
-  │     plot_type='hist',                                                   │
-  │     bins=30                                                             │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Panel completo (histograma, box, violin, Q-Q)                          │
-  │ fig2 = utils.plot_distribution(                                         │
-  │     df,                                                                 │
-  │     column='salario',                                                   │
-  │     plot_type='all',                                                    │
-  │     backend='seaborn'                                                   │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Con Plotly (interactivo)                                               │
-  │ fig3 = utils.plot_distribution(                                         │
-  │     df,                                                                 │
-  │     column='edad',                                                      │
-  │     plot_type='violin',                                                 │
-  │     backend='plotly'                                                    │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 7: Distribución con Intervalos de Confianza ───────────────────┐
-  │ # Visualizar distribución con IC                                         │
-  │ fig = utils.plot_distribution_with_ci(                                  │
-  │     df,                                                                 │
-  │     column='edad',                                                      │
-  │     confidence_level=0.95,                                              │
-  │     ci_method='parametric',                                             │
-  │     bins=30,                                                            │
-  │     save_fig=True,                                                      │
-  │     filename='edad_con_ic'                                              │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Comparar múltiples distribuciones                                      │
-  │ data_dict = {                                                            │
-  │     'Grupo A': df['edad'][:200],                                        │
-  │     'Grupo B': df['edad'][200:400],                                     │
-  │     'Grupo C': df['edad'][400:]                                         │
-  │ }                                                                        │
-  │                                                                          │
-  │ fig = utils.plot_multiple_distributions_with_ci(                        │
-  │     data_dict,                                                          │
-  │     confidence_level=0.95                                               │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 8: Matriz de Correlación ──────────────────────────────────────┐
-  │ # Crear datos correlacionados                                            │
-  │ df = pd.DataFrame({                                                      │
-  │     'A': np.random.normal(0, 1, 100),                                   │
-  │     'B': np.random.normal(0, 1, 100),                                   │
-  │     'C': np.random.normal(0, 1, 100)                                    │
-  │ })                                                                       │
-  │ df['D'] = df['A'] * 0.8 + np.random.normal(0, 0.2, 100)                │
-  │                                                                          │
-  │ # Matriz de correlación con seaborn                                      │
-  │ fig = utils.plot_correlation_matrix(                                    │
-  │     df,                                                                 │
-  │     method='pearson',                                                   │
-  │     backend='seaborn',                                                  │
-  │     figsize=(10, 8)                                                     │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Con Plotly (interactiva)                                               │
-  │ fig = utils.plot_correlation_matrix(                                    │
-  │     df,                                                                 │
-  │     method='spearman',                                                  │
-  │     backend='plotly'                                                    │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 9: Matriz de Dispersión ───────────────────────────────────────┐
-  │ # Pairplot completo                                                      │
-  │ fig = utils.plot_scatter_matrix(                                        │
-  │     df,                                                                 │
-  │     columns=['A', 'B', 'C', 'D'],                                       │
-  │     backend='seaborn'                                                   │
-  │ )                                                                        │
-  │                                                                          │
-  │ # Con Plotly                                                             │
-  │ fig = utils.plot_scatter_matrix(                                        │
-  │     df,                                                                 │
-  │     backend='plotly'                                                    │
-  │ )                                                                        │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-  ┌─ Ejemplo 10: Estadísticas Descriptivas Completas ───────────────────────┐
-  │ # Obtener todas las estadísticas                                         │
-  │ stats = utils.get_descriptive_stats(df, column='edad')                  │
-  │                                                                          │
-  │ print(f"Media: {stats['mean']:.2f}")                                    │
-  │ print(f"Mediana: {stats['median']:.2f}")                                │
-  │ print(f"Desv. Est.: {stats['std']:.2f}")                                │
-  │ print(f"IQR: {stats['iqr']:.2f}")                                       │
-  │ print(f"Asimetría: {stats['skewness']:.3f}")                            │
-  │ print(f"Curtosis: {stats['kurtosis']:.3f}")                             │
-  └──────────────────────────────────────────────────────────────────────────┘
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎯 CARACTERÍSTICAS CLAVE:
-
-  ✓ Múltiples backends de visualización (matplotlib, seaborn, plotly)
-  ✓ Guardado automático de figuras en alta resolución
-  ✓ Análisis estadísticos robustos
-  ✓ Detección de outliers con 3 métodos
-  ✓ Intervalos de confianza paramétricos y bootstrap
-  ✓ Visualizaciones profesionales listas para publicación
-  ✓ Manejo automático de valores faltantes
-  ✓ Integración perfecta con pandas y numpy
-  ✓ Gráficos interactivos con Plotly
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 BACKENDS DE VISUALIZACIÓN:
-
-  🔹 Matplotlib:
-     • Rápido y ligero
-     • Ideal para gráficos simples
-     • Mejor para exportar a archivos
-
-  🔹 Seaborn:
-     • Gráficos estadísticos elegantes
-     • Temas predefinidos atractivos
-     • Mejor para análisis exploratorio
-
-  🔹 Plotly:
-     • Gráficos interactivos
-     • Zoom, pan, hover tooltips
-     • Ideal para presentaciones y dashboards
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💡 CONSEJOS Y MEJORES PRÁCTICAS:
-
-  1. Siempre verificar normalidad antes de usar métodos paramétricos
-  2. Usar bootstrap para IC cuando los datos no son normales
-  3. Detectar outliers antes de calcular estadísticas
-  4. Guardar figuras en alta resolución (300 DPI) para publicaciones
-  5. Usar Plotly para presentaciones interactivas
-  6. Usar seaborn para análisis exploratorio rápido
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📚 DOCUMENTACIÓN ADICIONAL:
-   Para más información sobre métodos específicos, use:
-   help(UtilsStats.nombre_metodo)
-
-╚════════════════════════════════════════════════════════════════════════════╝
-    """
+For full statistical analysis prefer the dedicated classes:
+DescriptiveStats, InferentialStats, ComputationalStats.
+================================================================================
+For details: help(UtilsStats.<method>)
+"""
         print(help_text)

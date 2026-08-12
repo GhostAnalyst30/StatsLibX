@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GitBranch, Mail } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { STATSLIBX_VERSION } from "@/lib/version";
 
 export function Footer() {
   return (
@@ -10,7 +11,7 @@ export function Footer() {
           <BrandLogo size={36} href="/" className="justify-center" />
         </div>
         <p className="text-sm text-muted">
-          Developed by Emmanuel Ascendra &middot; v0.3.0
+          Developed by Emmanuel Ascendra &middot; v{STATSLIBX_VERSION}
         </p>
         <div className="flex items-center justify-center gap-5 mt-4">
           <Link

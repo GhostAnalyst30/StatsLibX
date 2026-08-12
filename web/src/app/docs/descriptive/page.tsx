@@ -9,7 +9,7 @@ export default function DescriptiveStatsDocs() {
         title="DescriptiveStats"
         description="A class for performing univariate and multivariate descriptive statistical analysis. Provides tools for exploratory data analysis, measures of central tendency, dispersion, distribution shape, and linear regression."
         icon={<BarChart3 className="w-6 h-6" />}
-        version="0.3.0"
+        version="0.3.1"
       />
 
       <section className="mb-12">
@@ -37,7 +37,7 @@ export default function DescriptiveStatsDocs() {
             <span className="text-xs font-mono text-muted ml-2">Constructor signature</span>
           </div>
           <pre>
-            <code>DescriptiveStats(data: pd.DataFrame | pl.DataFrame | np.ndarray, lang: Literal[&apos;es-ES&apos;, &apos;en-US&apos;] = &apos;es-ES&apos;)</code>
+            <code>DescriptiveStats(data: pd.DataFrame | pl.DataFrame | np.ndarray, backend: Literal[&apos;pandas&apos;, &apos;polars&apos;] | None = None)</code>
           </pre>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -45,9 +45,13 @@ export default function DescriptiveStatsDocs() {
             data : pd.DataFrame | pl.DataFrame | np.ndarray — Input data for analysis (auto-detects pandas/polars)
           </span>
           <span className="px-2.5 py-1 rounded-md bg-white/5 border border-border text-xs font-mono text-muted">
-            lang : Literal[&apos;es-ES&apos;, &apos;en-US&apos;] — Language for output labels (default: &apos;es-ES&apos;)
+            backend : &apos;pandas&apos; | &apos;polars&apos; | None — Data engine; auto-detected when None
           </span>
         </div>
+        <p className="mt-3 text-xs text-muted">
+          All univariate statistics drop NaN values consistently and use sample conventions (ddof=1).
+          The <code className="code-inline">lang</code> parameter is deprecated as of v0.3.1: all output is in English.
+        </p>
       </section>
 
       <section className="mb-12">
@@ -65,7 +69,7 @@ export default function DescriptiveStatsDocs() {
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 # Mean of a specific column
 mean_a = ds.mean("A")  # 3.0
@@ -87,7 +91,7 @@ print(means)`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 100], "B": [10, 20, 30, 40, 50]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 median_a = ds.median("A")  # 3.0
 print(f"Median of A: {median_a}")`}
@@ -105,7 +109,7 @@ print(f"Median of A: {median_a}")`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 1, 2, 3, 3, 3]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 mode_a = ds.mode("A")  # 3.0
 print(f"Mode of A: {mode_a}")`}
@@ -123,7 +127,7 @@ print(f"Mode of A: {mode_a}")`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 var_a = ds.variance("A")  # 2.5
 print(f"Variance of A: {var_a}")`}
@@ -141,7 +145,7 @@ print(f"Variance of A: {var_a}")`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 std_a = ds.std("A")  # ~1.5811
 print(f"Std of A: {std_a}")`}
@@ -159,7 +163,7 @@ print(f"Std of A: {std_a}")`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 100]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 skew = ds.skewness("A")
 print(f"Skewness of A: {skew}")  # Positive right skew`}
@@ -177,7 +181,7 @@ print(f"Skewness of A: {skew}")  # Positive right skew`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 kurt = ds.kurtosis("A")
 print(f"Kurtosis of A: {kurt}")`}
@@ -196,7 +200,7 @@ print(f"Kurtosis of A: {kurt}")`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 # Single quantile for one column
 q1 = ds.quantile(0.25, "A")  # 3.25
@@ -204,6 +208,118 @@ q1 = ds.quantile(0.25, "A")  # 3.25
 # Multiple quantiles
 quartiles = ds.quantile([0.25, 0.5, 0.75])
 print(quartiles)`}
+          />
+
+          <MethodCard
+            name="mad"
+            signature="mad(column: str | None = None, scale: Literal['raw', 'normal'] = 'raw') -> float | pd.Series"
+            description="Median absolute deviation: median(|x - median(x)|). A robust alternative to the standard deviation. With scale='normal' it is multiplied by 1.4826 so it estimates the standard deviation under normality."
+            parameters={[
+              { name: "column", type: "str | None", description: "Column name. If None, computes for all numeric columns.", default: "None" },
+              { name: "scale", type: "'raw' | 'normal'", description: "'normal' rescales the MAD to be consistent with the normal std.", default: "'raw'" },
+            ]}
+            returns="float | pd.Series"
+            example={`ds.mad("A")                    # raw MAD
+ds.mad("A", scale="normal")     # robust std estimate`}
+          />
+
+          <MethodCard
+            name="trimmed_mean"
+            signature="trimmed_mean(column: str | None = None, proportion: float = 0.1) -> float | pd.Series"
+            description="Mean after removing a fraction of the smallest and largest observations from each tail. Robust to outliers."
+            parameters={[
+              { name: "column", type: "str | None", description: "Column name. If None, computes for all numeric columns.", default: "None" },
+              { name: "proportion", type: "float", description: "Fraction cut from each tail (0 <= p < 0.5).", default: "0.1" },
+            ]}
+            returns="float | pd.Series"
+            example={`ds.trimmed_mean("A", proportion=0.1)`}
+          />
+
+          <MethodCard
+            name="winsorized_mean"
+            signature="winsorized_mean(column: str | None = None, limits: float = 0.1) -> float | pd.Series"
+            description="Mean after clipping a fraction of each tail to the nearest remaining value. Robust to outliers while keeping the sample size."
+            parameters={[
+              { name: "column", type: "str | None", description: "Column name. If None, computes for all numeric columns.", default: "None" },
+              { name: "limits", type: "float", description: "Fraction winsorized in each tail (0 <= p < 0.5).", default: "0.1" },
+            ]}
+            returns="float | pd.Series"
+            example={`ds.winsorized_mean("A", limits=0.05)`}
+          />
+
+          <MethodCard
+            name="sem"
+            signature="sem(column: str | None = None) -> float | pd.Series"
+            description="Standard error of the mean: s / sqrt(n) with the sample standard deviation."
+            parameters={[
+              { name: "column", type: "str | None", description: "Column name. If None, computes for all numeric columns.", default: "None" },
+            ]}
+            returns="float | pd.Series"
+            example={`ds.sem("A")`}
+          />
+
+          <MethodCard
+            name="cv"
+            signature="cv(column: str | None = None) -> float | pd.Series"
+            description="Coefficient of variation: sample standard deviation divided by the mean. NaN when the mean is zero."
+            parameters={[
+              { name: "column", type: "str | None", description: "Column name. If None, computes for all numeric columns.", default: "None" },
+            ]}
+            returns="float | pd.Series"
+            example={`ds.cv("A")`}
+          />
+
+          <MethodCard
+            name="weighted_mean"
+            signature="weighted_mean(column: str, weights: str | np.ndarray) -> float"
+            description="Weighted arithmetic mean. Also available: weighted_var, weighted_std and weighted_quantile (via the weighted CDF)."
+            parameters={[
+              { name: "column", type: "str", description: "Numeric column to average." },
+              { name: "weights", type: "str | array-like", description: "Column name or array of non-negative weights." },
+            ]}
+            returns="float"
+            example={`ds.weighted_mean("income", "sampling_weight")
+ds.weighted_std("income", "sampling_weight")
+ds.weighted_quantile("income", 0.5, "sampling_weight")`}
+          />
+
+          <MethodCard
+            name="freq_table"
+            signature="freq_table(column: str, sort: bool = True, dropna: bool = True) -> pd.DataFrame"
+            description="Frequency table with counts, relative frequencies and cumulative frequencies. Works on numeric and categorical columns."
+            parameters={[
+              { name: "column", type: "str", description: "Column name." },
+              { name: "sort", type: "bool", description: "Sort by descending count; otherwise sort by value.", default: "True" },
+              { name: "dropna", type: "bool", description: "Exclude missing values.", default: "True" },
+            ]}
+            returns="pd.DataFrame — columns: value, count, relative, cumulative"
+            example={`ds.freq_table("species")`}
+          />
+
+          <MethodCard
+            name="cramers_v"
+            signature="cramers_v(column1: str, column2: str, bias_correction: bool = True) -> float"
+            description="Cramér's V measure of association between two categorical variables (0 = none, 1 = perfect). Uses the Bergsma-Wicher bias correction by default."
+            parameters={[
+              { name: "column1", type: "str", description: "First categorical column." },
+              { name: "column2", type: "str", description: "Second categorical column." },
+              { name: "bias_correction", type: "bool", description: "Apply the small-sample bias correction.", default: "True" },
+            ]}
+            returns="float"
+            example={`ds.cramers_v("education", "job_sector")`}
+          />
+
+          <MethodCard
+            name="summary_by"
+            signature="summary_by(by: str | list[str], columns: list[str] | None = None, stats: list[str] | None = None) -> pd.DataFrame"
+            description="Grouped descriptive statistics: one row per group with count, mean, median, std, min, max (customizable) for each numeric column."
+            parameters={[
+              { name: "by", type: "str | list[str]", description: "Grouping column(s)." },
+              { name: "columns", type: "list[str] | None", description: "Numeric columns to summarize (all when None).", default: "None" },
+              { name: "stats", type: "list[str] | None", description: "Aggregations to compute.", default: "None" },
+            ]}
+            returns="pd.DataFrame"
+            example={`ds.summary_by("species", columns=["sepal_length"])`}
           />
 
           <MethodCard
@@ -220,7 +336,7 @@ print(quartiles)`}
 from statslibx import DescriptiveStats
 
 df = pd.DataFrame({"A": [10, 12, 11, 13, 100, 11, 12]})
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 outliers_iqr = ds.outliers("A", method="iqr")  # boolean mask
 outliers_z = ds.outliers("A", method="zscore", threshold=2.0)
@@ -247,7 +363,7 @@ df = pd.DataFrame({
     "B": [2, 4, 6, 8, 10],
     "C": [5, 4, 3, 2, 1]
 })
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 corr_pearson = ds.correlation("pearson")
 corr_spearman = ds.correlation("spearman", columns=["A", "B"])
@@ -269,7 +385,7 @@ df = pd.DataFrame({
     "A": [1, 2, 3, 4, 5],
     "B": [2, 4, 6, 8, 10]
 })
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 cov = ds.covariance()
 print(cov)`}
@@ -277,26 +393,22 @@ print(cov)`}
 
           <MethodCard
             name="summary"
-            signature="summary(columns: list[str] | None = None, show_plot: bool = False, plot_backend: Literal['seaborn', 'matplotlib'] = 'seaborn') -> DescriptiveSummary"
-            description="Generate a complete descriptive statistics summary for all numeric columns or a subset. Returns a DescriptiveSummary object with rich formatting options."
+            signature="summary(columns: list[str] | None = None, show_plot: bool = False, plot_backend: str = 'seaborn', include_categorical: bool = False, percentiles: list[float] | None = None) -> DescriptiveSummary"
+            description="Generate a complete descriptive statistics summary using a fast single-pass column summary. Optionally include categorical frequency summaries and custom percentiles."
             parameters={[
               { name: "columns", type: "list[str] | None", description: "Subset of columns to summarize. If None, uses all numeric columns.", default: "None" },
-              { name: "show_plot", type: "bool", description: "Whether to display distribution plots.", default: "False" },
-              { name: "plot_backend", type: "'seaborn' | 'matplotlib'", description: "Plotting library for visualizations.", default: "'seaborn'" },
+              { name: "show_plot", type: "bool", description: "Hint for plot export (use ViewX include_figures for charts).", default: "False" },
+              { name: "plot_backend", type: "str", description: "Plotting library hint.", default: "'seaborn'" },
+              { name: "include_categorical", type: "bool", description: "Include mode/frequency summaries for categorical columns.", default: "False" },
+              { name: "percentiles", type: "list[float] | None", description: "Extra percentiles to compute (e.g. [0.05, 0.25, 0.75, 0.95]).", default: "None" },
             ]}
             returns="DescriptiveSummary"
-            example={`import pandas as pd
-from statslibx import DescriptiveStats
+            example={`from statslibx import DescriptiveStats, load_iris
 
-df = pd.DataFrame({
-    "Age": [23, 45, 31, 47, 52, 36, 29],
-    "Salary": [48000, 72000, 56000, 95000, 110000, 62000, 51000]
-})
-ds = DescriptiveStats(df, lang="en-US")
-
-summary = ds.summary()
-print(summary.to_dataframe())
-print(summary.to_styled_df())`}
+ds = DescriptiveStats(load_iris())
+summary = ds.summary(include_categorical=True, percentiles=[0.05, 0.25, 0.75, 0.95])
+print(summary)
+print(summary.to_markdown())`}
           />
 
           <MethodCard
@@ -320,7 +432,7 @@ df = pd.DataFrame({
     "Hours": [1, 2, 3, 4, 5, 6, 7],
     "Score": [52, 55, 61, 65, 72, 78, 80]
 })
-ds = DescriptiveStats(df, lang="en-US")
+ds = DescriptiveStats(df)
 
 result = ds.linear_regression("Hours", "Score", engine="statsmodels")
 
@@ -358,6 +470,21 @@ print(preds)`}
 df_wide = summary.to_dataframe("wide")
 df_long = summary.to_dataframe("long")
 print(df_wide)`}
+          />
+
+          <MethodCard
+            name="to_html"
+            signature="to_html(filename: str = 'report.html', theme: Literal['corporate_blue','dark_enterprise','modern_green','void_indigo','glass_ocean','cyberpunk_neon'] = 'dark_enterprise', include_figures: bool = True, data: pd.DataFrame | None = None, show: bool = False) -> str"
+            description="Export summary to ViewX HTML dashboard. Requires pip install statslibx[viewx]."
+            parameters={[
+              { name: "filename", type: "str", description: "Output HTML path.", default: "'report.html'" },
+              { name: "theme", type: "HTMLTheme", description: "ViewX dashboard theme.", default: "'dark_enterprise'" },
+              { name: "include_figures", type: "bool", description: "Include Plotly charts in export.", default: "True" },
+              { name: "data", type: "pd.DataFrame | None", description: "Source data for charts.", default: "None" },
+            ]}
+            returns="str — path to generated HTML"
+            example={`summary = ds.summary()
+summary.to_html("report.html", data=df, include_figures=True)`}
           />
 
           <MethodCard

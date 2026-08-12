@@ -35,6 +35,7 @@ class CliArgs:
     verbose: bool = False
     rows: int = 5
     sample: bool = False
+    seed: Optional[int] = None
     detailed: bool = False
     summary: bool = False
     types: bool = False
@@ -50,8 +51,8 @@ def _header(title: str, char: str = "=") -> None:
 
 def _fmt_col(col: str, dtype: str, nulls: int, unique: int, width: int = 22) -> str:
     return (
-        f"  {col:<{width}} | Tipo: {dtype:<14} | Nulos: {nulls:>6} | "
-        f"Unicos: {unique:>6,}"
+        f"  {col:<{width}} | Type: {dtype:<14} | Nulls: {nulls:>6} | "
+        f"Unique: {unique:>6,}"
     )
 
 
@@ -130,7 +131,7 @@ def _handle_preview(df: pd.DataFrame, args: CliArgs) -> None:
         n = min(args.rows, len(df))
         print(f"\n  Random sample ({n} rows):")
         _line("-")
-        print(df.sample(n).to_string(index=False))
+        print(df.sample(n, random_state=args.seed).to_string(index=False))
     else:
         n = min(args.rows, len(df))
         print(f"\n  First {n} rows:")
@@ -168,8 +169,8 @@ def _handle_info(df: pd.DataFrame, args: CliArgs) -> None:
             pct = (nulls / len(df)) * 100
             print(f"\n  Null values:")
             _line("-")
-            null_df = pd.DataFrame({"Nulos": nulls, "Porcentaje": pct})
-            print(null_df[null_df["Nulos"] > 0].to_string())
+            null_df = pd.DataFrame({"Nulls": nulls, "Percent": pct})
+            print(null_df[null_df["Nulls"] > 0].to_string())
         else:
             print(f"\n  No null values")
         print(f"\n  Unique values per column:")
@@ -213,6 +214,7 @@ def main() -> None:
     p.add_argument("file")
     p.add_argument("-n", "--rows", type=int, default=5)
     p.add_argument("--sample", action="store_true")
+    p.add_argument("--seed", type=int, default=None, help="Seed for --sample")
 
     p = sub.add_parser("quality", help="Data quality report")
     p.add_argument("file")
@@ -237,6 +239,7 @@ def main() -> None:
         verbose=getattr(parsed, "verbose", False),
         rows=getattr(parsed, "rows", 5),
         sample=getattr(parsed, "sample", False),
+        seed=getattr(parsed, "seed", None),
         detailed=getattr(parsed, "detailed", False),
         summary=getattr(parsed, "summary", False),
         types=getattr(parsed, "types", False),
