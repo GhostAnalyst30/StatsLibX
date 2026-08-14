@@ -1,12 +1,10 @@
 import logging
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from typing import Any, Union, List, Optional, Literal, Tuple, Dict
 import warnings
 import os
 from scipy import stats
-import seaborn as sns
 from pathlib import Path
 
 from ._stats_utils import (

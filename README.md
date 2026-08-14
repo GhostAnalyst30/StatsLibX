@@ -228,6 +228,14 @@ test = InferentialStats(df).t_test_1sample("sepal_length", popmean=5.0)
 test.to_presentation("test.html", theme="dark")
 ```
 
+### Ecosystem: SynaptIX (machine learning)
+
+StatsLibX, ViewX and [SynaptIX](https://github.com/GhostAnalyst30/SynaptIX) share the same report-payload contract and dataset loaders, and each works standalone:
+
+- **SynaptIX → ViewX**: ML results (`evaluate()`, `compare_models()`, ...) export with `.to_html()` / `.to_report()` / `.to_presentation()` (`pip install synaptix[viewx]`).
+- **SynaptIX → StatsLibX**: `model.diagnostics(X, y)` runs inferential tests on residuals/predictions via StatsLibX (`pip install synaptix[stats]`).
+- **StatsLibX → SynaptIX**: DataFrames produced with the polars backend feed SynaptIX models directly (polars input is converted automatically).
+
 ---
 
 ## CLI
