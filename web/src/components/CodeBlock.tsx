@@ -31,6 +31,10 @@ export function CodeBlock({ code, language = "python", title }: CodeBlockProps) 
             <span className="text-xs font-mono text-muted ml-2">{title}</span>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline-flex items-center text-[10px] font-mono uppercase tracking-wider text-accent2 bg-accent2/10 border border-accent2/15 px-2 py-0.5 rounded-md">
+            {language}
+          </span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 text-xs font-mono text-muted px-2.5 py-1 border border-border rounded-md hover:text-white hover:border-white/20 transition-colors cursor-pointer"
@@ -47,6 +51,7 @@ export function CodeBlock({ code, language = "python", title }: CodeBlockProps) 
             </>
           )}
         </button>
+        </div>
       </div>
       <pre>
         <code>{code}</code>

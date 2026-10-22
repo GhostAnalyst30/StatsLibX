@@ -5,12 +5,13 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://statslibx.vercel.app"),
   title: {
-    default: "StatsLibX — Statistical Analysis Library",
+    default: "StatsLibX — Statistical Analysis Library for Python",
     template: "%s — StatsLibX",
   },
   description:
-    "Powerful, modern, and accessible statistical analysis library for Python. From descriptive to computational statistics, all in one library.",
+    "Descriptive, inferential and computational statistics for Python: pandas/polars support, time series, distribution fitting, imputation, automatic EDA — plus an online playground that runs the real library in your browser.",
   keywords: [
     "statistics",
     "python",
@@ -18,7 +19,27 @@ export const metadata: Metadata = {
     "descriptive statistics",
     "inferential statistics",
     "computational statistics",
+    "time series",
+    "eda",
+    "imputation",
+    "bootstrap",
   ],
+  authors: [{ name: "Emmanuel Ascendra" }],
+  openGraph: {
+    type: "website",
+    url: "https://statslibx.vercel.app",
+    siteName: "StatsLibX",
+    title: "StatsLibX — Statistical Analysis Library for Python",
+    description:
+      "Descriptive, inferential and computational statistics with time series, EDA and imputation — runs in your browser on the online playground.",
+    images: [{ url: "/icons/favicon.svg", width: 512, height: 512, alt: "StatsLibX" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "StatsLibX — Statistical Analysis Library",
+    description:
+      "Statistical analysis for Python: pandas/polars, time series, EDA, imputation. Try it in the browser playground.",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

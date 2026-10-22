@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import combinations
 from typing import Union, Optional, Literal, List, Tuple, Any, Dict, Callable
 import pandas as pd
@@ -441,6 +443,195 @@ class RegressionResult(_viewx_export_mixin(), BaseResult):
                 sign = "+" if coef >= 0 else "-"
                 formula += f" {sign} {abs(coef):.{decimals}f}·{name}"
             return formula
+
+    def diagnostics(self, alpha: float = 0.05) -> "RegressionDiagnostics":
+        """
+        Full diagnostic suite for this fitted model.
+
+        Returns
+        -------
+        RegressionDiagnostics
+            VIF, leverage, Cook's distance, Durbin-Watson, residual
+            normality, heteroscedasticity and influence table.
+        """
+        return RegressionDiagnostics(self, alpha=alpha)
+
+
+class RegressionDiagnostics(_viewx_export_mixin()):
+    """
+    Regression diagnostics for a fitted :class:`RegressionResult`.
+
+    Attributes
+    ----------
+    vif : dict or None
+        Variance inflation factors per raw feature (None for
+        single-predictor polynomial models).
+    leverage : np.ndarray
+        Hat-matrix diagonal h_i.
+    cooks_distance : np.ndarray
+        Cook's influence measure per observation.
+    durbin_watson : float
+        Autocorrelation statistic (≈2 for no autocorrelation).
+    residual_normality : dict
+        Shapiro-Wilk (n <= 5000) or Jarque-Bera result.
+    heteroscedasticity : dict
+        Breusch-Pagan-lite LM test on squared residuals.
+    influence : pd.DataFrame
+        ``residual``, ``leverage``, ``cooks_distance`` per row.
+    flags : list of str
+        Human-readable warnings detected.
+    """
+
+    def __init__(self, model: "RegressionResult", alpha: float = 0.05):
+        self.model = model
+        self.alpha = alpha
+        X = np.asarray(model.X_design, dtype=float)
+        n, k = X.shape
+        resid = np.asarray(model.residuals, dtype=float)
+        rss = float(np.dot(resid, resid))
+        dof = max(n - k, 1)
+        s2 = rss / dof
+
+        # Hat matrix diagonal.
+        try:
+            XtX_inv = np.linalg.inv(X.T @ X)
+            H_diag = np.einsum("ij,jk,ik->i", X, XtX_inv, X)
+        except np.linalg.LinAlgError:
+            H_diag = np.full(n, np.nan)
+
+        # Cook's distance.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            one_minus_h = 1.0 - H_diag
+            self.cooks_distance = np.where(
+                one_minus_h > 0, (resid ** 2 / (k * s2)) * (H_diag / one_minus_h ** 2), np.nan
+            )
+        self.leverage = H_diag
+
+        # Durbin-Watson.
+        dw_num = float(np.sum(np.diff(resid) ** 2))
+        self.durbin_watson = dw_num / rss if rss > 0 else float("nan")
+
+        # VIF per raw feature (multiple predictors only).
+        self.vif: Optional[Dict[str, float]] = None
+        if model.n_features > 1:
+            raw = np.asarray(model.X_values, dtype=float)
+            self.vif = {}
+            for j, name in enumerate(model.feature_names):
+                others = np.delete(raw, j, axis=1)
+                Xo = np.column_stack([np.ones(n), others])
+                beta, *_ = np.linalg.lstsq(Xo, raw[:, j], rcond=None)
+                pred = Xo @ beta
+                ss_res = float(np.sum((raw[:, j] - pred) ** 2))
+                ss_tot = float(np.sum((raw[:, j] - raw[:, j].mean()) ** 2))
+                r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+                vif = np.inf if r2 >= 1.0 else 1.0 / (1.0 - r2)
+                self.vif[name] = float(vif)
+
+        # Residual normality: Shapiro-Wilk for small samples, else Jarque-Bera.
+        if 3 < n <= 5000:
+            stat, p = scipy_stats.shapiro(resid)
+            self.residual_normality = {"test": "Shapiro-Wilk",
+                                       "statistic": float(stat), "pvalue": float(p)}
+        else:
+            jb = n / 6.0 * (float(scipy_stats.skew(resid)) ** 2
+                            + float(scipy_stats.kurtosis(resid)) ** 2 / 4.0)
+            self.residual_normality = {"test": "Jarque-Bera", "statistic": float(jb),
+                                       "pvalue": float(scipy_stats.chi2.sf(jb, 2))}
+
+        # Breusch-Pagan-lite: LM = n * R2 of e^2 on the model features.
+        e2 = resid ** 2
+        beta_bp, *_ = np.linalg.lstsq(X, e2, rcond=None)
+        fitted_e2 = X @ beta_bp
+        ss_res_bp = float(np.sum((e2 - fitted_e2) ** 2))
+        ss_tot_bp = float(np.sum((e2 - e2.mean()) ** 2))
+        r2_bp = 1 - ss_res_bp / ss_tot_bp if ss_tot_bp > 0 else 0.0
+        lm = n * r2_bp
+        self.heteroscedasticity = {
+            "test": "Breusch-Pagan (LM)",
+            "statistic": float(lm),
+            "df": int(k - 1),
+            "pvalue": float(scipy_stats.chi2.sf(lm, max(k - 1, 1))),
+        }
+
+        self.influence = pd.DataFrame({
+            "residual": resid,
+            "leverage": self.leverage,
+            "cooks_distance": self.cooks_distance,
+        })
+
+        # Flags.
+        flags: List[str] = []
+        if self.vif:
+            bad = {f: v for f, v in self.vif.items() if v > 10}
+            if bad:
+                flags.append(f"Multicollinearity (VIF > 10): "
+                             + ", ".join(f"{f}={v:.1f}" for f, v in bad.items()))
+        if np.isfinite(self.durbin_watson) and (self.durbin_watson < 1.0 or self.durbin_watson > 3.0):
+            flags.append(f"Autocorrelation suspected (Durbin-Watson = {self.durbin_watson:.2f})")
+        if self.residual_normality["pvalue"] < alpha:
+            flags.append(f"Residuals not normal ({self.residual_normality['test']} "
+                         f"p = {self.residual_normality['pvalue']:.4g})")
+        if self.heteroscedasticity["pvalue"] < alpha:
+            flags.append(f"Heteroscedasticity suspected (Breusch-Pagan "
+                         f"p = {self.heteroscedasticity['pvalue']:.4g})")
+        threshold = 4.0 / n
+        n_influential = int(np.sum(self.cooks_distance > threshold))
+        if n_influential:
+            flags.append(f"{n_influential} influential observation(s) "
+                         f"(Cook's D > 4/n = {threshold:.3g})")
+        self.flags = flags
+
+    @property
+    def n_influential(self) -> int:
+        """Observations with Cook's distance above 4/n."""
+        return int(np.nansum(self.cooks_distance > 4.0 / len(self.cooks_distance)))
+
+    def summary(self) -> dict:
+        return {
+            "vif": self.vif,
+            "durbin_watson": self.durbin_watson,
+            "residual_normality": self.residual_normality,
+            "heteroscedasticity": self.heteroscedasticity,
+            "n_influential": self.n_influential,
+            "flags": self.flags,
+        }
+
+    def __repr__(self) -> str:
+        lines = [
+            "=" * 70,
+            "Regression diagnostics",
+            "=" * 70,
+            f"Observations: {len(self.influence)}   Parameters: {self.model.X_design.shape[1]}",
+            f"Durbin-Watson: {self.durbin_watson:.4f} (≈2 = no autocorrelation)",
+        ]
+        if self.vif:
+            lines.append("VIF: " + ", ".join(f"{f}={v:.2f}" for f, v in self.vif.items()))
+        nr = self.residual_normality
+        lines.append(f"Residual normality ({nr['test']}): stat={nr['statistic']:.4f}, p={nr['pvalue']:.4g}")
+        bp = self.heteroscedasticity
+        lines.append(f"Homoscedasticity ({bp['test']}): stat={bp['statistic']:.4f}, p={bp['pvalue']:.4g}")
+        lines.append(f"Influential observations (Cook's D > 4/n): {self.n_influential}")
+        lines += ["", "Flags:"] + ([f"  - {f}" for f in self.flags] or ["  none"])
+        lines.append("=" * 70)
+        return "\n".join(lines)
+
+    def to_dataframe(self) -> pd.DataFrame:
+        return self.influence.copy()
+
+    def to_dict(self) -> dict:
+        return {
+            "summary": self.summary(),
+            "leverage": self.leverage.tolist(),
+            "cooks_distance": self.cooks_distance.tolist(),
+        }
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown
+        return records_to_markdown(self.influence.to_dict(orient="records"))
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        return dumps_json(self.to_dict(), indent=indent)
 
 
 @dataclass
@@ -1150,6 +1341,23 @@ class ComputationalStats:
     def polynomial_regression(self, X: str, y: str, degree: int = 2) -> RegressionResult:
         """Polynomial regression on a single predictor."""
         return self.regression(X, y, degree=degree)
+
+    def regression_diagnostics(self, X: Union[List[str], str], y: str,
+                               degree: int = 1, interaction_terms: bool = False,
+                               alpha: float = 0.05) -> RegressionDiagnostics:
+        """
+        Fit a regression and run the full diagnostic suite
+        (VIF, leverage, Cook's distance, Durbin-Watson, residual
+        normality, heteroscedasticity).
+
+        Returns
+        -------
+        RegressionDiagnostics
+            Also available as ``model.diagnostics()`` on any fitted
+            :class:`RegressionResult`.
+        """
+        model = self.regression(X, y, degree=degree, interaction_terms=interaction_terms)
+        return model.diagnostics(alpha=alpha)
 
     def bootstrap_regression(
         self,

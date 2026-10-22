@@ -51,7 +51,7 @@ export default function InstallationPage() {
         title="Installation"
         description="Get started with StatsLibX in minutes"
         icon={<Shell className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">

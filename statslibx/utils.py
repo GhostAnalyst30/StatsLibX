@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import numpy as np
 import pandas as pd
@@ -6,6 +8,15 @@ import warnings
 import os
 from scipy import stats
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+
+try:
+    import seaborn as sns
+    _SEABORN_AVAILABLE = True
+except ImportError:  # seaborn is an optional extra (pip install statslibx[plots])
+    sns = None
+    _SEABORN_AVAILABLE = False
 
 from ._stats_utils import (
     detect_outliers as _detect_outliers,
@@ -99,7 +110,7 @@ class UtilsStats:
     
     def __init__(self) -> None:
         """Initialize the utility class."""
-        self._plot_backend: str = 'seaborn'
+        self._plot_backend: str = 'seaborn' if _SEABORN_AVAILABLE else 'matplotlib'
         self._default_figsize: Tuple[int, int] = (12, 5)
         self._save_fig: bool = False
         self._fig_format: str = 'png'
@@ -111,6 +122,7 @@ class UtilsStats:
     
     def _setup_plotting_style(self) -> None:
         """Configure default plotting styles."""
+        import matplotlib.pyplot as plt
         plt.rcParams['figure.figsize'] = [self._default_figsize[0], self._default_figsize[1]]
         plt.rcParams['figure.dpi'] = self._fig_dpi
         plt.rcParams['savefig.dpi'] = self._fig_dpi
@@ -125,6 +137,7 @@ class UtilsStats:
     
     def set_default_figsize(self, figsize: Tuple[int, int]) -> None:
         """Set the default figure size."""
+        import matplotlib.pyplot as plt
         self._default_figsize = figsize
         plt.rcParams['figure.figsize'] = [figsize[0], figsize[1]]
     
@@ -655,6 +668,12 @@ class UtilsStats:
         """
         logger.info(f"Plotting distribution (type={plot_type}, backend={backend})")
         backend = backend or self._plot_backend
+        if backend == 'seaborn' and not _SEABORN_AVAILABLE:
+            logger.warning(
+                "seaborn is not installed; falling back to matplotlib. "
+                "Install it with: pip install statslibx[plots]"
+            )
+            backend = 'matplotlib'
         figsize = figsize or self._default_figsize
         self._save_fig = save_fig
         
@@ -722,6 +741,11 @@ class UtilsStats:
         """
         logger.info(f"Plotting correlation matrix (method={method}, backend={backend})")
         backend = backend or self._plot_backend
+        if backend == 'seaborn' and not _SEABORN_AVAILABLE:
+            raise ImportError(
+                "The seaborn backend requires seaborn. Install it with: "
+                "pip install statslibx[plots]  (or use backend='plotly')"
+            )
         figsize = figsize or self._default_figsize
         self.save_fig = save_fig 
         filename = filename or "correlation_matrix"
@@ -809,6 +833,12 @@ class UtilsStats:
         """
         logger.info(f"Plotting scatter matrix (backend={backend})")
         backend = backend or self._plot_backend
+        if backend == 'seaborn' and not _SEABORN_AVAILABLE:
+            logger.warning(
+                "seaborn is not installed; falling back to pandas. "
+                "Install it with: pip install statslibx[plots]"
+            )
+            backend = 'pandas'
         figsize = figsize or self._default_figsize
         self.save_fig = save_fig 
         filename = filename or "scatter_matrix"

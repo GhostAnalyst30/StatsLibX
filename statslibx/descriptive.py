@@ -12,6 +12,8 @@ LinearRegressionResult
     Fitted OLS model returned by :meth:`DescriptiveStats.linear_regression`.
 """
 
+from __future__ import annotations
+
 import logging
 import warnings
 from datetime import datetime

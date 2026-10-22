@@ -9,7 +9,7 @@ export default function InferentialStatsDocs() {
         title="InferentialStats"
         description="A class for performing inferential statistical analysis, including hypothesis tests, confidence intervals, normality tests, and more."
         icon={<FlaskConical className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">
@@ -587,6 +587,27 @@ print(inf.chi_square_gof("species", expected={"setosa": 0.4, "versicolor": 0.3, 
             example={`from statslibx import adjust_pvalues
 adjust_pvalues([0.01, 0.04, 0.03], method="holm")
 # array([0.03, 0.06, 0.06])`}
+          />
+          <MethodCard
+            name="suggest_test"
+            signature="suggest_test(column1, column2=None, groups=None, goal='auto', alpha=0.05) -> TestRecommendation"
+            description="New in v0.4.0. Data-driven test recommender. Inspects column types, group counts, per-group normality (Shapiro-Wilk / Jarque-Bera) and homoscedasticity (Levene), then recommends the appropriate test with its rationale, the assumption checks it performed, alternatives — and a run() shortcut that executes the recommended test. A categorical column2 is treated as the grouping variable."
+            parameters={[
+              { name: "column1", type: "str", description: "First column (numeric or categorical)." },
+              { name: "column2", type: "str, optional", description: "Second column; categorical columns become the grouping variable." },
+              { name: "groups", type: "str, optional", description: "Grouping column for comparisons." },
+              { name: "goal", type: "'auto' | 'compare' | 'correlate' | 'independence' | 'distribution'", description: "Analysis intent (auto infers from the columns).", default: "'auto'" },
+            ]}
+            returns="TestRecommendation"
+            example={`inf = InferentialStats(load_iris())
+
+rec = inf.suggest_test("sepal_length", groups="species")
+print(rec)             # recommendation + assumption checks
+result = rec.run()     # executes the recommended test
+print(result.pvalue)
+
+rec2 = inf.suggest_test("sepal_length", "sepal_width")
+print(rec2.method)     # 'pearson' or 'spearman'`}
           />
           <MethodCard
             name="fisher_exact_test"

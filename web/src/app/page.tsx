@@ -23,6 +23,12 @@ import {
   ExternalLink,
   Table,
   FileSpreadsheet,
+  TrendingUp,
+  Spline,
+  Puzzle,
+  ScanSearch,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ClassCard } from "@/components/ClassCard";
@@ -56,7 +62,7 @@ const modules = [
     icon: <FlaskConical className="w-6 h-6" />,
     title: "InferentialStats",
     description:
-      "Confidence intervals, t-tests, ANOVA, power analysis, permutation tests, and Fisher exact.",
+      "Confidence intervals, t-tests, ANOVA, power analysis, permutation tests, and a data-driven test recommender.",
     tags: ["ttest", "anova", "power"],
     href: "/docs/inferential",
   },
@@ -64,9 +70,45 @@ const modules = [
     icon: <Cpu className="w-6 h-6" />,
     title: "ComputationalStats",
     description:
-      "Bootstrap, Monte Carlo, jackknife, k-fold CV, regression, and k-means clustering.",
+      "Bootstrap, Monte Carlo, jackknife, k-fold CV, regression diagnostics, and k-means clustering.",
     tags: ["bootstrap", "montecarlo", "cv"],
     href: "/docs/computational",
+  },
+  {
+    icon: <TrendingUp className="w-6 h-6" />,
+    title: "TimeSeriesStats",
+    description:
+      "ACF/PACF with Ljung-Box, ADF + KPSS stationarity tests, classical decomposition, rolling stats and lag features.",
+    tags: ["acf", "stationarity", "decompose"],
+    href: "/docs/timeseries",
+    isNew: true,
+  },
+  {
+    icon: <Spline className="w-6 h-6" />,
+    title: "Distribution Fitting",
+    description:
+      "Maximum-likelihood fitting of scipy distributions ranked by AIC/BIC, QQ data and goodness-of-fit tests.",
+    tags: ["mle", "aic", "qq"],
+    href: "/docs/distribution",
+    isNew: true,
+  },
+  {
+    icon: <Puzzle className="w-6 h-6" />,
+    title: "Imputation",
+    description:
+      "Missingness reports per column and pattern, plus KNN and MICE-lite chained-regression imputation.",
+    tags: ["knn", "mice", "missing"],
+    href: "/docs/imputation",
+    isNew: true,
+  },
+  {
+    icon: <ScanSearch className="w-6 h-6" />,
+    title: "Automatic EDA",
+    description:
+      "One-call profiling with per-column statistics, correlation structure and data-quality alerts.",
+    tags: ["profile", "alerts", "report"],
+    href: "/docs/eda",
+    isNew: true,
   },
   {
     icon: <Wrench className="w-6 h-6" />,
@@ -107,9 +149,9 @@ const datasets = [
 ];
 
 const stats = [
-  { icon: Layers, value: "6+", label: "Modules", color: "text-accent" },
-  { icon: Hash, value: "55+", label: "Methods", color: "text-accent2" },
-  { icon: Database, value: "6", label: "Built-in Datasets", color: "text-accent3" },
+  { icon: Layers, value: "10+", label: "Modules", color: "text-accent" },
+  { icon: Hash, value: "90+", label: "Methods", color: "text-accent2" },
+  { icon: Database, value: "6", label: "Datasets", color: "text-accent3" },
   { icon: Package, value: `v${STATSLIBX_VERSION}`, label: "Version", color: "text-accent" },
   { icon: Eye, value: "ViewX", label: "Integration", color: "text-accent2" },
 ];
@@ -138,6 +180,8 @@ export default function HomePage() {
           }}
         />
 
+        <div className="hero-mesh" aria-hidden />
+
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-accent/10 blur-[120px] pointer-events-none" />
 
         <motion.div
@@ -160,10 +204,14 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="flex justify-center mb-4">
+          <motion.div variants={fadeUp} className="flex justify-center mb-4 gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-3 py-1 rounded-full">
               <Package className="w-3 h-3" />
-              v0.3.1
+              v0.4.0
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono text-accent2 bg-accent2/10 border border-accent2/20 px-3 py-1 rounded-full">
+              <Zap className="w-3 h-3" />
+              New: time series, EDA, imputation
             </span>
           </motion.div>
 
@@ -180,9 +228,9 @@ export default function HomePage() {
             variants={fadeUp}
             className="mt-6 text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed"
           >
-            A powerful, modern, and accessible statistical analysis library for
-            Python. From descriptive to computational statistics, all in one
-            library.
+            A powerful, modern statistical analysis library for Python — from
+            descriptive to computational statistics, including time series,
+            EDA and imputation. <span className="text-text font-medium">The real library runs in your browser</span> on the playground: no install required.
           </motion.p>
 
           <motion.div variants={fadeUp} className="mt-8 flex justify-center">
@@ -205,16 +253,23 @@ export default function HomePage() {
 
           <motion.div
             variants={fadeUp}
-            className="mt-10 flex items-center justify-center gap-4"
+            className="mt-10 flex flex-wrap items-center justify-center gap-4"
           >
             <Link
+              href="/playground"
+              className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all no-underline glow-accent"
+            >
+              <Sparkles className="w-4 h-4" />
+              Try the Playground <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
               href="/installation"
-              className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-semibold px-6 py-3 rounded-lg transition-all no-underline"
+              className="inline-flex items-center gap-2 border border-border hover:border-accent/40 hover:text-white text-text font-semibold px-6 py-3 rounded-lg transition-all no-underline"
             >
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="https://github.com"
+              href="https://github.com/GhostAnalyst30/StatsLibX"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border border-border hover:border-white/20 text-text font-semibold px-6 py-3 rounded-lg transition-all no-underline"
@@ -274,7 +329,8 @@ export default function HomePage() {
               Built-in Modules
             </h2>
             <p className="mt-3 text-muted max-w-xl mx-auto">
-              Everything you need for statistical analysis in one place.
+              Ten modules covering the full analysis workflow — from quick
+              summaries to time series and automatic EDA.
             </p>
           </motion.div>
 
@@ -293,6 +349,7 @@ export default function HomePage() {
                   description={mod.description}
                   tags={mod.tags}
                   href={mod.href}
+                  isNew={mod.isNew}
                 />
               </motion.div>
             ))}
@@ -392,7 +449,8 @@ ci = inf.confidence_interval(column='sepal_length', statistic='mean')`}
               Ready to Explore?
             </h2>
             <p className="mt-3 text-muted max-w-lg mx-auto">
-              Try StatsLibX interactively in the browser with our playground.
+              The playground loads the real statslibx in your browser — full
+              analysis, inline plots and bundled datasets, zero installation.
             </p>
             <Link
               href="/playground"

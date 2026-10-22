@@ -10,7 +10,7 @@ export default function DatasetsDocs() {
         title="Datasets"
         description="Built-in datasets for quick experimentation, plus synthetic data generation utilities. Load classic ML datasets with a single function call or generate custom data with configurable probability distributions."
         icon={<Database className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">

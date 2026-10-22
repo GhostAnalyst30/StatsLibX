@@ -72,6 +72,42 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
   type __Unused = __Check
 }
 
+// Validate ../../src/app/docs/distribution/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/distribution">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/distribution/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/docs/eda/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/eda">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/eda/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/docs/formatting/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/formatting">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/formatting/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/docs/imputation/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/imputation">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/imputation/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/docs/inferential/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/docs/inferential">> = Specific
@@ -85,6 +121,15 @@ type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
 {
   type __IsExpected<Specific extends AppPageConfig<"/docs/preprocessing">> = Specific
   const handler = {} as typeof import("../../src/app/docs/preprocessing/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/docs/timeseries/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/timeseries">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/timeseries/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

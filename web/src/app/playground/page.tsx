@@ -49,41 +49,52 @@ interface FileNode {
 
 interface OutputLine {
   text: string;
-  type: "stdout" | "stderr" | "system" | "error";
+  type: "stdout" | "stderr" | "system" | "error" | "image";
+  image?: string;
 }
 
 const FILES: Record<string, string> = {
-  "main.py": `from statslibx import DescriptiveStats, InferentialStats
-from statslibx.datasets import load_iris, generate_dataset
+  "main.py": `from statslibx import DescriptiveStats, InferentialStats, ComputationalStats
+from statslibx.datasets import load_iris
 
-# Load sample data (returns pandas DataFrame)
+# Real statslibx runs in your browser — no install needed.
 iris = load_iris()
-print(f"Iris dataset loaded! {len(iris)} samples")
-print(f"Columns: {', '.join(iris.columns)}")
+print(f"Iris dataset loaded: {len(iris)} samples")
 
 # Descriptive statistics
 stats = DescriptiveStats(iris)
-print("\\n=== Sepal Length Statistics ===")
-print(f"Mean: {stats.mean('sepal_length'):.3f}")
-print(f"Median: {stats.median('sepal_length'):.2f}")
-print(f"Std Dev: {stats.std('sepal_length'):.3f}")
+print(f"Mean sepal_length:   {stats.mean('sepal_length'):.3f}")
+print(f"Median sepal_length: {stats.median('sepal_length'):.2f}")
+print(f"Robust MAD:          {stats.mad('sepal_length', scale='normal'):.3f}")
 
 # Group stats by species
 for species in iris["species"].unique():
     subset = iris[iris["species"] == species]
     gs = DescriptiveStats(subset)
-    print(f"\\n{species}: mean={gs.mean('sepal_length'):.2f}, std={gs.std('sepal_length'):.2f}")
+    print(f"{species}: mean={gs.mean('sepal_length'):.2f}, std={gs.std('sepal_length'):.2f}")
 
-# Inferential statistics
+# Inferential statistics — ANOVA + post-hoc
 infer = InferentialStats(iris)
-result = infer.t_test_2sample("sepal_length", "sepal_width")
-print("\\n=== T-Test: sepal_length vs sepal_width ===")
-print(result)
+anova = infer.anova_oneway("sepal_length", "species")
+print(f"\\nANOVA: F={anova.statistic:.3f}, p={anova.pvalue:.4g}")
 
-# Synthetic data
-schema = {"value": {"dist": "normal", "mean": 10, "std": 2, "type": "float"}}
-synth = generate_dataset(n_rows=50, schema=schema)
-print(f"\\nGenerated dataset shape: {synth.shape}")
+posthoc = infer.tukey_hsd("sepal_length", "species")
+print(posthoc.to_dataframe())
+
+# Computational statistics — reproducible bootstrap
+comp = ComputationalStats(iris[["sepal_length", "sepal_width", "petal_length", "petal_width"]], seed=42)
+boot = comp.bootstrap("sepal_length", n_samples=1000)
+print(f"\\nBootstrap BCa 95% CI: {boot.bca_ci}")
+
+# Plots render inline in the output panel
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(6, 3.5))
+for species, group in iris.groupby("species"):
+    ax.hist(group["sepal_length"], bins=15, alpha=0.6, label=species)
+ax.set_xlabel("sepal_length")
+ax.set_title("Sepal length by species")
+ax.legend()
+plt.show()
 `,
   "utils.py": `from statslibx import DescriptiveStats
 
@@ -156,160 +167,26 @@ const FILE_ENTRIES: FileNode[] = [
   { name: "test_analysis.py", icon: FileCode, language: "python" },
 ];
 
-const STUB_PYTHON_CODE = `
-import sys
-import math
-import pandas as pd
-import numpy as np
-from scipy import stats as scipy_stats
+const FIGURE_CAPTURE_CODE = `
+import base64
+import io
+import matplotlib
+import matplotlib.pyplot as plt
 
-class _TestResult:
-    def __init__(self, test_name, statistic, pvalue):
-        self.test_name = test_name
-        self.statistic = statistic
-        self.pvalue = pvalue
-    def __repr__(self):
-        sig = "significant" if self.pvalue < 0.05 else "not significant"
-        return f"{self.test_name}: statistic={self.statistic:.4f}, p={self.pvalue:.4f} ({sig})"
-
-class _DescriptiveStats:
-    def __init__(self, data):
-        if isinstance(data, pd.DataFrame):
-            self._df = data
-            self._series = None
-        elif isinstance(data, pd.Series):
-            self._df = None
-            self._series = data
-        else:
-            self._series = pd.Series([float(x) for x in data])
-            self._df = None
-
-    def _values(self, column=None):
-        if column is not None:
-            return self._df[column].dropna()
-        return self._series.dropna()
-
-    def mean(self, column=None):
-        return float(self._values(column).mean())
-    def median(self, column=None):
-        return float(self._values(column).median())
-    def std(self, column=None, ddof=1):
-        return float(self._values(column).std(ddof=ddof))
-    def skewness(self, column=None):
-        return float(scipy_stats.skew(self._values(column), bias=False))
-    def summary(self):
-        if self._df is not None:
-            return type('S', (), {'to_dataframe': lambda self=None, format='wide': self._df.describe()})()
-        s = self._series
-        return {'count': len(s), 'mean': s.mean(), 'std': s.std()}
-
-class _InferentialStats:
-    def __init__(self, data):
-        self._df = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
-
-    def t_test_1sample(self, column, popmean=0, **kwargs):
-        sample = self._df[column].dropna()
-        t, p = scipy_stats.ttest_1samp(sample, popmean)
-        return _TestResult(f"t-test 1-sample ({column})", float(t), float(p))
-
-    def t_test_2sample(self, column1, column2, **kwargs):
-        a = self._df[column1].dropna()
-        b = self._df[column2].dropna()
-        t, p = scipy_stats.ttest_ind(a, b, equal_var=kwargs.get('equal_var', True))
-        return _TestResult(f"t-test 2-sample ({column1} vs {column2})", float(t), float(p))
-
-    def confidence_interval(self, column, confidence=0.95):
-        s = self._df[column].dropna()
-        m = s.mean()
-        se = s.std(ddof=1) / math.sqrt(len(s))
-        h = se * scipy_stats.t.ppf((1 + confidence) / 2, len(s) - 1)
-        return (m - h, m + h)
-
-class _ComputationalStats:
-    def __init__(self, data, seed=None):
-        self._df = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
-        if seed is not None:
-            np.random.seed(seed)
-
-    def correlation_analysis(self, method='pearson'):
-        return {'correlation_matrix': self._df.select_dtypes(include='number').corr(method=method)}
-
-    def bootstrap(self, column, n_samples=1000, statistic='mean', confidence_level=0.95, custom_func=None, random_state=None):
-        col = self._df[column].dropna().values
-        rng = np.random.default_rng(random_state)
-        stats = []
-        for _ in range(n_samples):
-            sample = rng.choice(col, size=len(col), replace=True)
-            stats.append(np.mean(sample) if statistic == 'mean' else np.median(sample))
-        lo = np.percentile(stats, (1 - confidence_level) / 2 * 100)
-        hi = np.percentile(stats, (1 + confidence_level) / 2 * 100)
-        return type('B', (), {'summary': lambda: {'ci': (lo, hi), 'original': float(np.mean(col))}})()
-
-    # Deprecated alias kept for compatibility with older examples.
-    bootstrapping = bootstrap
-
-class _Preprocessing:
-    def __init__(self, data):
-        self.data = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
-    def preview_data(self, n=5):
-        return self.data.head(n)
-    def describe_numeric(self):
-        return self.data.select_dtypes(include='number').describe()
-
-_IRIS = pd.DataFrame({
-    'sepal_length': [5.1,4.9,4.7,5.0,5.4,6.0,6.1,5.8,6.2,6.7,6.9,6.4],
-    'sepal_width': [3.5,3.0,3.2,3.6,3.9,2.9,3.0,2.7,2.8,3.1,3.2,2.8],
-    'petal_length': [1.4,1.4,1.3,1.4,1.7,4.5,4.6,4.1,4.8,5.6,5.7,5.6],
-    'petal_width': [0.2,0.2,0.2,0.2,0.4,1.5,1.4,1.0,1.8,2.4,2.3,2.1],
-    'species': ['setosa']*5 + ['versicolor']*4 + ['virginica']*3,
-})
-
-_PENGUINS = pd.DataFrame({
-    'species': ['Adelie','Adelie','Chinstrap','Gentoo'],
-    'bill_length_mm': [39.1,39.5,46.5,50.1],
-    'bill_depth_mm': [18.7,17.4,17.9,16.3],
-    'flipper_length_mm': [181,186,192,230],
-    'body_mass_g': [3750,3800,3500,5700],
-})
-
-def _generate_dataset(n_rows, schema, seed=42):
-    rng = np.random.default_rng(seed)
-    data = {}
-    for col, cfg in schema.items():
-        dist = cfg['dist']
-        if dist == 'normal':
-            vals = rng.normal(cfg.get('mean', 0), cfg.get('std', 1), n_rows)
-        elif dist == 'categorical':
-            vals = rng.choice(cfg['choices'], n_rows)
-            data[col] = vals
+def _slx_capture_figures():
+    """Render all open matplotlib figures as base64 PNGs, then close them."""
+    images = []
+    for num in plt.get_fignums():
+        fig = plt.figure(num)
+        buf = io.BytesIO()
+        try:
+            fig.savefig(buf, format="png", dpi=110, bbox_inches="tight")
+        except Exception:
+            plt.close(fig)
             continue
-        else:
-            vals = rng.normal(0, 1, n_rows)
-        if cfg.get('type') == 'int':
-            vals = np.round(vals).astype(int)
-        data[col] = vals
-    return pd.DataFrame(data)
-
-class _Datasets:
-    load_iris = staticmethod(lambda backend='pandas': _IRIS.copy())
-    load_penguins = staticmethod(lambda backend='pandas': _PENGUINS.copy())
-    load_dataset = staticmethod(lambda name, backend='pandas', **kw: _IRIS.copy() if 'iris' in name else _PENGUINS.copy())
-    generate_dataset = staticmethod(_generate_dataset)
-
-stub_module = type(sys)('statslibx')
-stub_module.DescriptiveStats = _DescriptiveStats
-stub_module.InferentialStats = _InferentialStats
-stub_module.ComputationalStats = _ComputationalStats
-stub_module.Preprocessing = _Preprocessing
-stub_module.datasets = _Datasets
-stub_module.__version__ = '0.3.1-stub'
-sys.modules['statslibx'] = stub_module
-datasets_mod = type(sys)('statslibx.datasets')
-datasets_mod.load_iris = _Datasets.load_iris
-datasets_mod.load_penguins = _Datasets.load_penguins
-datasets_mod.load_dataset = _Datasets.load_dataset
-datasets_mod.generate_dataset = _Datasets.generate_dataset
-sys.modules['statslibx.datasets'] = datasets_mod
+        images.append(base64.b64encode(buf.getvalue()).decode("ascii"))
+        plt.close(fig)
+    return images
 `;
 
 type SidePanel = "explorer" | "search" | "packages" | null;
@@ -324,6 +201,7 @@ export default function PlaygroundPage() {
   const [pyodideReady, setPyodideReady] = useState(false);
   const [pyodideLoading, setPyodideLoading] = useState(true);
   const [pyodideProgress, setPyodideProgress] = useState("");
+  const [statsLibxVersion, setStatsLibxVersion] = useState("");
   const [sidePanel, setSidePanel] = useState<SidePanel>("explorer");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bottomPanelOpen, setBottomPanelOpen] = useState(true);
@@ -332,18 +210,19 @@ export default function PlaygroundPage() {
   const [terminalInput, setTerminalInput] = useState("");
   const [terminalHistory, setTerminalHistory] = useState<string[]>([
     "Python REPL — enter Python expressions only (not shell commands)",
-    "Example: from statslibx import DescriptiveStats; DescriptiveStats([1,2,3]).mean()",
+    "Example: from statslibx.datasets import load_iris; DescriptiveStats(load_iris()).mean('sepal_length')",
   ]);
   const [problems, setProblems] = useState<{ file: string; line: number; msg: string }[]>([]);
   const [cursorPos, setCursorPos] = useState({ line: 1, col: 1 });
   const [execStatus, setExecStatus] = useState<"idle" | "running" | "done" | "error">("idle");
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [installedPackages, setInstalledPackages] = useState<{ name: string; installing: boolean; error?: string }[]>([
+    { name: "statslibx (bundled)", installing: false },
     { name: "numpy", installing: false },
     { name: "pandas", installing: false },
     { name: "scipy", installing: false },
+    { name: "sympy", installing: false },
     { name: "matplotlib", installing: false },
-    { name: "statslibx", installing: false },
   ]);
   const [installInput, setInstallInput] = useState("");
   const [explorerCollapsed, setExplorerCollapsed] = useState<Record<string, boolean>>({});
@@ -370,6 +249,30 @@ export default function PlaygroundPage() {
   useEffect(() => {
     let cancelled = false;
 
+    async function loadStatsLibX(pyodide: any): Promise<string> {
+      setPyodideProgress("Loading statslibx source...");
+      const res = await fetch("/pyodide/manifest.json");
+      if (!res.ok) throw new Error(`Failed to fetch statslibx manifest (HTTP ${res.status})`);
+      const manifest = await res.json();
+
+      // Write the real package into the Pyodide virtual filesystem.
+      for (const file of manifest.files) {
+        const target = `/home/pyodide/${file.path}`;
+        const dir = target.split("/").slice(0, -1).join("/");
+        pyodide.FS.mkdirTree(dir);
+        pyodide.FS.writeFile(target, file.content, { encoding: "utf8" });
+      }
+
+      pyodide.runPython(`
+import sys
+sys.path.insert(0, "/home/pyodide")
+import matplotlib
+matplotlib.use("Agg")  # figures are captured and rendered inline
+import statslibx
+`);
+      return manifest.version;
+    }
+
     async function initPyodide() {
       try {
         setPyodideProgress("Loading Pyodide runtime...");
@@ -384,20 +287,26 @@ export default function PlaygroundPage() {
 
         if (cancelled) return;
         pyodideRef.current = pyodide;
-        setPyodideProgress("Installing packages (numpy, pandas, scipy, matplotlib)...");
+        setPyodideProgress("Downloading packages (numpy, pandas, scipy, sympy, matplotlib)...");
 
-        await pyodide.loadPackage(["numpy", "pandas", "scipy", "matplotlib", "pytz"]);
-
-        if (cancelled) return;
-        setPyodideProgress("Injecting statslibx stubs...");
-
-        pyodide.runPython(STUB_PYTHON_CODE);
+        await pyodide.loadPackage(
+          ["numpy", "pandas", "scipy", "sympy", "matplotlib", "pytz", "micropip"],
+          { messageCallback: (msg: string) => setPyodideProgress(msg) }
+        );
 
         if (cancelled) return;
+        const version = await loadStatsLibX(pyodide);
+        if (cancelled) return;
+
+        // Helper used after every execution to render plots inline.
+        pyodide.runPython(FIGURE_CAPTURE_CODE);
+
+        setStatsLibxVersion(version);
         setPyodideReady(true);
         setPyodideLoading(false);
         setPyodideProgress("");
-        addOutput({ text: "Pyodide v0.26.4 ready — statslibx stubs loaded", type: "system" });
+        addOutput({ text: `Pyodide v0.26.4 ready — statslibx v${version} (real library) loaded`, type: "system" });
+        addOutput({ text: "Python 3.12 · numpy, pandas, scipy, sympy, matplotlib available · bundled datasets: iris, penguins, titanic", type: "system" });
       } catch (err: any) {
         if (!cancelled) {
           setPyodideLoading(false);
@@ -504,6 +413,21 @@ export default function PlaygroundPage() {
 
   const handleRunRef = useRef<() => void>(() => {});
 
+  const captureFigures = useCallback(async (py: any, emit: (line: OutputLine) => void) => {
+    try {
+      const figures = await py.runPythonAsync("_slx_capture_figures()");
+      if (figures) {
+        const images: string[] = figures.toJs ? figures.toJs() : figures;
+        figures.destroy?.();
+        for (const img of images) {
+          emit({ text: "", type: "image", image: img });
+        }
+      }
+    } catch {
+      // Figure capture is best-effort; never fail the run for it.
+    }
+  }, []);
+
   const handleRun = useCallback(async () => {
     if (!pyodideRef.current || isRunning) return;
 
@@ -518,9 +442,15 @@ export default function PlaygroundPage() {
     const py = pyodideRef.current;
 
     try {
-      const hasModule = await py.runPythonAsync(`import sys; 'statslibx' in sys.modules`);
-      if (!hasModule) {
-        await py.runPythonAsync(STUB_PYTHON_CODE);
+      // Sync every workspace file into /home/pyodide so multi-file
+      // scripts (imports, pd.read_csv) work just like locally.
+      const allFiles = { ...files, [activeFile]: code };
+      for (const [name, content] of Object.entries(allFiles)) {
+        try {
+          py.FS.writeFile(`/home/pyodide/${name}`, content, { encoding: "utf8" });
+        } catch {
+          // Non-fatal: some names may be invalid paths.
+        }
       }
 
       py.setStdout?.({
@@ -539,6 +469,9 @@ export default function PlaygroundPage() {
         addOutput({ text: String(result), type: "stdout" });
       }
 
+      // Render any matplotlib figures inline.
+      await captureFigures(py, addOutput);
+
       setExecStatus("done");
       addOutput({ text: `\n[Done] exited with code 0`, type: "system" });
     } catch (err: any) {
@@ -551,7 +484,7 @@ export default function PlaygroundPage() {
     }
 
     setIsRunning(false);
-  }, [isRunning, activeFile, files, addOutput]);
+  }, [isRunning, activeFile, files, addOutput, captureFigures]);
 
   handleRunRef.current = handleRun;
 
@@ -567,14 +500,20 @@ export default function PlaygroundPage() {
     addOutput({ text: "Resetting Python session...", type: "system" });
 
     if (pyodideRef.current) {
+      const py = pyodideRef.current;
       try {
-        await pyodideRef.current.runPythonAsync(STUB_PYTHON_CODE);
-        addOutput({ text: "Session reset complete. All variables cleared.", type: "system" });
-      } catch {
-        addOutput({ text: "Session reset.", type: "system" });
+        // Clear all user variables from the persistent __main__ namespace.
+        py.globals.clear();
+
+        // Re-define the helpers and re-import the defaults.
+        py.runPython(FIGURE_CAPTURE_CODE);
+        await py.runPythonAsync("import numpy, pandas, scipy; import statslibx");
+        addOutput({ text: `Session reset complete — statslibx v${statsLibxVersion || "reloaded"}. Variables cleared.`, type: "system" });
+      } catch (err: any) {
+        addOutput({ text: `Session reset (helpers could not be re-primed: ${err.message || err}).`, type: "system" });
       }
     }
-  }, [addOutput]);
+  }, [addOutput, statsLibxVersion]);
 
   const handleDownload = useCallback(() => {
     const code = editorViewRef.current?.state.doc.toString() || files[activeFile] || "";
@@ -605,11 +544,6 @@ export default function PlaygroundPage() {
 
     const py = pyodideRef.current;
     try {
-      const hasModule = await py.runPythonAsync(`import sys; 'statslibx' in sys.modules`);
-      if (!hasModule) {
-        await py.runPythonAsync(STUB_PYTHON_CODE);
-      }
-
       py.setStdout?.({ batched: (msg: string) => {
         setTerminalHistory(prev => [...prev, msg]);
       }});
@@ -621,10 +555,21 @@ export default function PlaygroundPage() {
       if (result !== undefined && result !== null) {
         setTerminalHistory(prev => [...prev, String(result)]);
       }
+
+      // Render any figures created in the REPL (they appear in the Output panel).
+      const figureCount = { n: 0 };
+      await captureFigures(py, (line) => {
+        if (line.type === "image") figureCount.n += 1;
+        addOutput(line);
+      });
+      if (figureCount.n > 0) {
+        setTerminalHistory(prev => [...prev, `[${figureCount.n} figure${figureCount.n > 1 ? "s" : ""} rendered in the Output panel]`]);
+        setBottomTab("output");
+      }
     } catch (err: any) {
       setTerminalHistory(prev => [...prev, `Error: ${err.message || err}`]);
     }
-  }, []);
+  }, [captureFigures, addOutput]);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -891,6 +836,9 @@ await micropip.install('${pkgName.replace(/'/g, "\\'")}')
                         Install
                       </button>
                     </form>
+                    <p className="text-[10px] text-muted leading-relaxed pt-2">
+                      Pure-Python PyPI packages install via micropip (e.g. plotly, seaborn). Compiled packages such as polars are not available in the browser.
+                    </p>
                   </div>
                 )}
               </div>
@@ -938,6 +886,9 @@ await micropip.install('${pkgName.replace(/'/g, "\\'")}')
               </button>
             </div>
             <div className="flex items-center gap-3">
+              {statsLibxVersion && (
+                <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded">statslibx v{statsLibxVersion}</span>
+              )}
               <span className="text-[10px] font-mono text-muted bg-white/[0.04] px-2 py-0.5 rounded">Pyodide v0.26.4</span>
             </div>
           </div>
@@ -1047,19 +998,30 @@ await micropip.install('${pkgName.replace(/'/g, "\\'")}')
                         {output.length === 0 ? (
                           <span className="text-muted italic">No output yet. Click Run to execute code.</span>
                         ) : (
-                          output.map((line, i) => (
-                            <div
-                              key={i}
-                              className={`whitespace-pre-wrap break-all ${
-                                line.type === "stdout" ? "text-gray-300"
-                                : line.type === "stderr" ? "text-yellow-300"
-                                : line.type === "error" ? "text-red-400"
-                                : "text-muted"
-                              }`}
-                            >
-                              {line.text}
-                            </div>
-                          ))
+                          output.map((line, i) =>
+                            line.type === "image" && line.image ? (
+                              <div key={i} className="my-2 flex justify-center">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`data:image/png;base64,${line.image}`}
+                                  alt="Matplotlib figure"
+                                  className="max-w-full max-h-[380px] rounded border border-[rgba(255,255,255,0.08)] bg-white"
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                key={i}
+                                className={`whitespace-pre-wrap break-all ${
+                                  line.type === "stdout" ? "text-gray-300"
+                                  : line.type === "stderr" ? "text-yellow-300"
+                                  : line.type === "error" ? "text-red-400"
+                                  : "text-muted"
+                                }`}
+                              >
+                                {line.text}
+                              </div>
+                            )
+                          )
                         )}
                       </div>
                     )}

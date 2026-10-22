@@ -29,7 +29,27 @@ requires_viewx = pytest.mark.skipif(
 
 
 def test_version():
-    assert __version__ == "0.3.1"
+    assert __version__ == "0.4.0"
+
+
+def test_import_v040_modules():
+    """New v0.4.0 modules are importable from the top-level package."""
+    from statslibx import (
+        TimeSeriesStats,
+        fit_distributions,
+        qq_data,
+        goodness_of_fit,
+        impute,
+        missing_report,
+        profile,
+    )
+    assert callable(fit_distributions)
+    assert callable(qq_data)
+    assert callable(goodness_of_fit)
+    assert callable(impute)
+    assert callable(missing_report)
+    assert callable(profile)
+    assert hasattr(TimeSeriesStats, "acf")
 
 
 def test_import_without_viewx_classes():

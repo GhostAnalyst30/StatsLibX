@@ -10,7 +10,7 @@ export default function ViewXDocs() {
         title="ViewX"
         description="Optional visualization module. StatsLibX performs all analysis; ViewX exports results to HTML dashboards, PDF reports, or Presentation slide decks. Core statslibx works without viewx installed."
         icon={<Eye className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">
@@ -186,6 +186,57 @@ from_report_payload(payload, target="html", filename="out.html")`}
           <p className="text-sm font-mono text-muted">
             <span className="text-accent">from</span> statslibx.viewx.adapters <span className="text-accent">import</span> to_report_data
           </p>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <h2 className="section-title">ViewX in the browser playground</h2>
+        <p className="text-sm text-muted leading-relaxed">
+          The online <a href="/playground" className="text-accent hover:underline">playground</a> runs the
+          real statslibx in your browser via Pyodide. What works and what does not:
+        </p>
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full text-sm text-left border border-border rounded-lg overflow-hidden">
+            <thead className="bg-white/5 text-muted">
+              <tr>
+                <th className="px-3 py-2">Capability</th>
+                <th className="px-3 py-2">In the playground</th>
+                <th className="px-3 py-2">Notes</th>
+              </tr>
+            </thead>
+            <tbody className="text-muted">
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">All analysis (descriptive, inferential, computational, timeseries, distribution, imputation, EDA)</td>
+                <td className="px-3 py-2 text-green-400">Works</td>
+                <td className="px-3 py-2">numpy, pandas, scipy, sympy and matplotlib are loaded.</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">Bundled datasets (iris, penguins, titanic)</td>
+                <td className="px-3 py-2 text-green-400">Works</td>
+                <td className="px-3 py-2">Large datasets are not bundled in the browser.</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">matplotlib plots</td>
+                <td className="px-3 py-2 text-green-400">Works</td>
+                <td className="px-3 py-2">Figures render inline in the output panel.</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">plotly / seaborn</td>
+                <td className="px-3 py-2 text-accent3">Installable</td>
+                <td className="px-3 py-2">Pure-Python packages — install them from the Packages panel (micropip).</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">polars backend</td>
+                <td className="px-3 py-2 text-red-400">Unavailable</td>
+                <td className="px-3 py-2">Compiled packages cannot run in the browser; use the pandas backend.</td>
+              </tr>
+              <tr className="border-t border-border">
+                <td className="px-3 py-2">ViewX export (.to_html() / .to_presentation())</td>
+                <td className="px-3 py-2 text-red-400">Requires pip</td>
+                <td className="px-3 py-2">Install statslibx[viewx] locally; to_report_data() payloads work everywhere.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </>

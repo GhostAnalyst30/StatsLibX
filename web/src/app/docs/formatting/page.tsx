@@ -9,7 +9,7 @@ export default function FormattingDocs() {
         title="Formatted Output"
         description="Consistent console, markdown, JSON, and ViewX exports for every StatsLibX result type."
         icon={<FileText className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">

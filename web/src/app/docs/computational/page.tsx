@@ -61,7 +61,7 @@ export default function ComputationalStatsPage() {
         title="ComputationalStats"
         description="Computational statistical methods including regression, interpolation, bootstrapping, and clustering algorithms for advanced data analysis."
         icon={<Cpu className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">
@@ -114,6 +114,23 @@ predictions = result.predict({"x1": [1.0, 2.0], "x2": [3.0, 4.0]})`}
             example={`result = cs.linear_regression("x", "y")
 print(f"R² = {result.r2}")
 print(result.summary())`}
+          />
+
+          <MethodCard
+            name="regression_diagnostics"
+            signature="regression_diagnostics(X, y, degree=1, interaction_terms=False, alpha=0.05) -> RegressionDiagnostics"
+            description="New in v0.4.0. Fit a regression and run the full diagnostic suite: variance inflation factors (VIF), hat leverage, Cook's distance, Durbin-Watson autocorrelation, Breusch-Pagan heteroscedasticity LM test, residual normality (Shapiro-Wilk or Jarque-Bera) and a per-observation influence table — with human-readable flags."
+            parameters={[
+              { name: "X", type: "str | list of str", description: "Independent variable(s)" },
+              { name: "y", type: "str", description: "Dependent variable" },
+              { name: "alpha", type: "float", description: "Significance level for the assumption checks.", default: "0.05" },
+            ]}
+            returns="RegressionDiagnostics"
+            example={`diag = cs.regression_diagnostics(["age", "score"], "income")
+print(diag.durbin_watson)     # ~2 = no autocorrelation
+print(diag.vif)               # >10 flags multicollinearity
+print(diag.flags)             # human-readable warnings
+diag.influence.head()         # residual, leverage, cooks per row`}
           />
 
           <MethodCard

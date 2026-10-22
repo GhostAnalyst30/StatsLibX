@@ -11,6 +11,7 @@ interface ClassCardProps {
   href: string;
   accent?: string;
   icon: React.ReactNode;
+  isNew?: boolean;
 }
 
 export function ClassCard({
@@ -19,6 +20,7 @@ export function ClassCard({
   tags,
   href,
   icon,
+  isNew,
 }: ClassCardProps) {
   return (
     <motion.div
@@ -27,10 +29,21 @@ export function ClassCard({
     >
       <Link
         href={href}
-        className="block h-full p-6 rounded-xl border border-border bg-card hover:border-accent/30 transition-colors group no-underline"
+        className={`block h-full p-6 rounded-xl border transition-colors group no-underline card-hover-lift ${
+          isNew
+            ? "border-accent3/25 bg-gradient-to-b from-accent3/[0.04] to-card hover:border-accent3/40"
+            : "border-border bg-card hover:border-accent/30"
+        }`}
       >
         <div className="flex flex-col gap-3 h-full">
-          <div className="text-accent">{icon}</div>
+          <div className="flex items-start justify-between">
+            <div className={isNew ? "text-accent3" : "text-accent"}>{icon}</div>
+            {isNew && (
+              <span className="inline-flex items-center text-[10px] font-mono font-semibold uppercase tracking-wider text-accent3 bg-accent3/10 border border-accent3/25 px-2 py-0.5 rounded-full">
+                v0.4.0
+              </span>
+            )}
+          </div>
           <h3 className="font-syne font-bold text-lg text-white">{title}</h3>
           <p className="text-sm text-muted leading-relaxed flex-1">
             {description}
@@ -39,7 +52,11 @@ export function ClassCard({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="font-mono text-xs text-accent bg-accent/10 border border-accent/20 px-2 py-0.5 rounded"
+                className={`font-mono text-xs px-2 py-0.5 rounded border ${
+                  isNew
+                    ? "text-accent3 bg-accent3/10 border-accent3/20"
+                    : "text-accent bg-accent/10 border-accent/20"
+                }`}
               >
                 {tag}
               </span>

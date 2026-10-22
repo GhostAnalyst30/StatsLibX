@@ -57,6 +57,30 @@
       "namedRegex": "^/docs/descriptive(?:/)?$"
     },
     {
+      "page": "/docs/distribution",
+      "regex": "^/docs/distribution(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/distribution(?:/)?$"
+    },
+    {
+      "page": "/docs/eda",
+      "regex": "^/docs/eda(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/eda(?:/)?$"
+    },
+    {
+      "page": "/docs/formatting",
+      "regex": "^/docs/formatting(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/formatting(?:/)?$"
+    },
+    {
+      "page": "/docs/imputation",
+      "regex": "^/docs/imputation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/imputation(?:/)?$"
+    },
+    {
       "page": "/docs/inferential",
       "regex": "^/docs/inferential(?:/)?$",
       "routeKeys": {},
@@ -67,6 +91,12 @@
       "regex": "^/docs/preprocessing(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/docs/preprocessing(?:/)?$"
+    },
+    {
+      "page": "/docs/timeseries",
+      "regex": "^/docs/timeseries(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/docs/timeseries(?:/)?$"
     },
     {
       "page": "/docs/utils",

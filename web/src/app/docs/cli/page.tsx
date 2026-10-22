@@ -361,7 +361,7 @@ export default function CliDocs() {
 
 # Output:
 # ╔══════════════════════════════════════════════╗
-# ║         Welcome to StatsLibX v0.3.1       ║
+# ║         Welcome to StatsLibX v0.4.0       ║
 # ║   Statistical Analysis for Data Science    ║
 # ╚══════════════════════════════════════════════╝
 #

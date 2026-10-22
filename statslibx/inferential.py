@@ -12,6 +12,8 @@ TestResult, PowerResult, ConfidenceIntervalResult, PairwiseResult
     ``to_markdown`` / ``to_json`` exporters.
 """
 
+from __future__ import annotations
+
 import logging
 import warnings
 from dataclasses import dataclass
@@ -104,6 +106,122 @@ def adjust_pvalues(
         return adjusted
 
     raise ValueError(f"Unknown adjustment method: {method!r}. Use 'bonferroni', 'holm' or 'bh'.")
+
+
+class TestRecommendation(_viewx_export_mixin()):
+    """
+    Structured test recommendation returned by
+    :meth:`InferentialStats.suggest_test`.
+
+    Attributes
+    ----------
+    goal : str
+        Analysis scenario ('compare', 'correlate', 'independence',
+        'distribution').
+    method : str
+        Recommended test or measure name.
+    kwargs : dict
+        Arguments to call it with (``run()`` executes them).
+    rationale : str
+        Why this test was chosen.
+    checks : list of dict
+        Assumption checks performed (normality, equal variance).
+    alternatives : list of dict
+        Fallback tests with their own rationale.
+    """
+
+    def __init__(self, instance: "InferentialStats", goal: str, method: str,
+                 kwargs: dict, rationale: str, checks: list, alternatives: list,
+                 alpha: float = 0.05):
+        self._instance = instance
+        self.goal = goal
+        self.method = method
+        self.kwargs = kwargs
+        self.rationale = rationale
+        self.checks = checks
+        self.alternatives = alternatives
+        self.alpha = alpha
+
+    def run(self):
+        """
+        Execute the recommended test and return its result.
+
+        Returns
+        -------
+        TestResult (or the underlying result object of the test)
+        """
+        inst = self._instance
+        method, kw = self.method, dict(self.kwargs)
+
+        if method in ("t_test_2sample", "mann_whitney_test") and isinstance(
+                kw.get("column1"), pd.Series):
+            # Group-subset comparison: run against a temporary frame.
+            tmp = pd.DataFrame({"g1": kw.pop("column1"), "g2": kw.pop("column2")})
+            runner = InferentialStats(tmp)
+            return getattr(runner, method)("g1", "g2", **kw)
+
+        if method in ("pearson", "spearman"):
+            df = inst._backend.to_pandas()
+            a = pd.to_numeric(df[kw["column1"]], errors="coerce")
+            b = pd.to_numeric(df[kw["column2"]], errors="coerce")
+            mask = a.notna() & b.notna()
+            if method == "pearson":
+                r, p = stats.pearsonr(a[mask], b[mask])
+            else:
+                r, p = stats.spearmanr(a[mask], b[mask])
+            return TestResult(
+                test_name=f"{method} correlation ({kw['column1']} vs {kw['column2']})",
+                statistic=float(r), pvalue=float(p), alpha=self.alpha,
+                params={"n_obs": int(mask.sum())},
+            )
+
+        return getattr(inst, method)(**kw)
+
+    def __repr__(self) -> str:
+        lines = [
+            "=" * 70,
+            "Test recommendation",
+            "=" * 70,
+            f"Goal: {self.goal}",
+            f"Recommended: {self.method}{tuple(self.kwargs.keys())}",
+            f"Rationale: {self.rationale}",
+        ]
+        if self.checks:
+            lines += ["", "Assumption checks:"]
+            for c in self.checks:
+                verdict = "OK" if c["passed"] else "VIOLATED"
+                lines.append(
+                    f"  {c['check']:<28} p={c['pvalue']:.4g}  [{verdict}]"
+                )
+        if self.alternatives:
+            lines += ["", "Alternatives:"]
+            for a in self.alternatives:
+                lines.append(f"  - {a['method']}: {a['rationale']}")
+        lines += ["", "Run it with: recommendation.run()"]
+        lines.append("=" * 70)
+        return "\n".join(lines)
+
+    def to_dict(self) -> dict:
+        return {
+            "goal": self.goal,
+            "method": self.method,
+            "kwargs": {k: str(v) for k, v in self.kwargs.items()},
+            "rationale": self.rationale,
+            "checks": self.checks,
+            "alternatives": self.alternatives,
+            "alpha": self.alpha,
+        }
+
+    def to_dataframe(self):
+        return pd.DataFrame(self.checks)
+
+    def to_markdown(self) -> str:
+        from .formatting import records_to_markdown
+        return records_to_markdown(self.to_dict()["checks"])
+
+    def to_json(self, indent: int = 2) -> str:
+        from .formatting import dumps_json
+        return dumps_json(self.to_dict(), indent=indent)
 
 
 class InferentialStats:
@@ -2203,6 +2321,185 @@ class InferentialStats:
         """
         return adjust_pvalues(pvalues, method=method)
 
+    def suggest_test(self, column1: str, column2: Optional[str] = None,
+                     groups: Optional[str] = None,
+                     goal: Literal["auto", "compare", "correlate", "independence", "distribution"] = "auto",
+                     alpha: float = 0.05) -> "TestRecommendation":
+        """
+        Recommend a statistical test based on the data.
+
+        Inspects column types, group counts, per-group normality
+        (Shapiro-Wilk) and homoscedasticity (Levene) and returns a
+        ranked recommendation with the rationale.
+
+        Parameters
+        ----------
+        column1 : str
+            First column (numeric or categorical).
+        column2 : str, optional
+            Second column (numeric or categorical). A categorical
+            ``column2`` is treated as the grouping variable.
+        groups : str, optional
+            Grouping column for comparisons.
+        goal : {'auto', 'compare', 'correlate', 'independence', 'distribution'}
+            Analysis intent ('auto' infers from the columns).
+        alpha : float, default 0.05
+            Significance level used in the assumption checks.
+
+        Returns
+        -------
+        TestRecommendation
+            With ``method``, ``kwargs``, ``checks``, ``alternatives``,
+            ``rationale`` and a ``run()`` shortcut that executes the
+            recommended test.
+
+        Examples
+        --------
+        >>> from statslibx import InferentialStats, load_iris
+        >>> inf = InferentialStats(load_iris())
+        >>> rec = inf.suggest_test("sepal_length", groups="species")
+        >>> rec.method
+        'anova_oneway'
+        """
+        df = self._backend.to_pandas()
+        for c in [column1, column2, groups]:
+            if c is not None and c not in df.columns:
+                raise ValueError(f"Column '{c}' not found in the data.")
+
+        cat_cols = set(self._backend.categorical_columns())
+        is_cat = lambda c: c in cat_cols
+
+        # ── Resolve the analysis scenario ──────────────────────────
+        if groups is None and column2 is not None and is_cat(column2) and not is_cat(column1):
+            groups, column2 = column2, None
+
+        if column1 is not None and column2 is None and groups is None:
+            # Single column → distribution check.
+            scenario = "distribution"
+        elif column1 is not None and column2 is not None:
+            both_num = not is_cat(column1) and not is_cat(column2)
+            scenario = "correlate" if both_num else "independence"
+        elif groups is not None:
+            scenario = "compare"
+        else:
+            raise ValueError("Provide column2 and/or groups to determine a test.")
+
+        if goal != "auto" and goal != scenario:
+            # Trust the explicit goal when the columns make it feasible.
+            if (goal == "correlate" and column2 and not is_cat(column1) and not is_cat(column2)) \
+               or (goal == "independence" and column2) \
+               or (goal == "compare" and groups) \
+               or (goal == "distribution"):
+                scenario = goal
+
+        checks: List[Dict[str, Optional[float]]] = []
+        alternatives: List[Dict[str, str]] = []
+
+        def _normality(series, label):
+            vals = series.dropna()
+            if 3 < len(vals) <= 5000:
+                stat, p = stats.shapiro(vals)
+            else:
+                jb = len(vals) / 6.0 * (stats.skew(vals) ** 2 + stats.kurtosis(vals) ** 2 / 4)
+                stat, p = jb, stats.chi2.sf(jb, 2)
+            checks.append({"check": f"normality({label})", "statistic": float(stat),
+                          "pvalue": float(p), "passed": bool(p >= alpha)})
+            return p >= alpha
+
+        # ── Scenario logic ─────────────────────────────────────────
+        if scenario == "distribution":
+            normal = _normality(df[column1], column1)
+            if normal:
+                method, kwargs = "normality_test", {"column": column1, "method": "shapiro"}
+                rationale = f"'{column1}' looks normal (Shapiro-Wilk p >= {alpha})."
+            else:
+                method, kwargs = "normality_test", {"column": column1, "method": "shapiro"}
+                rationale = (f"'{column1}' is not normal (Shapiro-Wilk p < {alpha}); "
+                            "consider robust statistics or a transformation.")
+            return TestRecommendation(self, "distribution", method, kwargs,
+                                      rationale, checks, alternatives, alpha)
+
+        if scenario == "correlate":
+            n1 = _normality(df[column1], column1)
+            n2 = _normality(df[column2], column2)
+            if n1 and n2:
+                method = "pearson"
+                rationale = "Both columns are normal → Pearson correlation."
+            else:
+                method = "spearman"
+                rationale = "At least one column is non-normal → Spearman rank correlation."
+            alternatives.append({"method": "spearman" if method == "pearson" else "pearson",
+                                 "rationale": "Rank-based / linear alternative."})
+            return TestRecommendation(self, "correlate", method,
+                                      {"column1": column1, "column2": column2},
+                                      rationale, checks, alternatives, alpha)
+
+        if scenario == "independence":
+            ct = pd.crosstab(df[column1], df[column2])
+            if ct.shape == (2, 2):
+                expected = np.outer(ct.sum(axis=1), ct.sum(axis=0)) / ct.values.sum()
+                if (expected < 5).any():
+                    method, kwargs = "fisher_exact_test", {"column1": column1, "column2": column2}
+                    rationale = "2×2 table with expected counts < 5 → Fisher exact test."
+                else:
+                    method, kwargs = "chi_square_test", {"column1": column1, "column2": column2}
+                    rationale = "2×2 table with expected counts >= 5 → chi-square test."
+            else:
+                method, kwargs = "chi_square_test", {"column1": column1, "column2": column2}
+                rationale = f"{ct.shape[0]}×{ct.shape[1]} contingency table → chi-square test."
+            alternatives.append({"method": "cramers_v", "rationale": "Effect size for the association."})
+            return TestRecommendation(self, "independence", method, kwargs,
+                                      rationale, checks, alternatives, alpha)
+
+        # scenario == "compare"
+        group_values = [g for g in df[groups].dropna().unique()]
+        if len(group_values) < 2:
+            raise ValueError(f"Grouping column '{groups}' needs at least two groups.")
+        normality_flags = []
+        for g in group_values:
+            normality_flags.append(_normality(df.loc[df[groups] == g, column1], f"{groups}={g}"))
+        all_normal = all(normality_flags)
+
+        if len(group_values) == 2:
+            a = df.loc[df[groups] == group_values[0], column1].dropna()
+            b = df.loc[df[groups] == group_values[1], column1].dropna()
+            lev_stat, lev_p = stats.levene(a, b)
+            checks.append({"check": "equal_variance (Levene)", "statistic": float(lev_stat),
+                           "pvalue": float(lev_p), "passed": bool(lev_p >= alpha)})
+            equal_var = lev_p >= alpha
+            if all_normal and equal_var:
+                method, kwargs = "t_test_2sample", {"column1": a.rename("g1"), "column2": b.rename("g2"),
+                                                    "equal_var": True}
+                rationale = "Normal groups with equal variances → Student t-test."
+            elif all_normal:
+                method, kwargs = "t_test_2sample", {"column1": a.rename("g1"), "column2": b.rename("g2"),
+                                                    "equal_var": False}
+                rationale = "Normal groups with unequal variances → Welch t-test."
+            else:
+                method, kwargs = "mann_whitney_test", {"column1": a.rename("g1"), "column2": b.rename("g2")}
+                rationale = "At least one group is non-normal → Mann-Whitney U test."
+            alternatives.append({"method": "permutation_test", "rationale": "Assumption-free alternative."})
+        else:
+            samples = [df.loc[df[groups] == g, column1].dropna() for g in group_values]
+            if len(samples) >= 2:
+                lev_stat, lev_p = stats.levene(*samples)
+                checks.append({"check": "equal_variance (Levene)", "statistic": float(lev_stat),
+                               "pvalue": float(lev_p), "passed": bool(lev_p >= alpha)})
+            equal_var = checks[-1]["passed"] if checks else True
+            if all_normal and equal_var:
+                method, kwargs = "anova_oneway", {"column": column1, "groups": groups}
+                rationale = "All groups normal with equal variances → one-way ANOVA + Tukey HSD."
+            elif all_normal:
+                method, kwargs = "welch_anova", {"column": column1, "groups": groups}
+                rationale = "All groups normal, unequal variances → Welch ANOVA + Games-Howell."
+            else:
+                method, kwargs = "kruskal_wallis_test", {"column": column1, "groups": groups}
+                rationale = "Non-normal group(s) → Kruskal-Wallis + Dunn post-hoc."
+            alternatives.append({"method": "permutation_anova", "rationale": "Assumption-free alternative."})
+
+        return TestRecommendation(self, "compare", method, kwargs,
+                                  rationale, checks, alternatives, alpha)
+
     def help(self):
         """Print a quick reference of the InferentialStats API."""
         print(_INFERENTIAL_HELP)
@@ -2257,6 +2554,11 @@ Power and sample size:
 
 Multiple comparisons:
   .adjust_pvalues(pvalues, method='bonferroni'|'holm'|'bh')
+
+Test recommendation:
+  .suggest_test(column1, column2=None, groups=None,
+                goal='auto'|'compare'|'correlate'|'independence'|'distribution')
+      -> TestRecommendation (assumption checks + .run() shortcut)
 
 Loading:
   InferentialStats.from_file(path, backend='pandas'|'polars')

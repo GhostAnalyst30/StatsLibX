@@ -26,9 +26,34 @@
 
 **StatsLibX** is a modern Python library for statistical analysis and data science, built for statisticians, analysts and data scientists. It offers a clear class-based API, dual **pandas / polars** support, structured result objects, bundled datasets, preprocessing, computational statistics and an optional **ViewX** reporting bridge.
 
-> **Current version:** `0.3.1` · **Author:** Emmanuel Ascendra
+> **Current version:** `0.4.0` · **Author:** Emmanuel Ascendra
 
 ---
+
+## What's new in v0.4.0
+
+This release focuses on **browser-ready packaging and four new analysis modules**.
+
+### New modules
+
+| Module | Description |
+|--------|-------------|
+| **`timeseries`** | `TimeSeriesStats`: ACF / PACF with Ljung-Box, ADF + KPSS stationarity tests (opposite nulls for a robust diagnosis), classical trend/seasonal decomposition, rolling statistics and lag feature matrices |
+| **`distribution`** | `fit_distributions` (scipy MLE over candidates ranked by AIC/BIC), `qq_data`, `goodness_of_fit` (KS with Lilliefors warning) |
+| **`imputation`** | `missing_report` (per-column + per-pattern missingness), `impute` with constant/mean/median/mode/linear/ffill/bfill/**KNN**/**MICE-lite** strategies |
+| **`eda`** | `profile()` — automatic EDA report with per-column statistics, correlation structure and data-quality alerts; exports a ViewX payload via `to_report_data()` |
+
+### New methods
+
+- **`ComputationalStats.regression_diagnostics()`** / `RegressionResult.diagnostics()` — VIF, hat leverage, Cook's distance, Durbin-Watson, Breusch-Pagan heteroscedasticity, residual normality and influence flags.
+- **`InferentialStats.suggest_test()`** — data-driven test recommender: inspects types, group counts, per-group normality and homoscedasticity, returns a `TestRecommendation` with assumption checks and a `.run()` shortcut.
+
+### Packaging
+
+- **Fixed a broken import**: `statslibx` failed to import on Python ≥ 3.10 (a `plt.Figure` annotation in `utils.py`); all modules now use lazy annotation evaluation.
+- `polars`, `seaborn` and `plotly` moved from hard dependencies to extras (`pip install statslibx[polars]`, `[plots]`) — the wheel is lighter and installs in **Pyodide/browser** environments.
+- Bundled datasets in the wheel slimmed to `iris`, `penguins`, `titanic` (the large `course_completion` and `sp500_companies` datasets remain available in the repository).
+- Legacy test files removed; new test suites for every new module.
 
 ## What's new in v0.3.1
 
@@ -82,7 +107,9 @@ pip install statslibx[viewx]
 # Advanced regression (statsmodels / sklearn)
 pip install statslibx[statsmodels,sklearn]
 
-# Excel + everything
+# polars backend / advanced plots / Excel
+pip install statslibx[polars]
+pip install statslibx[plots]
 pip install statslibx[excel]
 pip install statslibx[all]
 ```
@@ -92,10 +119,12 @@ pip install statslibx[all]
 | `viewx` | viewx ≥ 0.2.3 |
 | `statsmodels` | statsmodels ≥ 0.13 |
 | `sklearn` | scikit-learn ≥ 1.0 |
+| `polars` | polars ≥ 0.20 |
+| `plots` | seaborn ≥ 0.11, plotly ≥ 5.0 |
 | `excel` | openpyxl ≥ 3.0 |
 | `all` | All of the above |
 
-**Requirements:** Python ≥ 3.9 · numpy · pandas · scipy · matplotlib · seaborn · plotly · sympy
+**Requirements:** Python ≥ 3.9 · numpy · pandas · scipy · matplotlib · sympy (polars, seaborn and plotly are optional extras)
 
 ---
 
@@ -181,10 +210,14 @@ print(stats.backend)  # "polars"
 | Class / Module | Description |
 |----------------|-------------|
 | **`DescriptiveStats`** | Central tendency, dispersion, robust and weighted statistics, frequency tables, correlation, Cramér's V, grouped summaries, OLS regression |
-| **`InferentialStats`** | t-tests, ANOVA (classic / Welch / permutation), post-hoc (Tukey, Games-Howell, Dunn), non-parametric tests, categorical tests (chi-square, Fisher, McNemar), normality, power analysis, p-value adjustment |
-| **`ComputationalStats`** | Regression, bootstrap (with BCa), jackknife, Monte Carlo, permutation, cross-validation (k-fold / stratified / LOO), k-means, interpolation |
+| **`InferentialStats`** | t-tests, ANOVA (classic / Welch / permutation), post-hoc (Tukey, Games-Howell, Dunn), non-parametric tests, categorical tests (chi-square, Fisher, McNemar), normality, power analysis, p-value adjustment, **`suggest_test()`** |
+| **`ComputationalStats`** | Regression (+ **`regression_diagnostics()`**), bootstrap (with BCa), jackknife, Monte Carlo, permutation, cross-validation (k-fold / stratified / LOO), k-means, interpolation |
 | **`Preprocessing`** | Cleaning, missing values, scaling, outliers, data quality, dtypes |
 | **`UtilsStats`** | File loading, standalone visualization (matplotlib / seaborn / plotly), quick checks |
+| **`TimeSeriesStats`** | ACF / PACF, ADF + KPSS stationarity, classical decomposition, rolling stats, lag matrices |
+| **`distribution`** | `fit_distributions` (AIC/BIC ranking), `qq_data`, `goodness_of_fit` |
+| **`imputation`** | `missing_report`, `impute` (mean/median/mode/linear/KNN/MICE-lite) |
+| **`eda`** | `profile()` — automatic EDA report with alerts and ViewX payload |
 | **`datasets`** | `load_dataset`, `load_iris`, `load_penguins`, `generate_dataset` |
 | **`Backend`** | pandas / polars abstraction (`statslibx.backend`) |
 | **`viewx`** | `HTML`, `Presentation`, `Slide`, `Report`, `DataMatrix`, `to_report_data`, `render_html` (optional) |
@@ -321,13 +354,18 @@ Every class also ships an interactive quick reference: `DescriptiveStats(df).hel
 ```
 statslibx/
 ├── descriptive.py      # DescriptiveStats, DescriptiveSummary, LinearRegressionResult
-├── inferential.py      # InferentialStats, TestResult, PairwiseResult, adjust_pvalues
-├── computational.py    # ComputationalStats, RegressionResult, BootstrappingResult
+├── inferential.py      # InferentialStats, TestResult, PairwiseResult, adjust_pvalues, suggest_test
+├── computational.py    # ComputationalStats, RegressionResult, BootstrappingResult, RegressionDiagnostics
+├── timeseries.py       # TimeSeriesStats (ACF/PACF, ADF/KPSS, decomposition)
+├── distribution.py     # fit_distributions, qq_data, goodness_of_fit
+├── imputation.py       # impute, missing_report
+├── eda.py              # profile() — automatic EDA report
 ├── preprocessing/      # Preprocessing
 ├── datasets/           # iris, penguins, titanic + generate_dataset
 ├── utils.py            # UtilsStats (I/O, plots, quick checks)
 ├── backend.py          # pandas / polars Backend
 ├── viewx/              # ViewX bridge: adapters, renderers, export (optional)
+├── viz/                # Plotly figure builders (optional)
 ├── cli.py              # statslibx CLI
 └── py.typed            # PEP 561 typed package
 ```
@@ -345,5 +383,5 @@ Open an [issue](https://github.com/GhostAnalyst30/StatsLibX/issues) or a pull re
 ---
 
 <p align="center">
-  Developed by <strong>Emmanuel Ascendra</strong> · StatsLibX v0.3.1 · MIT License
+  Developed by <strong>Emmanuel Ascendra</strong> · StatsLibX v0.4.0 · MIT License
 </p>

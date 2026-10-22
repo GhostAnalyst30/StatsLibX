@@ -1,10 +1,12 @@
 {
   "name": "statslibx-docs",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
+    "sync:lib": "node scripts/sync-statslibx.mjs",
+    "predev": "node scripts/sync-statslibx.mjs",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "node scripts/sync-statslibx.mjs && next build",
     "start": "next start",
     "lint": "next lint"
   },

@@ -9,7 +9,7 @@ export default function PreprocessingDocs() {
         title="Preprocessing"
         description="A class for data preprocessing and cleaning. Provides methods for null detection, missing value handling, scaling, standardization, filtering, outlier detection, type conversion, and comprehensive data quality reporting."
         icon={<Filter className="w-6 h-6" />}
-        version="0.3.1"
+        version="0.4.0"
       />
 
       <section className="mb-12">

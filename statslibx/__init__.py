@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import sys
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 __author__ = "Emmanuel Ascendra"
 
 # ── Logging configuration ─────────────────────────────────────────────
@@ -46,6 +46,12 @@ from .computational import (
 from .utils import UtilsStats
 from .preprocessing import Preprocessing
 from .datasets import load_dataset, generate_dataset, load_iris, load_penguins
+
+# Time series, distribution fitting, imputation and EDA profiling (v0.4.0).
+from .timeseries import TimeSeriesStats
+from .distribution import fit_distributions, qq_data, goodness_of_fit
+from .imputation import impute, missing_report
+from .eda import profile
 
 # Core serializer — always available (does not require viewx installed).
 from .viewx.adapters import to_report_data
@@ -88,6 +94,13 @@ __all__ = [
     "generate_dataset",
     "load_iris",
     "load_penguins",
+    "TimeSeriesStats",
+    "fit_distributions",
+    "qq_data",
+    "goodness_of_fit",
+    "impute",
+    "missing_report",
+    "profile",
     "to_report_data",
     "VIEWX_AVAILABLE",
     "VIEWX_CLASSES_AVAILABLE",
@@ -121,6 +134,10 @@ def welcome() -> None:
     print("Modules:")
     print("  - datasets           Built-in datasets and generators")
     print("  - viewx              Optional ViewX export (pip install statslibx[viewx])")
+    print("  - timeseries         ACF/PACF, stationarity, decomposition (v0.4.0)")
+    print("  - distribution       Distribution fitting + goodness-of-fit (v0.4.0)")
+    print("  - imputation         Missing-data analysis and imputation (v0.4.0)")
+    print("  - eda                Automatic EDA profiling (v0.4.0)")
     print()
     if VIEWX_AVAILABLE:
         print("ViewX: installed — use .to_html() / .to_presentation() on results")
