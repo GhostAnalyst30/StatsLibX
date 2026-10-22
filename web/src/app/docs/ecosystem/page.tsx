@@ -15,7 +15,7 @@ const LIBRARIES = [
     role: "ML engine: supervised, unsupervised, bayesian and neural models with pipelines, evaluation and tuning.",
     install: "pip install synaptix",
     repo: "https://github.com/GhostAnalyst30/SynaptIX",
-    site: "https://synaptix.vercel.app/",
+    site: "https://synaptix-blue.vercel.app/",
   },
   {
     name: "ViewX",
