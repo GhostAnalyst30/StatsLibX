@@ -1,0 +1,3 @@
+recursive-include statslibx/datasets *.csv *.xlsx
+recursive-exclude statslibx/datasets course_completion.csv
+recursive-exclude statslibx/datasets sp500_companies.csv

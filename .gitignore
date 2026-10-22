@@ -1,12 +1,19 @@
 dist/
-*.toml
 venv/
 __pycache__/
 *.pyc
 .env
 statslibx.egg-info/
 figures/
-*.in
 node_modules
 .cursor/*
 .freebuff/*
+dist/*
+scripts/*
+
+# Web build artifacts (web/ Next.js)
+web/.next/
+web/out/
+web/.vercel/
+*.tsbuildinfo
+web/dev-*.txt

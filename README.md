@@ -261,13 +261,55 @@ test = InferentialStats(df).t_test_1sample("sepal_length", popmean=5.0)
 test.to_presentation("test.html", theme="dark")
 ```
 
-### Ecosystem: SynaptIX (machine learning)
+### Ecosystem: the GhostAnalyst data stack
 
-StatsLibX, ViewX and [SynaptIX](https://github.com/GhostAnalyst30/SynaptIX) share the same report-payload contract and dataset loaders, and each works standalone:
+StatsLibX is the **statistics core** of the GhostAnalyst ecosystem, together with [ViewX](https://github.com/GhostAnalyst30/ViewX) (visualization & reporting) and [SynaptIX](https://github.com/GhostAnalyst30/SynaptIX) (machine learning). The three libraries share the same report-payload contract and dataset loaders, and **each works standalone**:
+
+```mermaid
+flowchart TD
+    U["Raw data<br/>(CSV, DataFrame, arrays)"]
+    SLX["StatsLibX<br/>statistics + data handling + simulation"]
+    SYN["SynaptIX<br/>models + evaluation & tuning"]
+    VX["ViewX<br/>dashboards, EDA, PDF, slides"]
+    U --> SLX
+    U --> SYN
+    U --> VX
+    SLX -->|"DataFrame / polars"| SYN
+    SLX -->|"to_report_data() payload"| VX
+    SYN -->|"to_report_data() payload"| VX
+    SYN -->|"diagnostics() uses InferentialStats"| SLX
+    VX -->|"HTML / PDF / slides"| U
+```
 
 - **SynaptIX → ViewX**: ML results (`evaluate()`, `compare_models()`, ...) export with `.to_html()` / `.to_report()` / `.to_presentation()` (`pip install synaptix[viewx]`).
 - **SynaptIX → StatsLibX**: `model.diagnostics(X, y)` runs inferential tests on residuals/predictions via StatsLibX (`pip install synaptix[stats]`).
 - **StatsLibX → SynaptIX**: DataFrames produced with the polars backend feed SynaptIX models directly (polars input is converted automatically).
+
+#### End-to-end example (StatsLibX → SynaptIX → ViewX)
+
+```python
+# pip install statslibx[viewx] synaptix[viewx,stats] viewx
+from statslibx import DescriptiveStats, InferentialStats, load_iris
+import synaptix as sx
+from viewx import from_report_payload
+
+df = load_iris()
+
+# 1. Statistics: EDA + hypothesis testing (StatsLibX)
+DescriptiveStats(df).summary()
+anova = InferentialStats(df).anova_oneway("sepal_length", "species")
+
+# 2. Machine learning: model + evaluation (SynaptIX)
+X, y = df.drop(columns="species"), df["species"]
+model = sx.supervised.RandomForestClassifier().fit(X, y)
+eval_result = model.evaluate(X, y)
+
+# 3. Reporting: everything into one dashboard (ViewX)
+payload = eval_result.to_report_data(include_figures=True)
+from_report_payload(payload, target="html", filename="analisis.html")
+```
+
+> Portal with docs and a unified playground for the three libraries: **Libraries_of_Emms** (in this workspace).
 
 ---
 

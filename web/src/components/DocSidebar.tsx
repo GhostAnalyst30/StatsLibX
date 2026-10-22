@@ -19,6 +19,7 @@ import {
   Puzzle,
   ScanSearch,
   Search,
+  Boxes,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -60,6 +61,7 @@ const sections = [
       { href: "/docs/datasets", label: "Datasets", icon: Database, keywords: "iris penguins titanic generate csv" },
       { href: "/docs/cli", label: "Console", icon: Terminal, keywords: "cli terminal command statslibx data describe quality" },
       { href: "/docs/viewx", label: "ViewX", icon: Eye, keywords: "html presentation report export dashboard" },
+      { href: "/docs/ecosystem", label: "Ecosystem", icon: Boxes, keywords: "synaptix viewx ghostanalyst ecosystem integration payload libraries" },
     ],
   },
 ];

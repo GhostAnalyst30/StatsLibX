@@ -17,6 +17,7 @@ import {
   Terminal,
   Eye,
   Code2,
+  Boxes,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ const navItems = [
       { href: "/docs/datasets", label: "Datasets", icon: Database },
       { href: "/docs/cli", label: "Console", icon: Terminal },
       { href: "/docs/viewx", label: "ViewX", icon: Eye },
+      { href: "/docs/ecosystem", label: "Ecosystem", icon: Boxes },
     ],
   },
   { href: "/playground", label: "Playground", icon: Code2 },
